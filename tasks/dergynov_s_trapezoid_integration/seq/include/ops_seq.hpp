@@ -1,0 +1,22 @@
+#pragma once
+
+#include "dergynov_s_trapezoid_integration/common/include/common.hpp"
+
+namespace dergynov_s_trapezoid_integration {
+
+class DergynovSTrapezoidIntegrationSEQ : public BaseTask {
+ public:
+  static constexpr ppc::task::TypeOfTask GetStaticTypeOfTask() {
+    return ppc::task::TypeOfTask::kSEQ;
+  }
+
+  explicit DergynovSTrapezoidIntegrationSEQ(const InType& in);
+
+ private:
+  bool ValidationImpl() override;
+  bool PreProcessingImpl() override;
+  bool RunImpl() override;
+  bool PostProcessingImpl() override;
+};
+
+}  // namespace dergynov_s_trapezoid_integration
