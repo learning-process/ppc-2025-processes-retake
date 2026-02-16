@@ -1,11 +1,12 @@
 #include "dergynov_s_hypercube/mpi/include/ops_mpi.hpp"
-#include "dergynov_s_hypercube/common/include/common.hpp"
 
 #include <mpi.h>
 
 #include <cstddef>
 #include <numeric>
 #include <vector>
+
+#include "dergynov_s_hypercube/common/include/common.hpp"
 
 namespace dergynov_s_hypercube {
 
