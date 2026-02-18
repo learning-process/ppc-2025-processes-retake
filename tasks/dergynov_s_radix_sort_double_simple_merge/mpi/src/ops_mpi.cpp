@@ -10,7 +10,9 @@ namespace dergynov_s_radix_sort_double_simple_merge {
 namespace {
 
 void RadixSortDoubles(std::vector<double> &data) {
-  if (data.size() <= 1) return;
+  if (data.size() <= 1) {
+    return;
+  }
 
   std::vector<uint64_t> keys(data.size());
   for (size_t i = 0; i < data.size(); ++i) {
@@ -58,8 +60,12 @@ std::vector<double> MergeSorted(const std::vector<double> &a, const std::vector<
       result.push_back(b[j++]);
     }
   }
-  while (i < a.size()) result.push_back(a[i++]);
-  while (j < b.size()) result.push_back(b[j++]);
+  while (i < a.size()) {
+    result.push_back(a[i++]);
+  }
+  while (j < b.size()) {
+    result.push_back(b[j++]);
+  }
   return result;
 }
 
@@ -109,12 +115,8 @@ bool DergynovSRadixSortDoubleSimpleMergeMPI::RunImpl() {
 
   std::vector<double> local_data(counts[rank]);
 
-  MPI_Scatterv(rank == 0 ? input.data() : nullptr,
-               counts.data(), displs.data(),
-               MPI_DOUBLE,
-               local_data.data(), counts[rank],
-               MPI_DOUBLE,
-               0, MPI_COMM_WORLD);
+  MPI_Scatterv(rank == 0 ? input.data() : nullptr, counts.data(), displs.data(), MPI_DOUBLE, local_data.data(),
+               counts[rank], MPI_DOUBLE, 0, MPI_COMM_WORLD);
 
   RadixSortDoubles(local_data);
 

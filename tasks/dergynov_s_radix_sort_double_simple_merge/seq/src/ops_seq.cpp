@@ -8,7 +8,9 @@ namespace dergynov_s_radix_sort_double_simple_merge {
 namespace {
 
 void RadixSortDoubles(std::vector<double> &data) {
-  if (data.size() <= 1) return;
+  if (data.size() <= 1) {
+    return;
+  }
 
   std::vector<uint64_t> keys(data.size());
   for (size_t i = 0; i < data.size(); ++i) {

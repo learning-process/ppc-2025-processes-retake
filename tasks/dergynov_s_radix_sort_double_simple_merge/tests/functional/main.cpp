@@ -78,11 +78,10 @@ const std::array<TestType, 6> kTestParam = {
 
     std::make_tuple(std::make_tuple(std::vector<double>{42.0}, std::vector<double>{42.0}), "single_element")};
 
-const auto kTestTasksList =
-    std::tuple_cat(ppc::util::AddFuncTask<DergynovSRadixSortDoubleSimpleMergeMPI, InType>(
-                       kTestParam, PPC_SETTINGS_dergynov_s_radix_sort_double_simple_merge),
-                   ppc::util::AddFuncTask<DergynovSRadixSortDoubleSimpleMergeSEQ, InType>(
-                       kTestParam, PPC_SETTINGS_dergynov_s_radix_sort_double_simple_merge));
+const auto kTestTasksList = std::tuple_cat(ppc::util::AddFuncTask<DergynovSRadixSortDoubleSimpleMergeMPI, InType>(
+                                               kTestParam, PPC_SETTINGS_dergynov_s_radix_sort_double_simple_merge),
+                                           ppc::util::AddFuncTask<DergynovSRadixSortDoubleSimpleMergeSEQ, InType>(
+                                               kTestParam, PPC_SETTINGS_dergynov_s_radix_sort_double_simple_merge));
 
 const auto kGtestValues = ppc::util::ExpandToValues(kTestTasksList);
 
