@@ -74,6 +74,7 @@ const auto kGtestValues = ppc::util::TupleToGTestValues(kAllPerfTasks);
 
 const auto kPerfTestName = YushkovaPMinInMatrixPerfTests::CustomPerfTestName;
 
+// NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
 INSTANTIATE_TEST_SUITE_P(RunModeTests, YushkovaPMinInMatrixPerfTests, kGtestValues, kPerfTestName);
 
 }  // namespace

@@ -86,11 +86,13 @@ const auto kGtestValues = ppc::util::ExpandToValues(kTestTasksList);
 
 const auto kPerfTestName = YushkovaPMinInMatrixFuncTests::PrintFuncTestName<YushkovaPMinInMatrixFuncTests>;
 
+// NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
 INSTANTIATE_TEST_SUITE_P(SequentialAndMPI, YushkovaPMinInMatrixFuncTests, kGtestValues, kPerfTestName);
 
 }  // namespace
 
 template <typename TaskType>
+// NOLINTNEXTLINE(readability-function-cognitive-complexity)
 void ExpectPipelineSuccess(InType n) {
   auto task = std::make_shared<TaskType>(n);
 
@@ -141,6 +143,7 @@ TEST(YushkovaMinMatrixValidation, RejectsZeroMpi) {
 }
 
 template <typename TaskType>
+// NOLINTNEXTLINE(readability-function-cognitive-complexity)
 void RunTwice(TaskType& task, InType n) {
   task.GetInput() = n;
   task.GetOutput().clear();
