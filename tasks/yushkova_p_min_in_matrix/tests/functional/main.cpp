@@ -33,7 +33,7 @@ InType GenerateValue(int64_t i, int64_t j) {
 
 class YushkovaPMinInMatrixFuncTests : public ppc::util::BaseRunFuncTests<InType, OutType, TestType> {
  public:
-  static std::string PrintTestParam(const TestType& test_param) {
+  static std::string PrintTestParam(const TestType &test_param) {
     return std::to_string(std::get<0>(test_param)) + "_" + std::get<1>(test_param);
   }
 
@@ -43,7 +43,7 @@ class YushkovaPMinInMatrixFuncTests : public ppc::util::BaseRunFuncTests<InType,
     input_data_ = std::get<0>(test_param);
   }
 
-  bool CheckTestOutputData(OutType& output_data) final {
+  bool CheckTestOutputData(OutType &output_data) final {
     if (output_data.size() != static_cast<size_t>(input_data_)) {
       return false;
     }
@@ -144,7 +144,7 @@ TEST(YushkovaMinMatrixValidation, RejectsZeroMpi) {
 
 template <typename TaskType>
 // NOLINTNEXTLINE(readability-function-cognitive-complexity)
-void RunTwice(TaskType& task, InType n) {
+void RunTwice(TaskType &task, InType n) {
   task.GetInput() = n;
   task.GetOutput().clear();
 

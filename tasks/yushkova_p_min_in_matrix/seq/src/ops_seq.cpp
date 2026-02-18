@@ -25,7 +25,7 @@ inline int GenerateValue(int64_t i, int64_t j) {
 
 }  // namespace
 
-YushkovaPMinInMatrixSEQ::YushkovaPMinInMatrixSEQ(const InType& in) {
+YushkovaPMinInMatrixSEQ::YushkovaPMinInMatrixSEQ(const InType &in) {
   SetTypeOfTask(GetStaticTypeOfTask());
   GetInput() = in;
   GetOutput().clear();
@@ -36,7 +36,7 @@ bool YushkovaPMinInMatrixSEQ::ValidationImpl() {
 }
 
 bool YushkovaPMinInMatrixSEQ::PreProcessingImpl() {
-  auto& out = GetOutput();
+  auto &out = GetOutput();
   out.clear();
   out.reserve(GetInput());
   return true;
@@ -48,7 +48,7 @@ bool YushkovaPMinInMatrixSEQ::RunImpl() {
     return false;
   }
 
-  auto& out = GetOutput();
+  auto &out = GetOutput();
   out.clear();
   out.reserve(n);
 
