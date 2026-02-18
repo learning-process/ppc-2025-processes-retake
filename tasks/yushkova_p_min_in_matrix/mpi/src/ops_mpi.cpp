@@ -52,7 +52,7 @@ bool YushkovaPMinInMatrixMPI::RunImpl() {
   int base_rows = n / world_size;
   int extra = n % world_size;
 
-  int my_start = rank * base_rows + std::min(rank, extra);
+  int my_start = (rank * base_rows) + std::min(rank, extra);
   int my_count = base_rows + (rank < extra ? 1 : 0);
 
   std::vector<int> local_results(my_count);
@@ -62,9 +62,7 @@ bool YushkovaPMinInMatrixMPI::RunImpl() {
 
     for (int j = 0; j < n; ++j) {
       int val = GenerateValue(current_row, j);
-      if (val < row_min) {
-        row_min = val;
-      }
+      row_min = std::min(row_min, val);
     }
     local_results[i] = row_min;
   }
