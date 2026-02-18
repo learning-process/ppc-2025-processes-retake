@@ -1,4 +1,4 @@
-# Метод Гаусса – ленточная вертикальная схема
+#Метод Гаусса – ленточная вертикальная схема
 
 -  **Студент** Камалетдинов Рамзан Рамилевич
 -  **Группа** 3823Б1ПР4
@@ -408,8 +408,7 @@ void KamaletdinovAGaussVerticalSchemeMPI::SynchronizeRow(int k, int row, int col
   if (rank_ == 0) {
     for (int proc = 1; proc < size_; proc++) {
       std::vector<double> recv_data(cols - k);
-      MPI_Recv(recv_data.data(), cols - k, MPI_DOUBLE, proc, 0, 
-               MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+      MPI_Recv(recv_data.data(), cols - k, MPI_DOUBLE, proc, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
       for (int j = k + proc; j < cols; j += size_) {
         row_data[j - k] = recv_data[j - k];
       }
@@ -422,8 +421,7 @@ void KamaletdinovAGaussVerticalSchemeMPI::SynchronizeRow(int k, int row, int col
     }
   } else {
     MPI_Send(row_data.data(), cols - k, MPI_DOUBLE, 0, 0, MPI_COMM_WORLD);
-    MPI_Recv(row_data.data(), cols - k, MPI_DOUBLE, 0, 1, 
-             MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+    MPI_Recv(row_data.data(), cols - k, MPI_DOUBLE, 0, 1, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
     for (int j = k; j < cols; j++) {
       extended_matrix_[(row * cols) + j] = row_data[j - k];
     }
@@ -431,10 +429,10 @@ void KamaletdinovAGaussVerticalSchemeMPI::SynchronizeRow(int k, int row, int col
 }
 ```
 
-### Код исключения столбца
+    ## #Код исключения столбца
 
-```cpp
-void KamaletdinovAGaussVerticalSchemeMPI::EliminateColumn(int k, int cols) {
+```cpp void
+    KamaletdinovAGaussVerticalSchemeMPI::EliminateColumn(int k, int cols) {
   double pivot = extended_matrix_[(k * cols) + k];
   if (std::abs(pivot) < 1e-10) {
     return;
@@ -459,4 +457,3 @@ void KamaletdinovAGaussVerticalSchemeMPI::EliminateColumn(int k, int cols) {
   }
 }
 ```
-
