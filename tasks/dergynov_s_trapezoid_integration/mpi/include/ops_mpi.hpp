@@ -10,7 +10,7 @@ class DergynovSTrapezoidIntegrationMPI : public BaseTask {
     return ppc::task::TypeOfTask::kMPI;
   }
 
-  explicit DergynovSTrapezoidIntegrationMPI(const InType& in);
+  explicit DergynovSTrapezoidIntegrationMPI(const InType &in);
 
  private:
   bool ValidationImpl() override;

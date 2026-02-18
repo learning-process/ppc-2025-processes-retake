@@ -10,7 +10,7 @@ class DergynovSTrapezoidIntegrationSEQ : public BaseTask {
     return ppc::task::TypeOfTask::kSEQ;
   }
 
-  explicit DergynovSTrapezoidIntegrationSEQ(const InType& in);
+  explicit DergynovSTrapezoidIntegrationSEQ(const InType &in);
 
  private:
   bool ValidationImpl() override;

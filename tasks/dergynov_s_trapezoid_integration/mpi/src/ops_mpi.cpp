@@ -1,18 +1,19 @@
 #include "dergynov_s_trapezoid_integration/mpi/include/ops_mpi.hpp"
 
 #include <mpi.h>
+
 #include <algorithm>
 
 namespace dergynov_s_trapezoid_integration {
 
-DergynovSTrapezoidIntegrationMPI::DergynovSTrapezoidIntegrationMPI(const InType& in) {
+DergynovSTrapezoidIntegrationMPI::DergynovSTrapezoidIntegrationMPI(const InType &in) {
   SetTypeOfTask(GetStaticTypeOfTask());
   GetInput() = in;
   GetOutput() = 0.0;
 }
 
 bool DergynovSTrapezoidIntegrationMPI::ValidationImpl() {
-  const auto& in = GetInput();
+  const auto &in = GetInput();
   return (in.n > 0) && (in.a < in.b);
 }
 
@@ -35,7 +36,9 @@ bool DergynovSTrapezoidIntegrationMPI::RunImpl() {
   const int n = in.n;
 
   if (n <= 0 || !(a < b)) {
-    if (rank == 0) GetOutput() = 0.0;
+    if (rank == 0) {
+      GetOutput() = 0.0;
+    }
     return true;
   }
 

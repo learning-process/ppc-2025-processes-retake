@@ -23,7 +23,7 @@ using BaseTask = ppc::task::Task<InType, OutType>;
 enum class FunctionId : std::uint8_t {
   kLinear = 0,
   kQuadratic = 1,
-  kSin = 2
+  kSin = 2,
 };
 
 inline bool IsValidFunctionId(int id) {
@@ -31,7 +31,9 @@ inline bool IsValidFunctionId(int id) {
 }
 
 inline double Function(double x, int id) {
-  if (!IsValidFunctionId(id)) return 0.0;
+  if (!IsValidFunctionId(id)) {
+    return 0.0;
+  }
 
   switch (static_cast<FunctionId>(id)) {
     case FunctionId::kLinear:
@@ -45,8 +47,10 @@ inline double Function(double x, int id) {
   }
 }
 
-inline double GetExactIntegral(const InType& in) {
-  if (!IsValidFunctionId(in.func_id)) return 0.0;
+inline double GetExactIntegral(const InType &in) {
+  if (!IsValidFunctionId(in.func_id)) {
+    return 0.0;
+  }
 
   const double a = in.a;
   const double b = in.b;

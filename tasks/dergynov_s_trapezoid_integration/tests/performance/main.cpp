@@ -1,10 +1,10 @@
 #include <gtest/gtest.h>
 
-#include "dergynov_s_trapezoid_integration/seq/include/ops_seq.hpp"
 #include "dergynov_s_trapezoid_integration/mpi/include/ops_mpi.hpp"
+#include "dergynov_s_trapezoid_integration/seq/include/ops_seq.hpp"
 
-using dergynov_s_trapezoid_integration::DergynovSTrapezoidIntegrationSEQ;
 using dergynov_s_trapezoid_integration::DergynovSTrapezoidIntegrationMPI;
+using dergynov_s_trapezoid_integration::DergynovSTrapezoidIntegrationSEQ;
 using dergynov_s_trapezoid_integration::InType;
 
 TEST(dergynov_s_trapezoid_integration_perf, seq_performance) {
