@@ -1,6 +1,6 @@
 # Численное интегрирование методом трапеций
 
-* Студент:Дергунов Сергей Антонович
+* Студент: Дергунов Сергей Антонович
 * Группа: 3823Б1ПР4
 * Вариант: 20  
 * Технологии: SEQ, MPI 
@@ -46,12 +46,14 @@ I ≈ Σ ((f(x_i) + f(x_{i+1}))/2) * h ,
 
 ### Формат входных данных:
 
+```cpp
 struct InputParams {
   double a;
   double b;
   int n;
   int func_id; // 0: x, 1: x^2, 2: sin(x)
 };
+```
 
 Поддерживаемые функции:
 
@@ -89,12 +91,14 @@ struct InputParams {
 
 Чтобы обеспечить равномерное распределение вычислений, диапазон интегрирования делится между процессами:
 
+```cpp
 int base  = n / size;
 int extra = n % size;
 
 int local_n = base + (rank < extra ? 1 : 0);
 int start_i = rank * base + std::min(rank, extra);
 int end_i   = start_i + local_n;
+```
 
 ### Локальные вычисления
 
@@ -126,6 +130,7 @@ SEQ-версия аналогична, за исключением отсутс�
 
 ### 5.2. Структура классов
 
+```cpp
 namespace dergynov_s_trapezoid_integration {
 
 class DergynovSTrapezoidIntegrationMPI : public BaseTask {
@@ -144,6 +149,7 @@ class DergynovSTrapezoidIntegrationMPI : public BaseTask {
 };
 
 }  // namespace dergynov_s_trapezoid_integration
+```
 
 ---
 
@@ -151,34 +157,41 @@ class DergynovSTrapezoidIntegrationMPI : public BaseTask {
 
 #### 5.3.1. Конструктор
 
+```cpp
 DergynovSTrapezoidIntegrationMPI::DergynovSTrapezoidIntegrationMPI(const InType& in) {
   SetTypeOfTask(GetStaticTypeOfTask());
   GetInput() = in;
   GetOutput() = 0.0;
 }
+```
 
 ---
 
 ### 5.3.2. Валидация
 
+```cpp
 bool DergynovSTrapezoidIntegrationMPI::ValidationImpl() {
   const auto& in = GetInput();
   return (in.n > 0) && (in.a < in.b);
 }
+```
 
 ---
 
 ### 5.3.3. Предобработка
 
+```cpp
 bool DergynovSTrapezoidIntegrationMPI::PreProcessingImpl() {
   GetOutput() = 0.0;
   return true;
 }
+```
 
 ---
 
 ### 5.3.4. Основные вычисления (MPI-версия)
 
+```cpp
 bool DergynovSTrapezoidIntegrationMPI::RunImpl() {
   int rank = 0, size = 0;
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
@@ -205,7 +218,7 @@ bool DergynovSTrapezoidIntegrationMPI::RunImpl() {
 
   const double h = (b - a) / static_cast<double>(n);
 
-  `double` local_sum = 0.0;
+  double local_sum = 0.0;
   for (int i = start; i < end; ++i) {
     double x1 = a + h * i;
     double x2 = a + h * (i + 1);
@@ -219,14 +232,17 @@ bool DergynovSTrapezoidIntegrationMPI::RunImpl() {
   GetOutput() = global_sum;
   return true;
 }
+```
 
 ---
 
 ### 5.3.5. Постобработка
 
+```cpp
 bool DergunovSTrapezoidMethodMPI::PostProcessingImpl() {
   return true;
 }
+```
 
 ---
 
@@ -241,9 +257,9 @@ bool DergunovSTrapezoidMethodMPI::PostProcessingImpl() {
 
 ### Команды запуска
 
-mpirun --allow-run-as-root -n 1 ./build/bin/ppc_perf_tests
-mpirun --allow-run-as-root -n 2 ./build/bin/ppc_perf_tests
-mpirun --allow-run-as-root -n 4 ./build/bin/ppc_perf_tests
+* mpirun --allow-run-as-root -n 1 ./build/bin/ppc_perf_tests
+* mpirun --allow-run-as-root -n 2 ./build/bin/ppc_perf_tests
+* mpirun --allow-run-as-root -n 4 ./build/bin/ppc_perf_tests
 
 ### Параметры эксперимента
 
