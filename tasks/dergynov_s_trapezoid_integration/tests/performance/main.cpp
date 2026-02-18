@@ -1,5 +1,6 @@
 #include <gtest/gtest.h>
 
+#include "dergynov_s_trapezoid_integration/common/include/common.hpp"
 #include "dergynov_s_trapezoid_integration/mpi/include/ops_mpi.hpp"
 #include "dergynov_s_trapezoid_integration/seq/include/ops_seq.hpp"
 
@@ -9,7 +10,8 @@ using dergynov_s_trapezoid_integration::InType;
 
 class DergynovTrapezoidIntegrationPerfTest : public ::testing::Test {
  protected:
-  void RunTestSequence(auto &task) {
+  template <typename T>
+  void RunTestSequence(T &task) {
     ASSERT_TRUE(task.Validation());
     ASSERT_TRUE(task.PreProcessing());
     ASSERT_TRUE(task.Run());

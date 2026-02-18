@@ -33,7 +33,7 @@ bool DergynovSTrapezoidIntegrationSEQ::RunImpl() {
 
   double sum = 0.0;
   for (int i = 1; i < n; ++i) {
-    sum += Function(a + h * i, in.func_id);
+    sum += Function(a + (h * i), in.func_id);
   }
 
   GetOutput() = h * (0.5 * (Function(a, in.func_id) + Function(b, in.func_id)) + sum);

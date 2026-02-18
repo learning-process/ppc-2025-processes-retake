@@ -23,7 +23,8 @@ bool DergynovSTrapezoidIntegrationMPI::PreProcessingImpl() {
 }
 
 bool DergynovSTrapezoidIntegrationMPI::RunImpl() {
-  int rank = 0, size = 0;
+  int rank = 0;
+  int size = 0;
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
   MPI_Comm_size(MPI_COMM_WORLD, &size);
 
@@ -45,15 +46,15 @@ bool DergynovSTrapezoidIntegrationMPI::RunImpl() {
   int base = n / size;
   int rem = n % size;
   int local_n = base + (rank < rem ? 1 : 0);
-  int start = rank * base + std::min(rank, rem);
+  int start = (rank * base) + std::min(rank, rem);
   int end = start + local_n;
 
   const double h = (b - a) / static_cast<double>(n);
 
   double local_sum = 0.0;
   for (int i = start; i < end; ++i) {
-    double x1 = a + h * i;
-    double x2 = a + h * (i + 1);
+    double x1 = a + (h * i);
+    double x2 = a + (h * (i + 1));
     local_sum += 0.5 * (Function(x1, in.func_id) + Function(x2, in.func_id)) * h;
   }
 
