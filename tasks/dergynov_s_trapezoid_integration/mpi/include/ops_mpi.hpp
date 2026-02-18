@@ -1,6 +1,7 @@
 #pragma once
 
 #include "dergynov_s_trapezoid_integration/common/include/common.hpp"
+#include "task/include/task.hpp"
 
 namespace dergynov_s_trapezoid_integration {
 

@@ -1,5 +1,7 @@
 #include "dergynov_s_trapezoid_integration/seq/include/ops_seq.hpp"
 
+#include "dergynov_s_trapezoid_integration/common/include/common.hpp"
+
 namespace dergynov_s_trapezoid_integration {
 
 DergynovSTrapezoidIntegrationSEQ::DergynovSTrapezoidIntegrationSEQ(const InType &in) {

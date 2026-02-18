@@ -8,14 +8,26 @@ using dergynov_s_trapezoid_integration::DergynovSTrapezoidIntegrationMPI;
 using dergynov_s_trapezoid_integration::DergynovSTrapezoidIntegrationSEQ;
 using dergynov_s_trapezoid_integration::InType;
 
+namespace {
+template <typename T>
+void ValidateAndPreProcess(T &task) {
+  ASSERT_TRUE(task.Validation());
+  ASSERT_TRUE(task.PreProcessing());
+}
+
+template <typename T>
+void RunAndPostProcess(T &task) {
+  ASSERT_TRUE(task.Run());
+  ASSERT_TRUE(task.PostProcessing());
+}
+}  // namespace
+
 class DergynovTrapezoidIntegrationPerfTest : public ::testing::Test {
  protected:
   template <typename T>
   void RunTestSequence(T &task) {
-    ASSERT_TRUE(task.Validation());
-    ASSERT_TRUE(task.PreProcessing());
-    ASSERT_TRUE(task.Run());
-    ASSERT_TRUE(task.PostProcessing());
+    ValidateAndPreProcess(task);
+    RunAndPostProcess(task);
   }
 };
 
