@@ -205,7 +205,7 @@ bool DergynovSTrapezoidIntegrationMPI::RunImpl() {
 
   const double h = (b - a) / static_cast<double>(n);
 
-  "double" local_sum = 0.0;
+  `double` local_sum = 0.0;
   for (int i = start; i < end; ++i) {
     double x1 = a + h * i;
     double x2 = a + h * (i + 1);
