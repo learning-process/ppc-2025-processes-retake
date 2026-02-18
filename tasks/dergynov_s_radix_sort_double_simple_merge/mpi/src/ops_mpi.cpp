@@ -131,9 +131,9 @@ bool DergynovSRadixSortDoubleSimpleMergeMPI::RunImpl() {
 
     for (int proc = 1; proc < size; ++proc) {
       int recv_count = 0;
-      MPI_Recv(&recv_count, 1, MPI_INT, p, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+      MPI_Recv(&recv_count, 1, MPI_INT, proc, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
       std::vector<double> part(recv_count);
-      MPI_Recv(part.data(), recv_count, MPI_DOUBLE, p, 1, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+      MPI_Recv(part.data(), recv_count, MPI_DOUBLE, proc, 1, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
       result_ = MergeSorted(result_, part);
     }
   } else {
