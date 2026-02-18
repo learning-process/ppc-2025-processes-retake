@@ -2,7 +2,6 @@
 
 #include <mpi.h>
 
-#include <algorithm>
 #include <cstddef>
 #include <cstdint>
 #include <cstring>
@@ -24,18 +23,18 @@ void RadixSortDoubles(std::vector<double> &data) {
     keys[i] = DoubleToSortableUint64(data[i]);
   }
 
-  const int kRadix = 256;
+  const int k_radix = 256;
   std::vector<uint64_t> temp(data.size());
 
   for (int shift = 0; shift < 64; shift += 8) {
-    std::vector<size_t> count(kRadix + 1, 0);
+    std::vector<size_t> count(k_radix + 1, 0);
 
     for (uint64_t key : keys) {
       uint8_t digit = (key >> shift) & 0xFF;
       ++count[digit + 1];
     }
 
-    for (int i = 0; i < kRadix; ++i) {
+    for (int i = 0; i < k_radix; ++i) {
       count[i + 1] += count[i];
     }
 
@@ -43,7 +42,7 @@ void RadixSortDoubles(std::vector<double> &data) {
       uint8_t digit = (keys[i] >> shift) & 0xFF;
       size_t pos = count[digit];
       temp[pos] = keys[i];
-      count[digit] = pos + 1;
+      ++count[digit];
     }
 
     keys.swap(temp);
