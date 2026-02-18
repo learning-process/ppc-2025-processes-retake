@@ -66,7 +66,7 @@ bool IsRootOrSingleProcess() {
 }
 
 template <typename TaskType>
-OutType RunPerfPipeline(InType n, const std::string& test_id) {
+OutType RunPerfPipeline(InType n, const std::string &test_id) {
   auto task = std::make_shared<TaskType>(n);
   ppc::performance::Perf<InType, OutType> perf(task);
   const ppc::performance::PerfAttr attr = MakePerfAttr();
@@ -78,7 +78,7 @@ OutType RunPerfPipeline(InType n, const std::string& test_id) {
 }
 
 template <typename TaskType>
-OutType RunPerfTask(InType n, const std::string& test_id) {
+OutType RunPerfTask(InType n, const std::string &test_id) {
   auto task = std::make_shared<TaskType>(n);
   ppc::performance::Perf<InType, OutType> perf(task);
   const ppc::performance::PerfAttr attr = MakePerfAttr();
@@ -89,7 +89,7 @@ OutType RunPerfTask(InType n, const std::string& test_id) {
   return task->GetOutput();
 }
 
-void CheckOutputForN(InType n, const OutType& output) {
+void CheckOutputForN(InType n, const OutType &output) {
   const OutType expected = BuildExpectedOutput(n);
   ASSERT_EQ(output.size(), expected.size());
   EXPECT_EQ(output, expected);

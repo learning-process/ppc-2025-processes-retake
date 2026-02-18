@@ -41,7 +41,7 @@ OutType BuildExpectedOutput(InType n) {
 }
 
 template <typename TaskType>
-bool RunPipeline(TaskType& task) {
+bool RunPipeline(TaskType &task) {
   return task.Validation() && task.PreProcessing() && task.Run() && task.PostProcessing();
 }
 
