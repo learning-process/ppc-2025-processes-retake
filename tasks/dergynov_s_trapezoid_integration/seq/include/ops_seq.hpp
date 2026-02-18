@@ -7,7 +7,7 @@ namespace dergynov_s_trapezoid_integration {
 class DergynovSTrapezoidIntegrationSEQ : public BaseTask {
  public:
   static constexpr ppc::task::TypeOfTask GetStaticTypeOfTask() {
-    return ppc::task::TypeOfTask::kSequential;
+    return ppc::task::TypeOfTask::kSEQ;
   }
 
   explicit DergynovSTrapezoidIntegrationSEQ(const InType &in);
