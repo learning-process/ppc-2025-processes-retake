@@ -1,8 +1,12 @@
 #include "dergynov_s_radix_sort_double_simple_merge/seq/include/ops_seq.hpp"
 
 #include <algorithm>
+#include <cstddef>
+#include <cstdint>
 #include <cstring>
 #include <vector>
+
+#include "dergynov_s_radix_sort_double_simple_merge/common/include/common.hpp"
 
 namespace dergynov_s_radix_sort_double_simple_merge {
 namespace {
@@ -23,8 +27,8 @@ void RadixSortDoubles(std::vector<double> &data) {
   for (int shift = 0; shift < 64; shift += 8) {
     std::vector<size_t> count(kRadix + 1, 0);
 
-    for (size_t i = 0; i < keys.size(); ++i) {
-      uint8_t digit = (keys[i] >> shift) & 0xFF;
+    for (uint64_t key : keys) {
+      uint8_t digit = (key >> shift) & 0xFF;
       ++count[digit + 1];
     }
 

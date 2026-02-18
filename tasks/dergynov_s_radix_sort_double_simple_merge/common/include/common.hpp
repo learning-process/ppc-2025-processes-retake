@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cstdint>
 #include <cstring>
 #include <string>
 #include <tuple>
@@ -15,7 +16,7 @@ using TestType = std::tuple<std::tuple<std::vector<double>, std::vector<double>>
 using BaseTask = ppc::task::Task<InType, OutType>;
 
 inline uint64_t DoubleToSortableUint64(double d) {
-  uint64_t u;
+  uint64_t u = 0;
   std::memcpy(&u, &d, sizeof(double));
   if ((u & 0x8000000000000000ULL) != 0U) {
     u = ~u;
@@ -31,7 +32,7 @@ inline double SortableUint64ToDouble(uint64_t u) {
   } else {
     u = ~u;
   }
-  double d;
+  double d = 0.0;
   std::memcpy(&d, &u, sizeof(double));
   return d;
 }

@@ -1,6 +1,9 @@
 #include <gtest/gtest.h>
+#include <mpi.h>
 
 #include <cstddef>
+#include <random>
+#include <vector>
 
 #include "dergynov_s_radix_sort_double_simple_merge/common/include/common.hpp"
 #include "dergynov_s_radix_sort_double_simple_merge/mpi/include/ops_mpi.hpp"
@@ -8,55 +11,50 @@
 #include "util/include/perf_test_util.hpp"
 
 namespace dergynov_s_radix_sort_double_simple_merge {
+namespace {
 
-class DergynovRadixSortPerfTests : public ppc::util::BaseRunPerfTests<InType, OutType> {
-  std::size_t kCount_ = 1000000;
-
+class DergynovRadixSortPerfTests : public ::testing::Test {
+ protected:
   void SetUp() override {
-    test_data_.resize(kCount_);
-    for (std::size_t i = 0; i < kCount_; ++i) {
-      auto value = static_cast<double>(kCount_ - i);
-      if (i % 3 == 0) {
-        value = -value;
-      }
-      if (i % 7 == 0) {
-        value += 0.25;
-      }
-      test_data_[i] = value;
+    const size_t kDataSize = 1000000;
+    test_data_.resize(kDataSize);
+    std::mt19937 gen(123);
+    std::uniform_real_distribution<double> dist(-1000.0, 1000.0);
+    for (size_t i = 0; i < kDataSize; ++i) {
+      test_data_[i] = dist(gen);
     }
   }
 
-  bool CheckTestOutputData(OutType &output_data) final {
-    if (std::get<1>(output_data) == 0) {
-      for (std::size_t i = 1; i < std::get<0>(output_data).size(); ++i) {
-        if (std::get<0>(output_data)[i] < std::get<0>(output_data)[i - 1]) {
-          return false;
-        }
-      }
-    }
-    return true;
-  }
-
-  InType GetTestInputData() final {
-    return test_data_;
-  }
-
- private:
-  InType test_data_;
+  std::vector<double> test_data_;
 };
 
-TEST_P(DergynovRadixSortPerfTests, RunPerfModes) {
-  ExecuteTest(GetParam());
+TEST_F(DergynovRadixSortPerfTests, SeqPerformance) {
+  DergynovSRadixSortDoubleSimpleMergeSEQ task(test_data_);
+  ASSERT_TRUE(task.Validation());
+  ASSERT_TRUE(task.PreProcessing());
+  ASSERT_TRUE(task.Run());
+  ASSERT_TRUE(task.PostProcessing());
+  auto sorted = std::get<0>(task.GetOutput());
+  EXPECT_TRUE(std::is_sorted(sorted.begin(), sorted.end()));
+  EXPECT_EQ(sorted.size(), test_data_.size());
 }
 
-const auto kAllPerfTasks =
-    ppc::util::MakeAllPerfTasks<InType, DergynovSRadixSortDoubleSimpleMergeMPI, DergynovSRadixSortDoubleSimpleMergeSEQ>(
-        PPC_SETTINGS_dergynov_s_radix_sort_double_simple_merge);
+TEST_F(DergynovRadixSortPerfTests, MpiPerformance) {
+  int rank = 0;
+  MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 
-const auto kGtestValues = ppc::util::TupleToGTestValues(kAllPerfTasks);
+  DergynovSRadixSortDoubleSimpleMergeMPI task(test_data_);
+  ASSERT_TRUE(task.Validation());
+  ASSERT_TRUE(task.PreProcessing());
+  ASSERT_TRUE(task.Run());
+  ASSERT_TRUE(task.PostProcessing());
 
-const auto kPerfTestName = DergynovRadixSortPerfTests::CustomPerfTestName;
+  if (rank == 0) {
+    auto sorted = std::get<0>(task.GetOutput());
+    EXPECT_TRUE(std::is_sorted(sorted.begin(), sorted.end()));
+    EXPECT_EQ(sorted.size(), test_data_.size());
+  }
+}
 
-INSTANTIATE_TEST_SUITE_P(RunModeTests, DergynovRadixSortPerfTests, kGtestValues, kPerfTestName);
-
+}  // namespace
 }  // namespace dergynov_s_radix_sort_double_simple_merge

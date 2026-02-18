@@ -3,8 +3,13 @@
 #include <mpi.h>
 
 #include <algorithm>
+#include <cstddef>
+#include <cstdint>
 #include <cstring>
+#include <utility>
 #include <vector>
+
+#include "dergynov_s_radix_sort_double_simple_merge/common/include/common.hpp"
 
 namespace dergynov_s_radix_sort_double_simple_merge {
 namespace {
@@ -25,8 +30,8 @@ void RadixSortDoubles(std::vector<double> &data) {
   for (int shift = 0; shift < 64; shift += 8) {
     std::vector<size_t> count(kRadix + 1, 0);
 
-    for (size_t i = 0; i < keys.size(); ++i) {
-      uint8_t digit = (keys[i] >> shift) & 0xFF;
+    for (uint64_t key : keys) {
+      uint8_t digit = (key >> shift) & 0xFF;
       ++count[digit + 1];
     }
 
@@ -52,7 +57,8 @@ void RadixSortDoubles(std::vector<double> &data) {
 std::vector<double> MergeSorted(const std::vector<double> &a, const std::vector<double> &b) {
   std::vector<double> result;
   result.reserve(a.size() + b.size());
-  size_t i = 0, j = 0;
+  size_t i = 0;
+  size_t j = 0;
   while (i < a.size() && j < b.size()) {
     if (a[i] < b[j]) {
       result.push_back(a[i++]);
@@ -123,8 +129,8 @@ bool DergynovSRadixSortDoubleSimpleMergeMPI::RunImpl() {
   if (rank == 0) {
     result_ = std::move(local_data);
 
-    for (int p = 1; p < size; ++p) {
-      int recv_count;
+    for (int proc = 1; proc < size; ++proc) {
+      int recv_count = 0;
       MPI_Recv(&recv_count, 1, MPI_INT, p, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
       std::vector<double> part(recv_count);
       MPI_Recv(part.data(), recv_count, MPI_DOUBLE, p, 1, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
