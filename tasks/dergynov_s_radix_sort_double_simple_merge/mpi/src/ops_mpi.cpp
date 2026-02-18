@@ -38,10 +38,10 @@ void RadixSortDoubles(std::vector<double> &data) {
       count[i + 1] += count[i];
     }
 
-    for (size_t i = 0; i < keys.size(); ++i) {
-      uint8_t digit = (keys[i] >> shift) & 0xFF;
+    for (uint64_t key : keys) {
+      uint8_t digit = (key >> shift) & 0xFF;
       size_t pos = count[digit];
-      temp[pos] = keys[i];
+      temp[pos] = key;
       ++count[digit];
     }
 
