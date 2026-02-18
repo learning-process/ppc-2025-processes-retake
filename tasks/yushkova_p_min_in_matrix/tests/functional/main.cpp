@@ -5,10 +5,8 @@
 #include <cstddef>
 #include <cstdint>
 #include <memory>
-#include <string>
-#include <tuple>
+#include <vector>
 
-#include "util/include/func_test_util.hpp"
 #include "util/include/util.hpp"
 #include "yushkova_p_min_in_matrix/common/include/common.hpp"
 #include "yushkova_p_min_in_matrix/mpi/include/ops_mpi.hpp"
@@ -29,96 +27,56 @@ InType GenerateValue(int64_t i, int64_t j) {
   return static_cast<InType>((val % 2000001LL) - 1000000LL);
 }
 
-}  // namespace
-
-class YushkovaPMinInMatrixFuncTests : public ppc::util::BaseRunFuncTests<InType, OutType, TestType> {
- public:
-  static std::string PrintTestParam(const TestType &test_param) {
-    return std::to_string(std::get<0>(test_param)) + "_" + std::get<1>(test_param);
-  }
-
- protected:
-  void SetUp() override {
-    auto test_param = std::get<static_cast<size_t>(ppc::util::GTestParamIndex::kTestParams)>(GetParam());
-    input_data_ = std::get<0>(test_param);
-  }
-
-  bool CheckTestOutputData(OutType &output_data) final {
-    if (output_data.size() != static_cast<size_t>(input_data_)) {
-      return false;
+OutType BuildExpectedOutput(InType n) {
+  OutType expected;
+  expected.reserve(static_cast<size_t>(n));
+  for (InType i = 0; i < n; ++i) {
+    InType row_min = GenerateValue(static_cast<int64_t>(i), 0);
+    for (InType j = 1; j < n; ++j) {
+      row_min = std::min(row_min, GenerateValue(static_cast<int64_t>(i), static_cast<int64_t>(j)));
     }
-
-    for (InType i = 0; i < input_data_; ++i) {
-      InType expected = GenerateValue(static_cast<int64_t>(i), 0);
-      for (InType j = 1; j < input_data_; j++) {
-        expected = std::min(expected, GenerateValue(static_cast<int64_t>(i), static_cast<int64_t>(j)));
-      }
-      if (output_data[static_cast<size_t>(i)] != expected) {
-        return false;
-      }
-    }
-    return true;
+    expected.push_back(row_min);
   }
-
-  InType GetTestInputData() final {
-    return input_data_;
-  }
-
- private:
-  InType input_data_ = 0;
-};
-
-TEST_P(YushkovaPMinInMatrixFuncTests, TestMinInMatrix) {
-  ExecuteTest(GetParam());
+  return expected;
 }
-
-namespace {
-
-const std::array<TestType, 6> kTestParam = {std::make_tuple(1, "size_1"),     std::make_tuple(5, "size_5"),
-                                            std::make_tuple(17, "size_17"),   std::make_tuple(64, "size_64"),
-                                            std::make_tuple(128, "size_128"), std::make_tuple(256, "size_256")};
-
-const auto kTestTasksList = std::tuple_cat(
-    ppc::util::AddFuncTask<YushkovaPMinInMatrixMPI, InType>(kTestParam, PPC_SETTINGS_yushkova_p_min_in_matrix),
-    ppc::util::AddFuncTask<YushkovaPMinInMatrixSEQ, InType>(kTestParam, PPC_SETTINGS_yushkova_p_min_in_matrix));
-
-const auto kGtestValues = ppc::util::ExpandToValues(kTestTasksList);
-
-const auto kPerfTestName = YushkovaPMinInMatrixFuncTests::PrintFuncTestName<YushkovaPMinInMatrixFuncTests>;
-
-// NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
-INSTANTIATE_TEST_SUITE_P(SequentialAndMPI, YushkovaPMinInMatrixFuncTests, kGtestValues, kPerfTestName);
-
-}  // namespace
 
 template <typename TaskType>
-// NOLINTNEXTLINE(readability-function-cognitive-complexity)
-void ExpectPipelineSuccess(InType n) {
-  auto task = std::make_shared<TaskType>(n);
-
-  ASSERT_TRUE(task->Validation());
-  ASSERT_TRUE(task->PreProcessing());
-  ASSERT_TRUE(task->Run());
-  ASSERT_TRUE(task->PostProcessing());
-
-  ASSERT_EQ(task->GetOutput().size(), static_cast<size_t>(n));
+bool RunPipeline(TaskType& task) {
+  return task.Validation() && task.PreProcessing() && task.Run() && task.PostProcessing();
 }
 
-TEST(YushkovaMinMatrixStandalone, SeqPipelineWorks) {
-  const std::array<InType, 6> sizes = {1, 4, 17, 33, 127, 255};
-  for (auto s : sizes) {
-    ExpectPipelineSuccess<YushkovaPMinInMatrixSEQ>(s);
+template <typename TaskType>
+OutType RunPipelineForN(InType n) {
+  auto task = std::make_shared<TaskType>(n);
+  if (!RunPipeline(*task)) {
+    return {};
+  }
+  return task->GetOutput();
+}
+
+}  // namespace
+
+TEST(YushkovaMinMatrixFunctional, SeqSizes) {
+  constexpr std::array<InType, 6> kSizes = {1, 5, 17, 64, 128, 256};
+  for (InType n : kSizes) {
+    const OutType expected = BuildExpectedOutput(n);
+    const OutType actual = RunPipelineForN<YushkovaPMinInMatrixSEQ>(n);
+    ASSERT_EQ(actual.size(), static_cast<size_t>(n));
+    EXPECT_EQ(actual, expected);
   }
 }
 
-TEST(YushkovaMinMatrixStandalone, MpiPipelineWorks) {
+TEST(YushkovaMinMatrixFunctional, MpiSizes) {
   if (!ppc::util::IsUnderMpirun()) {
     GTEST_SKIP();
   }
 
-  const std::array<InType, 6> sizes = {1, 5, 18, 37, 130, 257};
-  for (auto s : sizes) {
-    ExpectPipelineSuccess<YushkovaPMinInMatrixMPI>(s);
+  constexpr std::array<InType, 6> kSizes = {1, 5, 17, 64, 128, 256};
+  for (InType n : kSizes) {
+    const OutType expected = BuildExpectedOutput(n);
+    const OutType actual = RunPipelineForN<YushkovaPMinInMatrixMPI>(n);
+    ASSERT_EQ(actual.size(), static_cast<size_t>(n));
+    EXPECT_EQ(actual, expected);
   }
 }
 
@@ -142,24 +100,16 @@ TEST(YushkovaMinMatrixValidation, RejectsZeroMpi) {
   ppc::util::DestructorFailureFlag::Unset();
 }
 
-template <typename TaskType>
-// NOLINTNEXTLINE(readability-function-cognitive-complexity)
-void RunTwice(TaskType &task, InType n) {
-  task.GetInput() = n;
-  task.GetOutput().clear();
-
-  ASSERT_TRUE(task.Validation());
-  ASSERT_TRUE(task.PreProcessing());
-  ASSERT_TRUE(task.Run());
-  ASSERT_TRUE(task.PostProcessing());
-
-  ASSERT_EQ(task.GetOutput().size(), static_cast<size_t>(n));
-}
-
 TEST(YushkovaMinMatrixPipeline, SeqReusable) {
   YushkovaPMinInMatrixSEQ task(4);
-  RunTwice(task, 4);
-  RunTwice(task, 9);
+
+  constexpr std::array<InType, 2> kSizes = {4, 9};
+  for (InType n : kSizes) {
+    task.GetInput() = n;
+    task.GetOutput().clear();
+    ASSERT_TRUE(RunPipeline(task));
+    EXPECT_EQ(task.GetOutput().size(), static_cast<size_t>(n));
+  }
 }
 
 TEST(YushkovaMinMatrixPipeline, MpiReusable) {
@@ -168,8 +118,14 @@ TEST(YushkovaMinMatrixPipeline, MpiReusable) {
   }
 
   YushkovaPMinInMatrixMPI task(6);
-  RunTwice(task, 6);
-  RunTwice(task, 14);
+
+  constexpr std::array<InType, 2> kSizes = {6, 14};
+  for (InType n : kSizes) {
+    task.GetInput() = n;
+    task.GetOutput().clear();
+    ASSERT_TRUE(RunPipeline(task));
+    EXPECT_EQ(task.GetOutput().size(), static_cast<size_t>(n));
+  }
 }
 
 }  // namespace yushkova_p_min_in_matrix

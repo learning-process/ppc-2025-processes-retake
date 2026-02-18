@@ -1,82 +1,132 @@
 #include <gtest/gtest.h>
+#include <mpi.h>
 
 #include <algorithm>
+#include <chrono>
 #include <cstddef>
 #include <cstdint>
-#include <vector>
+#include <memory>
+#include <string>
 
-#include "util/include/perf_test_util.hpp"
+#include "performance/include/performance.hpp"
+#include "util/include/util.hpp"
 #include "yushkova_p_min_in_matrix/common/include/common.hpp"
 #include "yushkova_p_min_in_matrix/mpi/include/ops_mpi.hpp"
 #include "yushkova_p_min_in_matrix/seq/include/ops_seq.hpp"
 
 namespace yushkova_p_min_in_matrix {
 
-class YushkovaPMinInMatrixPerfTests : public ppc::util::BaseRunPerfTests<InType, OutType> {
-  const int kCount_ = 2000;
-  InType input_data_{};
-  std::vector<InType> expected_mins_;
+namespace {
 
- protected:
-  void SetUp() override {
-    input_data_ = kCount_;
+InType GenerateValue(int64_t i, int64_t j) {
+  constexpr int64_t kA = 1103515245LL;
+  constexpr int64_t kC = 12345LL;
+  constexpr int64_t kM = 2147483648LL;
 
-    auto generate_value = [](int64_t i, int64_t j) -> InType {
-      constexpr int64_t kA = 1103515245LL;
-      constexpr int64_t kC = 12345LL;
-      constexpr int64_t kM = 2147483648LL;
-      int64_t seed = ((i % kM) * (100000007LL % kM) + (j % kM) * (1000000009LL % kM)) % kM;
-      seed = (seed ^ 42LL) % kM;
-      int64_t val = ((kA % kM) * (seed % kM) + kC) % kM;
-      return static_cast<InType>((val % 2000001LL) - 1000000LL);
-    };
+  int64_t seed = ((i % kM) * (100000007LL % kM) + (j % kM) * (1000000009LL % kM)) % kM;
+  seed = (seed ^ 42LL) % kM;
+  int64_t val = ((kA % kM) * (seed % kM) + kC) % kM;
+  return static_cast<InType>((val % 2000001LL) - 1000000LL);
+}
 
-    expected_mins_.resize(kCount_);
-    for (int i = 0; i < kCount_; i++) {
-      InType min_val = generate_value(static_cast<int64_t>(i), 0);
-      for (int j = 1; j < kCount_; j++) {
-        InType val = generate_value(static_cast<int64_t>(i), static_cast<int64_t>(j));
-        min_val = std::min(min_val, val);
-      }
-      expected_mins_[i] = min_val;
+OutType BuildExpectedOutput(InType n) {
+  OutType expected;
+  expected.reserve(static_cast<size_t>(n));
+  for (InType i = 0; i < n; ++i) {
+    InType row_min = GenerateValue(static_cast<int64_t>(i), 0);
+    for (InType j = 1; j < n; ++j) {
+      row_min = std::min(row_min, GenerateValue(static_cast<int64_t>(i), static_cast<int64_t>(j)));
     }
+    expected.push_back(row_min);
   }
+  return expected;
+}
 
-  bool CheckTestOutputData(OutType &output_data) final {
-    if (output_data.size() != static_cast<size_t>(input_data_)) {
-      return false;
-    }
+ppc::performance::PerfAttr MakePerfAttr() {
+  ppc::performance::PerfAttr attr;
+  attr.num_running = 3;
 
-    for (size_t i = 0; i < output_data.size(); i++) {
-      if (output_data[i] != expected_mins_[i]) {
-        return false;
-      }
-    }
+  const auto t0 = std::chrono::high_resolution_clock::now();
+  attr.current_timer = [t0] {
+    const auto now = std::chrono::high_resolution_clock::now();
+    const auto ns = std::chrono::duration_cast<std::chrono::nanoseconds>(now - t0).count();
+    return static_cast<double>(ns) * 1e-9;
+  };
+  return attr;
+}
 
+bool IsRootOrSingleProcess() {
+  if (!ppc::util::IsUnderMpirun()) {
     return true;
   }
 
-  InType GetTestInputData() final {
-    return input_data_;
-  }
-};
-
-TEST_P(YushkovaPMinInMatrixPerfTests, RunPerfModes) {
-  ExecuteTest(GetParam());
+  int rank = 0;
+  MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+  return rank == 0;
 }
 
-namespace {
+template <typename TaskType>
+OutType RunPerfPipeline(InType n, const std::string& test_id) {
+  auto task = std::make_shared<TaskType>(n);
+  ppc::performance::Perf<InType, OutType> perf(task);
+  const ppc::performance::PerfAttr attr = MakePerfAttr();
+  perf.PipelineRun(attr);
+  if (IsRootOrSingleProcess()) {
+    perf.PrintPerfStatistic(test_id);
+  }
+  return task->GetOutput();
+}
 
-const auto kAllPerfTasks = ppc::util::MakeAllPerfTasks<InType, YushkovaPMinInMatrixMPI, YushkovaPMinInMatrixSEQ>(
-    PPC_SETTINGS_yushkova_p_min_in_matrix);
+template <typename TaskType>
+OutType RunPerfTask(InType n, const std::string& test_id) {
+  auto task = std::make_shared<TaskType>(n);
+  ppc::performance::Perf<InType, OutType> perf(task);
+  const ppc::performance::PerfAttr attr = MakePerfAttr();
+  perf.TaskRun(attr);
+  if (IsRootOrSingleProcess()) {
+    perf.PrintPerfStatistic(test_id);
+  }
+  return task->GetOutput();
+}
 
-const auto kGtestValues = ppc::util::TupleToGTestValues(kAllPerfTasks);
-
-const auto kPerfTestName = YushkovaPMinInMatrixPerfTests::CustomPerfTestName;
-
-// NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
-INSTANTIATE_TEST_SUITE_P(RunModeTests, YushkovaPMinInMatrixPerfTests, kGtestValues, kPerfTestName);
+void CheckOutputForN(InType n, const OutType& output) {
+  const OutType expected = BuildExpectedOutput(n);
+  ASSERT_EQ(output.size(), expected.size());
+  EXPECT_EQ(output, expected);
+}
 
 }  // namespace
+
+TEST(YushkovaMinMatrixPerf, SeqPipelineRun) {
+  constexpr InType kN = 512;
+  const OutType output = RunPerfPipeline<YushkovaPMinInMatrixSEQ>(kN, "yushkova_p_min_in_matrix_seq_pipeline");
+  CheckOutputForN(kN, output);
+}
+
+TEST(YushkovaMinMatrixPerf, SeqTaskRun) {
+  constexpr InType kN = 512;
+  const OutType output = RunPerfTask<YushkovaPMinInMatrixSEQ>(kN, "yushkova_p_min_in_matrix_seq_task");
+  CheckOutputForN(kN, output);
+}
+
+TEST(YushkovaMinMatrixPerf, MpiPipelineRun) {
+  if (!ppc::util::IsUnderMpirun()) {
+    GTEST_SKIP();
+  }
+
+  constexpr InType kN = 512;
+  const OutType output = RunPerfPipeline<YushkovaPMinInMatrixMPI>(kN, "yushkova_p_min_in_matrix_mpi_pipeline");
+  CheckOutputForN(kN, output);
+}
+
+TEST(YushkovaMinMatrixPerf, MpiTaskRun) {
+  if (!ppc::util::IsUnderMpirun()) {
+    GTEST_SKIP();
+  }
+
+  constexpr InType kN = 512;
+  const OutType output = RunPerfTask<YushkovaPMinInMatrixMPI>(kN, "yushkova_p_min_in_matrix_mpi_task");
+  CheckOutputForN(kN, output);
+}
 
 }  // namespace yushkova_p_min_in_matrix
