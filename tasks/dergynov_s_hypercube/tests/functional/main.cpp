@@ -13,6 +13,7 @@
 #include "util/include/util.hpp"
 
 namespace dergynov_s_hypercube {
+namespace {
 
 class DergynovSHypercubeFuncTests : public ppc::util::BaseRunFuncTests<InType, OutType, TestType> {
  public:
@@ -37,8 +38,6 @@ class DergynovSHypercubeFuncTests : public ppc::util::BaseRunFuncTests<InType, O
  private:
   InType input_;
 };
-
-namespace {
 
 TEST_P(DergynovSHypercubeFuncTests, Run) {
   ExecuteTest(GetParam());

@@ -7,6 +7,7 @@
 #include "util/include/perf_test_util.hpp"
 
 namespace dergynov_s_hypercube {
+namespace {
 
 class DergynovSHypercubePerfTests : public ppc::util::BaseRunPerfTests<InType, OutType> {
  protected:
@@ -41,4 +42,5 @@ const auto kValues = ppc::util::TupleToGTestValues(kAllTasks);
 INSTANTIATE_TEST_SUITE_P(PerfTests, DergynovSHypercubePerfTests, kValues,
                          DergynovSHypercubePerfTests::CustomPerfTestName);
 
+}  // namespace
 }  // namespace dergynov_s_hypercube
