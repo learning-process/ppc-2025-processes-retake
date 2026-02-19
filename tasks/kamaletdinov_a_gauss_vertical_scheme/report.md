@@ -22,7 +22,7 @@
 Дана система линейных алгебраических уравнений вида:
 
 A*x = b
-```
+
 
 где:
 - A — квадратная матрица коэффициентов размером n×n
@@ -127,9 +127,9 @@ x[i] = b[i] - (sum)(j=i+1 to n-1) A[i][j] * x[j]
  так как вычисление каждого элемента решения требует знания уже вычисленных значений:
 
 1. **Вычисление решения**: Процесс 0 последовательно вычисляет значения неизвестных, начиная с последней строки:
-   ```
+   
    solution[i] = b[i] - sum(j=i+1 to n-1) A[i][j] * solution[j]
-   ```
+   
 
 2. **Распространение результата**: После вычисления решения на процессе 0,
  результат рассылается всем процессам через MPI_Bcast, обеспечивая согласованность данных на всех процессах.
@@ -178,13 +178,13 @@ j = start_col, start_col + size, start_col + 2*size, ...
 
 ### 4.4 Топология коммуникаций
 
-```
+
 Процесс 0 (координатор)
     | MPI_Recv (сбор данных)
     | Обновление матрицы
     | MPI_Send (рассылка)
 Процессы 1..size-1 (рабочие)
-```
+
 
 ### 4.5 Обратный ход
 
@@ -397,7 +397,7 @@ j = start_col, start_col + size, start_col + 2*size, ...
 
 ### Код синхронизации строки между процессами
 
-```cpp
+
 void KamaletdinovAGaussVerticalSchemeMPI::SynchronizeRow(int k, int row, int cols) {
   std::vector<double> row_data(cols - k);
   for (int j = k; j < cols; j++) {
@@ -426,11 +426,11 @@ void KamaletdinovAGaussVerticalSchemeMPI::SynchronizeRow(int k, int row, int col
     }
   }
 }
-```
+
 
     ## #Код исключения столбца
 
-```cpp void
+void
     KamaletdinovAGaussVerticalSchemeMPI::EliminateColumn(int k, int cols) {
   double pivot = extended_matrix_[(k * cols) + k];
   if (std::abs(pivot) < 1e-10) {
@@ -455,4 +455,4 @@ void KamaletdinovAGaussVerticalSchemeMPI::SynchronizeRow(int k, int row, int col
     }
   }
 }
-```
+
