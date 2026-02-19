@@ -22,14 +22,17 @@
 по возрастанию.
 
 Входные данные:
+
 - вектор \( x \in \mathbb{R}^n \), содержащий значения типа `double`
 - допускаются отрицательные значения, положительные значения и значения ±0
 
 Выходные данные:
+
 - вектор \( y \in \mathbb{R}^n \), содержащий те же элементы,
   отсортированные по возрастанию
 
 Ограничения:
+
 - \( n \ge 0 \)
 - сортировка должна быть корректной для всех допустимых значений типа `double`
 
@@ -39,6 +42,7 @@
 для вещественных чисел.
 
 Основные идеи алгоритма:
+
 - каждое значение `double` преобразуется в 64-битный целочисленный ключ,
   сохраняющий порядок вещественных чисел
 - для отрицательных чисел используется инверсия всех битов
@@ -76,15 +80,18 @@ O(8 \cdot n) = O(n)
 ## 5. Implementation Details
 
 Структура проекта:
+
 - `common/include/common.hpp` — общие типы данных и базовый класс задачи
 - `seq/` — последовательная реализация
 - `mpi/` — параллельная реализация
 
 Ключевые классы:
+
 - `SabutayARadixSortDoubleWithMergeSEQ`
 - `SabutayARadixSortDoubleWithMergeMPI`
 
 Особенности реализации:
+
 - используется безопасное преобразование `double` в `uint64_t`
   через `std::bit_cast`
 - корректно обрабатываются отрицательные значения и ±0
@@ -94,16 +101,19 @@ O(8 \cdot n) = O(n)
 ## 6. Experimental Setup
 
 Hardware / OS:
+
 - CPU: 11th Gen Intel(R) Core(TM) i5-1135G7 @ 2.40GHz
 - RAM: 8 ГБ
 - OS: Windows 10
 
 Toolchain:
+
 - Compiler: MSVC / clang
 - C++ standard: C++20
 - Build type: Release
 
 Data:
+
 - размер входного массива: 200000 элементов
 - значения генерируются псевдослучайным образом
 
@@ -117,6 +127,7 @@ mpiexec -n 2 .\ppc_perf_tests.exe --gtest_filter=RunModeTests/SabutayARadixSortD
 ### 7.1 Correctness
 
 Корректность реализации проверялась:
+
 - функциональными тестами для SEQ и MPI версий
 - сравнением результата с эталонной сортировкой
 - проверкой на граничных случаях
@@ -179,14 +190,13 @@ MPI-реализация демонстрирует ускорение в реж
 
 ## 9. References
 
-
-- OpenMPI Documentation — https://www.open-mpi.org/doc/
-- PPC Parallel Programming Course — https://learning-process.github.io/parallel_programming_course/
-- GTest Framework — https://github.com/google/googletest
-- Статья — https://www.cyberforum.ru/cpp-beginners/thread597195.html
+- OpenMPI Documentation — <https://www.open-mpi.org/doc/>
+- PPC Parallel Programming Course — <https://learning-process.github.io/parallel_programming_course/>
+- GTest Framework — <https://github.com/google/googletest>
+- Статья — <https://www.cyberforum.ru/cpp-beginners/thread597195.html>
 - Anthony Williams.
   "C++ Concurrency in Action" —
-  https://dodo.inm.ras.ru/konshin/HPC/bib/HPC-cxx11-book.pdf
+  <https://dodo.inm.ras.ru/konshin/HPC/bib/HPC-cxx11-book.pdf>
 - С. Макконнел.
   "Совершенный код. Практическое руководство по разработке
   программного обеспечения", 2014 г.
