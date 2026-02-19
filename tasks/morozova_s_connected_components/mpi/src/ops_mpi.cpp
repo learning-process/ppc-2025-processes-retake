@@ -81,7 +81,7 @@ std::pair<int, int> MorozovaSConnectedComponentsMPI::ComputeRowRange() const {
   return {start, end};
 }
 
-std::vector<std::pair<int, int>> MorozovaSConnectedComponentsMPI::GetNeighbors(int row, int col) {
+std::vector<std::pair<int, int>> MorozovaSConnectedComponentsMPI::GetNeighbors(int row, int col) const {
   std::vector<std::pair<int, int>> neighbors;
   const auto &input = GetInput();
   for (const auto &[dr, dc] : kShifts) {
@@ -146,37 +146,40 @@ void MorozovaSConnectedComponentsMPI::GatherLocalResults() {
   }
 }
 
-void MorozovaSConnectedComponentsMPI::ProcessBoundaryCell(int proc, int j, int dj,
-                                                          std::unordered_map<int, int> &parent) {
+bool MorozovaSConnectedComponentsMPI::TryProcessBoundaryCell(int proc, int j, int dj,
+                                                             std::unordered_map<int, int> &parent) {
   const auto &input = GetInput();
   const auto &output = GetOutput();
   const int br = (proc * rows_per_proc_) + std::min(proc, remainder_);
   if (br <= 0 || br >= rows_) {
-    return;
+    return false;
   }
   const int nj = j + dj;
   if (nj < 0 || nj >= cols_) {
-    return;
+    return false;
   }
-  if (input[br - 1][j] == 1 && input[br][nj] == 1) {
-    const int a = output[br - 1][j];
-    const int b = output[br][nj];
-    if (a != 0 && b != 0 && a != b) {
-      int root_a = a;
-      int root_b = b;
-      auto it = parent.find(a);
-      if (it != parent.end()) {
-        root_a = it->second;
-      }
-      it = parent.find(b);
-      if (it != parent.end()) {
-        root_b = it->second;
-      }
-      if (root_a != root_b) {
-        parent[std::max(root_a, root_b)] = std::min(root_a, root_b);
-      }
-    }
+  if (input[br - 1][j] != 1 || input[br][nj] != 1) {
+    return false;
   }
+  const int a = output[br - 1][j];
+  const int b = output[br][nj];
+  if (a == 0 || b == 0 || a == b) {
+    return false;
+  }
+  int root_a = a;
+  auto it = parent.find(a);
+  if (it != parent.end()) {
+    root_a = it->second;
+  }
+  int root_b = b;
+  it = parent.find(b);
+  if (it != parent.end()) {
+    root_b = it->second;
+  }
+  if (root_a != root_b) {
+    parent[std::max(root_a, root_b)] = std::min(root_a, root_b);
+  }
+  return true;
 }
 
 int MorozovaSConnectedComponentsMPI::FindRoot(std::unordered_map<int, int> &parent, int v) {
@@ -201,9 +204,9 @@ void MorozovaSConnectedComponentsMPI::MergeBoundaries() {
       continue;
     }
     for (int j = 0; j < cols_; ++j) {
-      ProcessBoundaryCell(proc, j, -1, parent);
-      ProcessBoundaryCell(proc, j, 0, parent);
-      ProcessBoundaryCell(proc, j, 1, parent);
+      TryProcessBoundaryCell(proc, j, -1, parent);
+      TryProcessBoundaryCell(proc, j, 0, parent);
+      TryProcessBoundaryCell(proc, j, 1, parent);
     }
   }
   for (int i = 0; i < rows_; ++i) {

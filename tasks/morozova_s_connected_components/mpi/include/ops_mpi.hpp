@@ -24,14 +24,14 @@ class MorozovaSConnectedComponentsMPI : public BaseTask {
   bool PostProcessingImpl() override;
 
   void FloodFill(int row, int col, int label);
-  std::vector<std::pair<int, int>> GetNeighbors(int row, int col);
+  [[nodiscard]] std::vector<std::pair<int, int>> GetNeighbors(int row, int col) const;
 
   void InitMPI();
-  std::pair<int, int> ComputeRowRange() const;
+  [[nodiscard]] std::pair<int, int> ComputeRowRange() const;
   void ComputeLocalComponents(int start_row, int end_row, int base_label);
   void GatherLocalResults();
   void MergeBoundaries();
-  void ProcessBoundaryCell(int proc, int j, int dj, std::unordered_map<int, int> &parent);
+  bool TryProcessBoundaryCell(int proc, int j, int dj, std::unordered_map<int, int> &parent);
   static int FindRoot(std::unordered_map<int, int> &parent, int v);
   void NormalizeLabels();
   void BroadcastResult();
