@@ -222,5 +222,5 @@
 и производительными тестами.
 
 ## 9. Источники
-1. MPI Forum. MPI: A Message-Passing Interface Standard. https://www.mpi-forum.org/docs/
-2. Open MPI Documentation. https://docs.open-mpi.org/
+1. MPI Forum. MPI: A Message-Passing Interface Standard. <https://www.mpi-forum.org/docs/>
+2. Open MPI Documentation. <https://docs.open-mpi.org/>
