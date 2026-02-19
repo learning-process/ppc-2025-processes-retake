@@ -179,6 +179,7 @@ MPI-реализация демонстрирует ускорение в реж
 
 ## 9. References
 
+
 - OpenMPI Documentation — https://www.open-mpi.org/doc/
 - PPC Parallel Programming Course — https://learning-process.github.io/parallel_programming_course/
 - GTest Framework — https://github.com/google/googletest
