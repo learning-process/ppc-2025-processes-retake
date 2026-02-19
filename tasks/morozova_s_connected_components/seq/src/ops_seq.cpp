@@ -52,7 +52,11 @@ bool MorozovaSConnectedComponentsSEQ::PreProcessingImpl() {
   }
   rows_ = static_cast<int>(input.size());
   cols_ = static_cast<int>(input.front().size());
-  GetOutput().assign(rows_, std::vector<int>(cols_, 0));
+  auto &output = GetOutput();
+  output.resize(rows_);
+  for (int i = 0; i < rows_; ++i) {
+    output[i].resize(cols_, 0);
+  }
   return true;
 }
 
@@ -91,6 +95,7 @@ bool MorozovaSConnectedComponentsSEQ::RunImpl() {
       }
     }
   }
+
   return true;
 }
 
@@ -106,7 +111,7 @@ bool MorozovaSConnectedComponentsSEQ::PostProcessingImpl() {
     }
   }
   output.push_back({max_label});
-  return max_label >= 0;
+  return true;
 }
 
 }  // namespace morozova_s_connected_components

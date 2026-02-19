@@ -48,15 +48,17 @@ bool MorozovaSConnectedComponentsMPI::ValidationImpl() {
 
 bool MorozovaSConnectedComponentsMPI::PreProcessingImpl() {
   rows_ = static_cast<int>(GetInput().size());
-
   if (rows_ == 0) {
     cols_ = 0;
     GetOutput().clear();
     return true;
   }
-
   cols_ = static_cast<int>(GetInput().front().size());
-  GetOutput().assign(rows_, std::vector<int>(cols_, 0));
+  auto &output = GetOutput();
+  output.resize(rows_);
+  for (int i = 0; i < rows_; ++i) {
+    output[i].resize(cols_, 0);
+  }
   return true;
 }
 
@@ -90,18 +92,15 @@ std::vector<std::pair<int, int>> MorozovaSConnectedComponentsMPI::GetNeighbors(i
 void MorozovaSConnectedComponentsMPI::FloodFill(int row, int col, int label) {
   auto &output = GetOutput();
 
-  std::vector<std::vector<bool>> visited(rows_, std::vector<bool>(cols_, false));
   std::queue<std::pair<int, int>> q;
   q.emplace(row, col);
-  visited[row][col] = true;
   output[row][col] = label;
 
   while (!q.empty()) {
     const auto [r, c] = q.front();
     q.pop();
     for (const auto &[nr, nc] : GetNeighbors(r, c)) {
-      if (!visited[nr][nc]) {
-        visited[nr][nc] = true;
+      if (output[nr][nc] == 0 && GetInput()[nr][nc] == 1) {
         output[nr][nc] = label;
         q.emplace(nr, nc);
       }
@@ -112,10 +111,7 @@ void MorozovaSConnectedComponentsMPI::FloodFill(int row, int col, int label) {
 void MorozovaSConnectedComponentsMPI::ComputeLocalComponents(int start_row, int end_row, int base_label) {
   const auto &input = GetInput();
   auto &output = GetOutput();
-
-  std::vector<std::vector<bool>> visited(rows_, std::vector<bool>(cols_, false));
   int local_label = 1;
-
   for (int i = start_row; i < end_row; ++i) {
     for (int j = 0; j < cols_; ++j) {
       if (input[i][j] == 1 && output[i][j] == 0) {
@@ -128,15 +124,12 @@ void MorozovaSConnectedComponentsMPI::ComputeLocalComponents(int start_row, int 
 
 void MorozovaSConnectedComponentsMPI::GatherLocalResults() {
   auto &output = GetOutput();
-
   for (int proc = 1; proc < size_; ++proc) {
     const int ps = (proc * rows_per_proc_) + std::min(proc, remainder_);
     const int pe = ps + rows_per_proc_ + (proc < remainder_ ? 1 : 0);
     const int pr = pe - ps;
-
     std::vector<int> buf(static_cast<size_t>(pr) * static_cast<size_t>(cols_));
     MPI_Recv(buf.data(), static_cast<int>(buf.size()), MPI_INT, proc, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-
     for (int i = 0; i < pr; ++i) {
       for (int j = 0; j < cols_; ++j) {
         const size_t idx = (static_cast<size_t>(i) * static_cast<size_t>(cols_)) + static_cast<size_t>(j);
@@ -150,28 +143,25 @@ void MorozovaSConnectedComponentsMPI::ProcessBoundaryCell(int proc, int j, int d
                                                           std::unordered_map<int, int> &parent) {
   const auto &input = GetInput();
   const auto &output = GetOutput();
-
   const int br = (proc * rows_per_proc_) + std::min(proc, remainder_);
   if (br <= 0 || br >= rows_) {
     return;
   }
-
   const int nj = j + dj;
   if (nj < 0 || nj >= cols_) {
     return;
   }
-
   if (input[br - 1][j] == 1 && input[br][nj] == 1) {
     const int a = output[br - 1][j];
     const int b = output[br][nj];
-    if (a != b) {
+    if (a != 0 && b != 0 && a != b) {
       parent[std::max(a, b)] = std::min(a, b);
     }
   }
 }
 
 int MorozovaSConnectedComponentsMPI::FindRoot(std::unordered_map<int, int> &parent, int v) {
-  while (parent.contains(v)) {
+  while (parent.contains(v) && parent[v] != v) {
     v = parent[v];
   }
   return v;
@@ -180,24 +170,21 @@ int MorozovaSConnectedComponentsMPI::FindRoot(std::unordered_map<int, int> &pare
 void MorozovaSConnectedComponentsMPI::MergeBoundaries() {
   auto &output = GetOutput();
   std::unordered_map<int, int> parent;
-
   for (int proc = 1; proc < size_; ++proc) {
     const int br = (proc * rows_per_proc_) + std::min(proc, remainder_);
     if (br <= 0 || br >= rows_) {
       continue;
     }
-
     for (int j = 0; j < cols_; ++j) {
       ProcessBoundaryCell(proc, j, -1, parent);
       ProcessBoundaryCell(proc, j, 0, parent);
       ProcessBoundaryCell(proc, j, 1, parent);
     }
   }
-
   for (int i = 0; i < rows_; ++i) {
     for (int j = 0; j < cols_; ++j) {
       int &v = output[i][j];
-      if (v > 0) {
+      if (v > 0 && parent.contains(v)) {
         v = FindRoot(parent, v);
       }
     }
@@ -263,14 +250,11 @@ void MorozovaSConnectedComponentsMPI::ReceiveFinalResult() {
 
 bool MorozovaSConnectedComponentsMPI::RunImpl() {
   InitMPI();
-
   if (rows_ == 0 || cols_ == 0) {
     return true;
   }
-
   const auto [start, end] = ComputeRowRange();
   ComputeLocalComponents(start, end, rank_ * kLabelOffset);
-
   if (rank_ == 0) {
     GatherLocalResults();
     MergeBoundaries();
@@ -280,21 +264,21 @@ bool MorozovaSConnectedComponentsMPI::RunImpl() {
     SendLocalResult(start, end);
     ReceiveFinalResult();
   }
-
   return true;
 }
 
 bool MorozovaSConnectedComponentsMPI::PostProcessingImpl() {
-  const auto &output = GetOutput();
+  auto &output = GetOutput();
+  if (output.empty()) {
+    return true;
+  }
   int max_label = 0;
   for (const auto &row : output) {
     for (int v : row) {
       max_label = std::max(max_label, v);
     }
   }
-
-  auto &output_ref = GetOutput();
-  output_ref.push_back({max_label});
+  output.push_back({max_label});
   return true;
 }
 
