@@ -81,7 +81,7 @@ std::pair<int, int> MorozovaSConnectedComponentsMPI::ComputeRowRange() const {
   return {start, end};
 }
 
-std::vector<std::pair<int, int>> MorozovaSConnectedComponentsMPI::GetNeighbors(int row, int col) const {
+std::vector<std::pair<int, int>> MorozovaSConnectedComponentsMPI::GetNeighbors(int row, int col) {
   std::vector<std::pair<int, int>> neighbors;
   const auto &input = GetInput();
   for (const auto &[dr, dc] : kShifts) {
