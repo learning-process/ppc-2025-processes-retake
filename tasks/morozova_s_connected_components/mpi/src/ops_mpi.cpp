@@ -81,9 +81,9 @@ std::pair<int, int> MorozovaSConnectedComponentsMPI::ComputeRowRange() const {
   return {start, end};
 }
 
-std::vector<std::pair<int, int>> MorozovaSConnectedComponentsMPI::GetNeighbors(int row, int col) const {
+std::vector<std::pair<int, int>> MorozovaSConnectedComponentsMPI::GetNeighbors(int row, int col) {
   std::vector<std::pair<int, int>> neighbors;
-  const auto &input = const_cast<const MorozovaSConnectedComponentsMPI *>(this)->GetInput();
+  const auto &input = GetInput();
   for (const auto &[dr, dc] : kShifts) {
     const int nr = row + dr;
     const int nc = col + dc;
@@ -160,6 +160,7 @@ bool MorozovaSConnectedComponentsMPI::TryProcessBoundaryCell(int proc, int j, in
   if (nj < 0 || nj >= cols_) {
     return false;
   }
+
   if (input[br - 1][j] != 1 || input[br][nj] != 1) {
     return false;
   }
@@ -176,11 +177,13 @@ bool MorozovaSConnectedComponentsMPI::TryProcessBoundaryCell(int proc, int j, in
   if (it != parent.end()) {
     root_a = it->second;
   }
+
   int root_b = b;
   it = parent.find(b);
   if (it != parent.end()) {
     root_b = it->second;
   }
+
   if (root_a != root_b) {
     parent[std::max(root_a, root_b)] = std::min(root_a, root_b);
   }
