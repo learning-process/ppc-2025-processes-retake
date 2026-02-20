@@ -3,6 +3,7 @@
 - Variant: <13>
 
 ## 1. Introduction
+
 МОТИВАЦИЯ -> Ускорение поиска максимально элемента в матрицах
 большого размера,за счёт распределения нагрузки по нескольким процесам
 
@@ -12,6 +13,7 @@
 РЕЗУЛЬТАТ -> Ускорение производительности.
 
 ## 2. Problem Statement
+
 Formal task definition -> для матрицы размером A[a1,b1] найти
 максимальный элемент
 input/output format    -> на вход подаётся Matrix(тоесть данные
@@ -20,6 +22,7 @@ input/output format    -> на вход подаётся Matrix(тоесть д�
 constraints            -> a1,b1 > 0, matrix.size() = a1 * b1.
 
 ## 3. Baseline Algorithm (Sequential)
+
 Describe the base algorithm with enough detail to reproduce.
 
 ```cpp
@@ -31,10 +34,12 @@ for (size_t i = 1; i < matrix.size(); i++) {
 ```
 
 ## 4. Parallelization Scheme
+
 data distribution:
 Блочное распределение по строкам
 Балансировка нагрузки при неравномерном распределении
 , communication pattern:
+
 ```cpp
 //распределение данных
 MPI_Scatterv(matrix.data(), how_many_to_one_proces.data(), offset
@@ -56,12 +61,13 @@ data(), MPI_INT, recvbuf.data(),
   MPI_Allreduce(&local_max, &global_max, 1, MPI_INT, MPI_MAX
   MPI_COMM_WORLD);
 ```
+
  rank roles.
  Rank 0 - распределение задач
  Rank all - локальные вычисления и участие в редукции
 
-
 ## 5. Implementation Details
+
 - Code structure (files, key classes/functions)
 common - общие структуры данных
 mpi - паралельная реализация mpi
@@ -83,6 +89,7 @@ class MuhammadkhonIMaxMatrixElemSEQ : public BaseTask {
   bool PostProcessingImpl() override;
 };
 ```
+
 ```cpp
 class MuhammadkhonIMaxMatrixElemMPI : public BaseTask {
  public:
@@ -99,6 +106,7 @@ class MuhammadkhonIMaxMatrixElemMPI : public BaseTask {
 };
 
 ```
+
 ```cpp
 struct Matrix {
   std::vector<int> data;
@@ -106,6 +114,7 @@ struct Matrix {
   int columns;
 };
 ```
+
 - Important assumptions and corner cases
  1- матрица не должна быть пустой
  2- размер матрицы должен соответствовать rows*columns
@@ -113,8 +122,8 @@ struct Matrix {
 - Memory usage considerations
  1- в mpi каждый процесс имеет только свои значения
 
-
 ## 6. Experimental Setup
+
 - Процессор: ryzen 5 5600x
 - Количество ядер: 6
 - Количество потоков: 12
@@ -125,16 +134,18 @@ struct Matrix {
 - Язык программирования: C++
 - Библиотека для параллельного программирования: MPI
 - Компилятор MSCV
-- Тип сборки: Release 
+- Тип сборки: Release
 
 ## 7. Results and Discussion
 
 ### 7.1 Correctness
+
 Размер матрицы был 4000x4000
 Было произведено 4 запуска
 В каждом из запусков MPI оказалось эффективнее SEQ
 
 ### 7.2 Performance
+
 Present time, speedup and efficiency. Example table:
 
 | Mode        | processes | AvgTime(s) | Speedup | Efficiency |
@@ -145,8 +156,8 @@ Present time, speedup and efficiency. Example table:
 | mpi         | 6         | 0.04205    | 2.23    | 37.2%      |
 | mpi         | 8         | 0.03589    | 2.62    | 32.7%      |
 
-
 ## 8. Conclusions
+
 ВЫВОД :использование mpi показало свою эффективность, ускорив работу
 в 2.32 раза в среднем
 таким образом можно сделать вывод, что распределение нагрузки на
@@ -165,10 +176,11 @@ Present time, speedup and efficiency. Example table:
 не затратит времени больше, чем сама работа с данными
 
 ## 9. References
-  MICROSOFT MPI - https://learn.microsoft.com/ru-ru
+
+  MICROSOFT MPI - <https://learn.microsoft.com/ru-ru>
   message-passing-interface/microsoft-mpi
-  Parallel Programming Course - https://learning-process.github.io
+  Parallel Programming Course - <https://learning-process.github.io>
   parallel_programming_course/ru/index.html
-  Parallel Programming 2025-2026 - https://disk.yandex.ru/d
+  Parallel Programming 2025-2026 - <https://disk.yandex.ru/d>
   NvHFyhOJCQU65w
-  stack overflow - https://stackoverflow.com/questions
+  stack overflow - <https://stackoverflow.com/questions>
