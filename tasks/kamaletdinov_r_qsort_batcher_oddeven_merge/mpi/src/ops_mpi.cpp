@@ -150,7 +150,7 @@ void KamaletdinovQuicksortWithBatcherEvenOddMergeMPI::BatcherPhases(std::vector<
 
     const int partner = rank + direction;
     const bool keep_lower = direction > 0;
-    NeighborExchange(local, partner, keep_lower);
+    KamaletdinovQuicksortWithBatcherEvenOddMergeMPI::NeighborExchange(local, partner, keep_lower);
   }
 }
 
