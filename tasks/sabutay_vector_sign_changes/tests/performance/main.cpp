@@ -40,11 +40,11 @@ namespace {
 
 using ParamType = SabutayVectorSignChangesRunPerfTestProcesses::ParamType;
 
-::testing::internal::ParamGenerator<ParamType> RastvorovPerfEvalGenerator() {
+::testing::internal::ParamGenerator<ParamType> SabutayPerfEvalGenerator() {
   return kGtestValues;
 }
 
-std::string RastvorovPerfEvalGenerateName(const ::testing::TestParamInfo<ParamType> &info) {
+std::string SabutayPerfEvalGenerateName(const ::testing::TestParamInfo<ParamType> &info) {
   return SabutayVectorSignChangesRunPerfTestProcesses::CustomPerfTestName(info);
 }
 
@@ -53,8 +53,8 @@ const int kRastvorovPerfDummy =
         ->parameterized_test_registry()
         .GetTestSuitePatternHolder<SabutayVectorSignChangesRunPerfTestProcesses>(
             "SabutayVectorSignChangesRunPerfTestProcesses", ::testing::internal::CodeLocation(__FILE__, __LINE__))
-        ->AddTestSuiteInstantiation("RunModeTests", &RastvorovPerfEvalGenerator, &RastvorovPerfEvalGenerateName,
-                                    __FILE__, __LINE__);
+        ->AddTestSuiteInstantiation("RunModeTests", &SabutayPerfEvalGenerator, &SabutayPerfEvalGenerateName, __FILE__,
+                                    __LINE__);
 
 }  // namespace
 
