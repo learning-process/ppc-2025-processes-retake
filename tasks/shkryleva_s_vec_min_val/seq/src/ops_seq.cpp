@@ -1,7 +1,7 @@
 #include "shkryleva_s_vec_min_val/seq/include/ops_seq.hpp"
 
-#include <climits>
 #include <cstddef>
+#include <limits>
 #include <vector>
 
 #include "shkryleva_s_vec_min_val/common/include/common.hpp"
@@ -19,21 +19,22 @@ bool ShkrylevaSVecMinValSEQ::ValidationImpl() {
 }
 
 bool ShkrylevaSVecMinValSEQ::PreProcessingImpl() {
-  GetOutput() = INT_MAX;
+  GetOutput() = std::numeric_limits<int>::max();
   return true;
 }
 
 bool ShkrylevaSVecMinValSEQ::RunImpl() {
-  if (GetInput().empty()) {
-    // Для пустого вектора возвращаем INT_MAX (как в MPI версии)
-    GetOutput() = INT_MAX;
+  const auto &input = GetInput();
+
+  if (input.empty()) {
+    GetOutput() = std::numeric_limits<int>::max();
     return true;
   }
 
-  int min_val = GetInput()[0];
-  for (size_t i = 1; i < GetInput().size(); i++) {
-    if (GetInput()[i] < min_val) {  // NOLINT
-      min_val = GetInput()[i];
+  int min_val = input.front();
+  for (std::size_t i = 1; i < input.size(); ++i) {
+    if (input[i] < min_val) {
+      min_val = input[i];
     }
   }
 
