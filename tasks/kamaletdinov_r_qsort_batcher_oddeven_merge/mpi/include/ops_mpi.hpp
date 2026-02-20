@@ -22,7 +22,7 @@ class KamaletdinovQuicksortWithBatcherEvenOddMergeMPI : public BaseTask {
 
   static void NeighborExchange(std::vector<int> &local, int partnerrank, bool keeplower);
   void BroadcastOutputToAllRanks();
-  void BatcherPhases(std::vector<int> &local, int rank, int size, int global_size);
+  static void BatcherPhases(std::vector<int> &local, int rank, int size, int global_size);
 };
 
 }  // namespace kamaletdinov_quicksort_with_batcher_even_odd_merge

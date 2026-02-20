@@ -198,7 +198,7 @@ bool KamaletdinovQuicksortWithBatcherEvenOddMergeMPI::RunImpl() {
                local_count, MPI_INT, 0, MPI_COMM_WORLD);
 
   IterativeQuickSort(local_data);
-  BatcherPhases(local_data, rank, size, global_size);
+  KamaletdinovQuicksortWithBatcherEvenOddMergeMPI::BatcherPhases(local_data, rank, size, global_size);
 
   if (rank == 0) {
     GetOutput().resize(static_cast<std::size_t>(global_size));
