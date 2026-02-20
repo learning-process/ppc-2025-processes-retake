@@ -1,16 +1,16 @@
 #pragma once
 
-#include "sabutay_a_increasing_contrast/common/include/common.hpp"
+#include "sabutay_vector_sign_changes/common/include/common.hpp"
 #include "task/include/task.hpp"
 
-namespace sabutay_a_increasing_contrast {
+namespace sabutay_vector_sign_changes {
 
-class SabutayAIncreaseContrastSEQ : public BaseTask {
+class SabutayVectorSignChangesSEQ : public BaseTask {
  public:
   static constexpr ppc::task::TypeOfTask GetStaticTypeOfTask() {
     return ppc::task::TypeOfTask::kSEQ;
   }
-  explicit SabutayAIncreaseContrastSEQ(const InType &in);
+  explicit SabutayVectorSignChangesSEQ(const InType &in);
 
  private:
   bool ValidationImpl() override;
@@ -19,4 +19,4 @@ class SabutayAIncreaseContrastSEQ : public BaseTask {
   bool PostProcessingImpl() override;
 };
 
-}  // namespace sabutay_a_increasing_contrast
+}  // namespace sabutay_vector_sign_changes
