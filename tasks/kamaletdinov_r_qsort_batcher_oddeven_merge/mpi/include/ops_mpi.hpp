@@ -20,7 +20,7 @@ class KamaletdinovQuicksortWithBatcherEvenOddMergeMPI : public BaseTask {
   bool RunImpl() override;
   bool PostProcessingImpl() override;
 
-  void NeighborExchange(std::vector<int> &local, int partner_rank, bool keep_lower);
+  void NeighborExchange(std::vector<int> &local, int partnerrank, bool keeplower);
   void BroadcastOutputToAllRanks();
   void BatcherPhases(std::vector<int> &local, int rank, int size, int global_size);
 };
