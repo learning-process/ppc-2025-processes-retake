@@ -25,6 +25,15 @@ bool IsPowerOfTwo(int value) {
   return value > 0 && (value & (value - 1)) == 0;
 }
 
+template <typename Container>
+void FillIota(Container& container, int start_value) {
+#if defined(__cpp_lib_ranges_iota)
+  std::ranges::iota(container, start_value);
+#else
+  std::iota(container.begin(), container.end(), start_value);
+#endif
+}
+
 bool IsRootOrSingleProcess() {
   if (!ppc::util::IsUnderMpirun()) {
     return true;
@@ -277,7 +286,7 @@ TEST(HypercubePerformance, CompareHypercubeBroadcastWithMPIBcast) {
 
   std::vector<int> base(1 << 14);
   if (rank == 0) {
-    std::ranges::iota(base, 10);
+    FillIota(base, 10);
   } else {
     base.clear();
   }

@@ -23,6 +23,15 @@ bool IsPowerOfTwo(int value) {
   return value > 0 && (value & (value - 1)) == 0;
 }
 
+template <typename Container>
+void FillIota(Container& container, int start_value) {
+#if defined(__cpp_lib_ranges_iota)
+  std::ranges::iota(container, start_value);
+#else
+  std::iota(container.begin(), container.end(), start_value);
+#endif
+}
+
 int HammingDistance(int lhs, int rhs) {
   return std::popcount(static_cast<unsigned int>(lhs ^ rhs));
 }
@@ -238,7 +247,7 @@ TEST(HypercubeFunctionalTopology, DataIntegrityForLargeVector) {
   }
 
   std::vector<int> payload(1 << 15);
-  std::ranges::iota(payload, -5000);
+  FillIota(payload, -5000);
   const auto delivered = RouteVectorThroughHypercube(0, 7, payload);
 
   ASSERT_EQ(delivered.size(), payload.size());
