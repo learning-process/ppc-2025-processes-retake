@@ -5,12 +5,12 @@
 #include <cstddef>
 #include <vector>
 
-#include "kamaletdinov_a_gauss_vertical_scheme/common/include/common.hpp"
-#include "kamaletdinov_a_gauss_vertical_scheme/mpi/include/ops_mpi.hpp"
-#include "kamaletdinov_a_gauss_vertical_scheme/seq/include/ops_seq.hpp"
+#include "kamaletdinov_r_gauss_vertical_scheme/kamaletdinov_r_gauss_vertical_scheme/common/include/common.hpp"
+#include "kamaletdinov_r_gauss_vertical_scheme/kamaletdinov_r_gauss_vertical_scheme/mpi/include/ops_mpi.hpp"
+#include "kamaletdinov_r_gauss_vertical_scheme/kamaletdinov_r_gauss_vertical_scheme/seq/include/ops_seq.hpp"
 #include "util/include/perf_test_util.hpp"
 
-namespace kamaletdinov_a_gauss_vertical_scheme {
+namespace kamaletdinov_r_gauss_vertical_scheme {
 
 namespace {
 
@@ -54,7 +54,7 @@ bool CompareVectors(const std::vector<double> &a, const std::vector<double> &b, 
 
 }  // namespace
 
-class KamaletdinovAGaussVerticalSchemePerfTests : public ppc::util::BaseRunPerfTests<InType, OutType> {
+class KamaletdinovRGaussVerticalSchemeFuncTests : public ppc::util::BaseRunPerfTests<InType, OutType> {
   const int kMatrixSize_ = 300;
   InType input_data_;
   OutType expected_output_;
@@ -78,18 +78,18 @@ class KamaletdinovAGaussVerticalSchemePerfTests : public ppc::util::BaseRunPerfT
   }
 };
 
-TEST_P(KamaletdinovAGaussVerticalSchemePerfTests, RunPerfModes) {
+TEST_P(KamaletdinovRGaussVerticalSchemeFuncTests, RunPerfModes) {
   ExecuteTest(GetParam());
 }
 
 const auto kAllPerfTasks =
-    ppc::util::MakeAllPerfTasks<InType, KamaletdinovAGaussVerticalSchemeMPI, KamaletdinovAGaussVerticalSchemeSEQ>(
-        PPC_SETTINGS_kamaletdinov_a_gauss_vertical_scheme);
+    ppc::util::MakeAllPerfTasks<InType, KamaletdinovRGaussVerticalSchemeMPI, KamaletdinovRGaussVerticalSchemeSEQ>(
+        PPC_SETTINGS_kamaletdinov_r_gauss_vertical_scheme);
 
 const auto kGtestValues = ppc::util::TupleToGTestValues(kAllPerfTasks);
 
-const auto kPerfTestName = KamaletdinovAGaussVerticalSchemePerfTests::CustomPerfTestName;
+const auto kPerfTestName = KamaletdinovRGaussVerticalSchemeFuncTests::CustomPerfTestName;
 
-INSTANTIATE_TEST_SUITE_P(RunModeTests, KamaletdinovAGaussVerticalSchemePerfTests, kGtestValues, kPerfTestName);
+INSTANTIATE_TEST_SUITE_P(RunModeTests, KamaletdinovRGaussVerticalSchemeFuncTests, kGtestValues, kPerfTestName);
 
-}  // namespace kamaletdinov_a_gauss_vertical_scheme
+}  // namespace kamaletdinov_r_gauss_vertical_scheme

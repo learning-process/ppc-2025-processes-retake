@@ -2,17 +2,17 @@
 
 #include <vector>
 
-#include "kamaletdinov_a_gauss_vertical_scheme/common/include/common.hpp"
+#include "kamaletdinov_r_gauss_vertical_scheme/kamaletdinov_r_gauss_vertical_scheme/common/include/common.hpp"
 #include "task/include/task.hpp"
 
-namespace kamaletdinov_a_gauss_vertical_scheme {
+namespace kamaletdinov_r_gauss_vertical_scheme {
 
-class KamaletdinovAGaussVerticalSchemeMPI : public BaseTask {
+class KamaletdinovRGaussVerticalSchemeMPI : public BaseTask {
  public:
   static constexpr ppc::task::TypeOfTask GetStaticTypeOfTask() {
     return ppc::task::TypeOfTask::kMPI;
   }
-  explicit KamaletdinovAGaussVerticalSchemeMPI(const InType &in);
+  explicit KamaletdinovRGaussVerticalSchemeMPI(const InType &in);
 
  private:
   bool ValidationImpl() override;
@@ -39,4 +39,4 @@ class KamaletdinovAGaussVerticalSchemeMPI : public BaseTask {
   int size_{0};
 };
 
-}  // namespace kamaletdinov_a_gauss_vertical_scheme
+}  // namespace kamaletdinov_r_gauss_vertical_scheme

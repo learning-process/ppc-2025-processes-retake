@@ -2,17 +2,17 @@
 
 #include <vector>
 
-#include "kamaletdinov_a_gauss_vertical_scheme/common/include/common.hpp"
+#include "kamaletdinov_r_gauss_vertical_scheme/kamaletdinov_r_gauss_vertical_scheme/common/include/common.hpp"
 #include "task/include/task.hpp"
 
-namespace kamaletdinov_a_gauss_vertical_scheme {
+namespace kamaletdinov_r_gauss_vertical_scheme {
 
-class KamaletdinovAGaussVerticalSchemeSEQ : public BaseTask {
+class KamaletdinovRGaussVerticalSchemeSEQ : public BaseTask {
  public:
   static constexpr ppc::task::TypeOfTask GetStaticTypeOfTask() {
     return ppc::task::TypeOfTask::kSEQ;
   }
-  explicit KamaletdinovAGaussVerticalSchemeSEQ(const InType &in);
+  explicit KamaletdinovRGaussVerticalSchemeSEQ(const InType &in);
 
  private:
   bool ValidationImpl() override;
@@ -30,4 +30,4 @@ class KamaletdinovAGaussVerticalSchemeSEQ : public BaseTask {
   std::vector<double> solution_;
 };
 
-}  // namespace kamaletdinov_a_gauss_vertical_scheme
+}  // namespace kamaletdinov_r_gauss_vertical_scheme

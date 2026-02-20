@@ -1,4 +1,4 @@
-#include "kamaletdinov_a_gauss_vertical_scheme/seq/include/ops_seq.hpp"
+#include "kamaletdinov_r_gauss_vertical_scheme/kamaletdinov_r_gauss_vertical_scheme/seq/include/ops_seq.hpp"
 
 #include <algorithm>
 #include <cmath>
@@ -6,16 +6,16 @@
 #include <utility>
 #include <vector>
 
-#include "kamaletdinov_a_gauss_vertical_scheme/common/include/common.hpp"
+#include "kamaletdinov_r_gauss_vertical_scheme/kamaletdinov_r_gauss_vertical_scheme/common/include/common.hpp"
 
-namespace kamaletdinov_a_gauss_vertical_scheme {
+namespace kamaletdinov_r_gauss_vertical_scheme {
 
-KamaletdinovAGaussVerticalSchemeSEQ::KamaletdinovAGaussVerticalSchemeSEQ(const InType &in) {
+KamaletdinovRGaussVerticalSchemeSEQ::KamaletdinovRGaussVerticalSchemeSEQ(const InType &in) {
   SetTypeOfTask(GetStaticTypeOfTask());
   GetInput() = in;
 }
 
-bool KamaletdinovAGaussVerticalSchemeSEQ::ValidationImpl() {
+bool KamaletdinovRGaussVerticalSchemeSEQ::ValidationImpl() {
   if (GetInput().empty()) {
     return false;
   }
@@ -27,7 +27,7 @@ bool KamaletdinovAGaussVerticalSchemeSEQ::ValidationImpl() {
   return GetInput().size() == expected_size;
 }
 
-bool KamaletdinovAGaussVerticalSchemeSEQ::PreProcessingImpl() {
+bool KamaletdinovRGaussVerticalSchemeSEQ::PreProcessingImpl() {
   n_ = static_cast<int>(GetInput()[0]);
   extended_matrix_.resize(static_cast<std::size_t>(n_) * (n_ + 1));
   std::copy(GetInput().begin() + 1, GetInput().end(), extended_matrix_.begin());
@@ -35,7 +35,7 @@ bool KamaletdinovAGaussVerticalSchemeSEQ::PreProcessingImpl() {
   return true;
 }
 
-int KamaletdinovAGaussVerticalSchemeSEQ::FindPivotRow(int k, int cols) {
+int KamaletdinovRGaussVerticalSchemeSEQ::FindPivotRow(int k, int cols) {
   int max_row = k;
   double max_val = std::abs(extended_matrix_[(k * cols) + k]);
   for (int i = k + 1; i < n_; i++) {
@@ -48,13 +48,13 @@ int KamaletdinovAGaussVerticalSchemeSEQ::FindPivotRow(int k, int cols) {
   return max_row;
 }
 
-void KamaletdinovAGaussVerticalSchemeSEQ::SwapRows(int row1, int row2, int cols) {
+void KamaletdinovRGaussVerticalSchemeSEQ::SwapRows(int row1, int row2, int cols) {
   for (int j = 0; j < cols; j++) {
     std::swap(extended_matrix_[(row1 * cols) + j], extended_matrix_[(row2 * cols) + j]);
   }
 }
 
-void KamaletdinovAGaussVerticalSchemeSEQ::EliminateColumn(int k, int cols) {
+void KamaletdinovRGaussVerticalSchemeSEQ::EliminateColumn(int k, int cols) {
   double pivot = extended_matrix_[(k * cols) + k];
   if (std::abs(pivot) < 1e-10) {
     return;
@@ -72,7 +72,7 @@ void KamaletdinovAGaussVerticalSchemeSEQ::EliminateColumn(int k, int cols) {
   }
 }
 
-void KamaletdinovAGaussVerticalSchemeSEQ::BackSubstitution() {
+void KamaletdinovRGaussVerticalSchemeSEQ::BackSubstitution() {
   int cols = n_ + 1;
   for (int i = n_ - 1; i >= 0; i--) {
     solution_[i] = extended_matrix_[(i * cols) + n_];
@@ -82,7 +82,7 @@ void KamaletdinovAGaussVerticalSchemeSEQ::BackSubstitution() {
   }
 }
 
-bool KamaletdinovAGaussVerticalSchemeSEQ::RunImpl() {
+bool KamaletdinovRGaussVerticalSchemeSEQ::RunImpl() {
   int cols = n_ + 1;
   for (int k = 0; k < n_; k++) {
     int max_row = FindPivotRow(k, cols);
@@ -95,9 +95,9 @@ bool KamaletdinovAGaussVerticalSchemeSEQ::RunImpl() {
   return true;
 }
 
-bool KamaletdinovAGaussVerticalSchemeSEQ::PostProcessingImpl() {
+bool KamaletdinovRGaussVerticalSchemeSEQ::PostProcessingImpl() {
   GetOutput() = solution_;
   return true;
 }
 
-}  // namespace kamaletdinov_a_gauss_vertical_scheme
+}  // namespace kamaletdinov_r_gauss_vertical_scheme
