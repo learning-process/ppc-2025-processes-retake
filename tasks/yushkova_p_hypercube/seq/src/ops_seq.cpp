@@ -14,7 +14,7 @@ bool IsPowerOfTwo(int value) {
 
 }  // namespace
 
-YushkovaPHypercubeSEQ::YushkovaPHypercubeSEQ(const InType& in) {
+YushkovaPHypercubeSEQ::YushkovaPHypercubeSEQ(const InType &in) {
   SetTypeOfTask(GetStaticTypeOfTask());
   GetInput() = in;
   GetOutput() = 0;

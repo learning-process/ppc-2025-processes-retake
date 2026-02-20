@@ -110,7 +110,7 @@ double RunNeighborPairTraffic() {
   return MPI_Wtime() - t0;
 }
 
-double HypercubeBroadcastVector(std::vector<int>& data, int root) {
+double HypercubeBroadcastVector(std::vector<int> &data, int root) {
   int rank = 0;
   int world_size = 0;
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
@@ -149,7 +149,7 @@ double HypercubeBroadcastVector(std::vector<int>& data, int root) {
   return MPI_Wtime() - t0;
 }
 
-double MpiBroadcastVector(std::vector<int>& data, int root) {
+double MpiBroadcastVector(std::vector<int> &data, int root) {
   int rank = 0;
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 
@@ -180,7 +180,7 @@ ppc::performance::PerfAttr MakePerfAttr() {
   return attr;
 }
 
-OutType RunSeqPerfPipeline(const InType& input, const std::string& test_id) {
+OutType RunSeqPerfPipeline(const InType &input, const std::string &test_id) {
   auto task = std::make_shared<YushkovaPHypercubeSEQ>(input);
   ppc::performance::Perf<InType, OutType> perf(task);
   perf.PipelineRun(MakePerfAttr());
@@ -190,7 +190,7 @@ OutType RunSeqPerfPipeline(const InType& input, const std::string& test_id) {
   return task->GetOutput();
 }
 
-OutType RunSeqPerfTask(const InType& input, const std::string& test_id) {
+OutType RunSeqPerfTask(const InType &input, const std::string &test_id) {
   auto task = std::make_shared<YushkovaPHypercubeSEQ>(input);
   ppc::performance::Perf<InType, OutType> perf(task);
   perf.TaskRun(MakePerfAttr());
@@ -200,7 +200,7 @@ OutType RunSeqPerfTask(const InType& input, const std::string& test_id) {
   return task->GetOutput();
 }
 
-OutType RunMpiPerfPipeline(const InType& input, const std::string& test_id) {
+OutType RunMpiPerfPipeline(const InType &input, const std::string &test_id) {
   auto task = std::make_shared<YushkovaPHypercubeMPI>(input);
   ppc::performance::Perf<InType, OutType> perf(task);
   perf.PipelineRun(MakePerfAttr());
@@ -210,7 +210,7 @@ OutType RunMpiPerfPipeline(const InType& input, const std::string& test_id) {
   return task->GetOutput();
 }
 
-OutType RunMpiPerfTask(const InType& input, const std::string& test_id) {
+OutType RunMpiPerfTask(const InType &input, const std::string &test_id) {
   auto task = std::make_shared<YushkovaPHypercubeMPI>(input);
   ppc::performance::Perf<InType, OutType> perf(task);
   perf.TaskRun(MakePerfAttr());
@@ -220,7 +220,7 @@ OutType RunMpiPerfTask(const InType& input, const std::string& test_id) {
   return task->GetOutput();
 }
 
-void CheckPerfOutput(const InType& input, int output) {
+void CheckPerfOutput(const InType &input, int output) {
   EXPECT_EQ(output, std::get<2>(input));
 }
 

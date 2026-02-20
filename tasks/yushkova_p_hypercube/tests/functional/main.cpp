@@ -70,7 +70,7 @@ int RouteIntThroughHypercube(int source, int destination, int payload) {
   return value;
 }
 
-void SendVectorToNeighbor(const std::vector<int>& data, int next_owner, int bit) {
+void SendVectorToNeighbor(const std::vector<int> &data, int next_owner, int bit) {
   const int count = static_cast<int>(data.size());
   MPI_Send(&count, 1, MPI_INT, next_owner, 700 + bit, MPI_COMM_WORLD);
   if (count > 0) {
@@ -109,7 +109,7 @@ std::vector<int> BroadcastVectorFromDestination(std::vector<int> data, int desti
   return data;
 }
 
-std::vector<int> RouteVectorThroughHypercube(int source, int destination, const std::vector<int>& payload) {
+std::vector<int> RouteVectorThroughHypercube(int source, int destination, const std::vector<int> &payload) {
   int rank = 0;
   int world_size = 0;
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
@@ -139,11 +139,11 @@ std::vector<int> RouteVectorThroughHypercube(int source, int destination, const 
 }
 
 template <typename TaskType>
-bool RunPipeline(TaskType& task) {
+bool RunPipeline(TaskType &task) {
   return task.Validation() && task.PreProcessing() && task.Run() && task.PostProcessing();
 }
 
-OutType RunSeqTask(const InType& input) {
+OutType RunSeqTask(const InType &input) {
   auto task = std::make_shared<YushkovaPHypercubeSEQ>(input);
   if (!RunPipeline(*task)) {
     return 0;
@@ -151,7 +151,7 @@ OutType RunSeqTask(const InType& input) {
   return task->GetOutput();
 }
 
-OutType RunMpiTask(const InType& input) {
+OutType RunMpiTask(const InType &input) {
   auto task = std::make_shared<YushkovaPHypercubeMPI>(input);
   if (!RunPipeline(*task)) {
     return 0;
@@ -159,7 +159,7 @@ OutType RunMpiTask(const InType& input) {
   return task->GetOutput();
 }
 
-void CheckRouteForBothImplementations(const InType& input, int expected) {
+void CheckRouteForBothImplementations(const InType &input, int expected) {
   EXPECT_EQ(RunSeqTask(input), expected);
   if (ppc::util::IsUnderMpirun()) {
     EXPECT_EQ(RunMpiTask(input), expected);
