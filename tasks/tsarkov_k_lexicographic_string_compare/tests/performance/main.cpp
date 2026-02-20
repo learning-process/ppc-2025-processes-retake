@@ -1,5 +1,6 @@
 #include <gtest/gtest.h>
 
+#include <cstddef>
 #include <string>
 #include <utility>
 
@@ -32,7 +33,7 @@ class TsarkovKRunPerfTestProcesses : public ppc::util::BaseRunPerfTests<InType, 
   }
 
  private:
-  InType input_data_{};
+  InType input_data_;
   OutType expected_{1};
 };
 

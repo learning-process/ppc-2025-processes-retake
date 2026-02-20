@@ -1,6 +1,7 @@
 #include <gtest/gtest.h>
 
 #include <array>
+#include <cstddef>
 #include <string>
 #include <tuple>
 #include <utility>
@@ -9,6 +10,7 @@
 #include "tsarkov_k_lexicographic_string_compare/mpi/include/ops_mpi.hpp"
 #include "tsarkov_k_lexicographic_string_compare/seq/include/ops_seq.hpp"
 #include "util/include/func_test_util.hpp"
+#include "util/include/util.hpp"
 
 namespace tsarkov_k_lexicographic_string_compare {
 
@@ -34,7 +36,7 @@ class TsarkovKRunFuncTestsProcesses : public ppc::util::BaseRunFuncTests<InType,
   }
 
  private:
-  InType input_data_{};
+  InType input_data_;
   OutType expected_{0};
 };
 
