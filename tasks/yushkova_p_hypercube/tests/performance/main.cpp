@@ -26,7 +26,7 @@ bool IsPowerOfTwo(int value) {
 }
 
 template <typename Container>
-void FillIota(Container& container, int start_value) {
+void FillIota(Container &container, int start_value) {
 #if defined(__cpp_lib_ranges_iota)
   std::ranges::iota(container, start_value);
 #else
