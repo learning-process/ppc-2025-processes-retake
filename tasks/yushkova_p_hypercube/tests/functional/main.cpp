@@ -6,6 +6,7 @@
 #include <cstring>
 #include <memory>
 #include <numeric>
+#include <ranges>
 #include <utility>
 #include <vector>
 
@@ -237,7 +238,7 @@ TEST(HypercubeFunctionalTopology, DataIntegrityForLargeVector) {
   }
 
   std::vector<int> payload(1 << 15);
-  std::iota(payload.begin(), payload.end(), -5000);
+  std::ranges::iota(payload, -5000);
   const auto delivered = RouteVectorThroughHypercube(0, 7, payload);
 
   ASSERT_EQ(delivered.size(), payload.size());

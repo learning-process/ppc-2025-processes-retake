@@ -7,6 +7,7 @@
 #include <cstddef>
 #include <memory>
 #include <numeric>
+#include <ranges>
 #include <string>
 #include <vector>
 
@@ -89,7 +90,7 @@ double RunNeighborPairTraffic() {
 
   const int partner = rank ^ 1;
   int received = -1;
-  const int send_value = rank * 10 + 1;
+  const int send_value = (rank * 10) + 1;
 
   MPI_Barrier(MPI_COMM_WORLD);
   const double t0 = MPI_Wtime();
@@ -105,7 +106,7 @@ double RunNeighborPairTraffic() {
   MPI_Barrier(MPI_COMM_WORLD);
 
   if (partner < world_size) {
-    EXPECT_EQ(received, partner * 10 + 1);
+    EXPECT_EQ(received, (partner * 10) + 1);
   }
   return MPI_Wtime() - t0;
 }
@@ -276,7 +277,7 @@ TEST(HypercubePerformance, CompareHypercubeBroadcastWithMPIBcast) {
 
   std::vector<int> base(1 << 14);
   if (rank == 0) {
-    std::iota(base.begin(), base.end(), 10);
+    std::ranges::iota(base, 10);
   } else {
     base.clear();
   }
