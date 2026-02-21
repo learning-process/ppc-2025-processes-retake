@@ -3,7 +3,7 @@
 - Студент: Иманов Сабутай Ширзад оглы
 - Группа: 3823Б1ПР5
 - Технология: SEQ | MPI
-- Вариант: 1
+- Вариант: 5
 
 ## 1. Введение
 
@@ -405,4 +405,4 @@ inline int CombineGlobal(const std::vector<int> &all_info) {
 
   return global_count;
 }
-```
+
