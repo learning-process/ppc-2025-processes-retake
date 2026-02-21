@@ -32,6 +32,7 @@
 сравнение с последовательной версией.
 
 3. Последовательный алгоритм
+
 ```cpp
 int min_val = GetInput()[0];
 for (size_t i = 1; i < GetInput().size(); i++) {
@@ -62,6 +63,7 @@ O(n)
 Если размер не кратен числу процессов — первые процессы получают на один элемент больше.
 
 Размеры вычисляются динамически.
+
 ```cpp
 int base_size = total_size / world_size;
 int extra_items = total_size % world_size;
@@ -70,6 +72,7 @@ for (int i = 0; i < world_size; ++i) {
     sendcounts[i] = base_size + (i < extra_items ? 1 : 0);
 }
 ```
+
 4.2 Коммуникационная схема
 
 MPI_Bcast
@@ -125,10 +128,10 @@ PostProcessingImpl()
 Финальная проверка результата
 
 Обработка краевых случаев
-Ситуация	Поведение
-Пустой вектор	Возврат false
-1 процесс	Работает как sequential
-Процесс без данных	Использует INT_MAX
+Ситуация Поведение
+Пустой вектор Возврат false
+1 процесс Работает как sequential
+Процесс без данных Использует INT_MAX
 Потребление памяти
 
 Каждый процесс хранит только свой локальный блок
@@ -174,11 +177,11 @@ Visual Studio Code
 Результаты MPI и последовательной версии совпадают
 
 7.2 Производительность
-Процессы	Время (с)	Ускорение	Эффективность
-1 (seq)	0.082347	1.00	100%
-2	0.203896	0.40	20%
-4	0.184119	0.45	11%
-8	0.154157	0.53	7%
+Процессы Время (с) Ускорение Эффективность
+1 (seq) 0.082347 1.00 100%
+2 0.203896 0.40 20%
+4 0.184119 0.45 11%
+8 0.154157 0.53 7%
 Анализ
 
 Параллельная версия медленнее последовательной.
@@ -205,15 +208,16 @@ MPI становится эффективным при более вычисли
 
 9. Источники
 
-MPI Standard — https://www.mpi-forum.org/docs/
+MPI Standard — <https://www.mpi-forum.org/docs/>
 
-MPICH Documentation — https://www.mpich.org/documentation/guides/
+MPICH Documentation — <https://www.mpich.org/documentation/guides/>
 
-Microsoft MPI — https://learn.microsoft.com/en-us/message-passing-interface/microsoft-mpi
+Microsoft MPI — <https://learn.microsoft.com/en-us/message-passing-interface/microsoft-mpi>
 
-OpenMPI Documentation — https://www.open-mpi.org/docs/
+OpenMPI Documentation — <https://www.open-mpi.org/docs/>
 
 Приложение
+
 ```cpp
 bool ShkrylevaSVecMinValMPI::RunImpl() {
   if (GetInput().empty()) {
