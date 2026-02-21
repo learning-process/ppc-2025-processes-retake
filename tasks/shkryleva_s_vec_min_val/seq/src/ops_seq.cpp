@@ -1,5 +1,6 @@
 #include "shkryleva_s_vec_min_val/seq/include/ops_seq.hpp"
 
+#include <algorithm>
 #include <cstddef>
 #include <limits>
 #include <vector>
@@ -33,9 +34,7 @@ bool ShkrylevaSVecMinValSEQ::RunImpl() {
 
   int min_val = input.front();
   for (std::size_t i = 1; i < input.size(); ++i) {
-    if (input[i] < min_val) {
-      min_val = input[i];
-    }
+    min_val = std::min(input[i], min_val);
   }
 
   GetOutput() = min_val;
