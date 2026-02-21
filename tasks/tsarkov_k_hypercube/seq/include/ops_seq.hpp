@@ -1,5 +1,6 @@
 #pragma once
 
+#include "task/include/task.hpp"
 #include "tsarkov_k_hypercube/common/include/common.hpp"
 
 namespace tsarkov_k_hypercube {

@@ -34,6 +34,7 @@ TEST_P(TsarkovKHypercubePerfTests, RunPerfModes) {
   ExecuteTest(GetParam());
 }
 
+namespace {
 const auto kAllPerfTasks =
     ppc::util::MakeAllPerfTasks<InType, TsarkovKHypercubeMPI, TsarkovKHypercubeSEQ>(PPC_SETTINGS_tsarkov_k_hypercube);
 
@@ -43,4 +44,5 @@ const auto kPerfTestName = TsarkovKHypercubePerfTests::CustomPerfTestName;
 
 INSTANTIATE_TEST_SUITE_P(RunModeTests, TsarkovKHypercubePerfTests, kGtestValues, kPerfTestName);
 
+}  // namespace
 }  // namespace tsarkov_k_hypercube
