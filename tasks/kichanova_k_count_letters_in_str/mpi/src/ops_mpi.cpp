@@ -31,11 +31,12 @@ bool KichanovaKCountLettersInStrMPI::RunImpl() {
     return false;
   }
 
-  int rank, size;
+  int rank = 0; 
+  int size = 0;
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
   MPI_Comm_size(MPI_COMM_WORLD, &size);
 
-  int total_length = input_str.length();
+  int total_length = static_cast<int>(input_str.length());
   int chunk_size = total_length / size;
 
   int start_index = rank * chunk_size;
@@ -43,7 +44,7 @@ bool KichanovaKCountLettersInStrMPI::RunImpl() {
 
   int local_count = 0;
   for (int i = start_index; i < end_index; i++) {
-    if (std::isalpha(static_cast<unsigned char>(input_str[i]))) {
+    if (std::isalpha(static_cast<unsigned char>(input_str[i])) != 0) {
       local_count++;
     }
   }

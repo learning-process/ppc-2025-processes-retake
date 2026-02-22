@@ -1,16 +1,11 @@
 #include <gtest/gtest.h>
 #include <stb/stb_image.h>
 
-#include <algorithm>
 #include <array>
 #include <cstddef>
-#include <cstdint>
-#include <numeric>
-#include <stdexcept>
 #include <string>
 #include <tuple>
-#include <utility>
-#include <vector>
+#include <cctype>
 
 #include "kichanova_k_count_letters_in_str/common/include/common.hpp"
 #include "kichanova_k_count_letters_in_str/mpi/include/ops_mpi.hpp"
@@ -27,7 +22,7 @@ class KichanovaKCountLettersInStrFuncTests : public ppc::util::BaseRunFuncTests<
     std::string safe_name;
 
     for (char c : input_str) {
-      if (std::isalnum(static_cast<unsigned char>(c))) {
+      if (std::isalnum(static_cast<unsigned char>(c)) != 0) {
         safe_name += c;
       } else {
         safe_name += '_';
@@ -53,7 +48,7 @@ class KichanovaKCountLettersInStrFuncTests : public ppc::util::BaseRunFuncTests<
   }
 
  private:
-  int CalculateExpectedCount(const std::string &str) {
+  static int CalculateExpectedCount(const std::string &str) {
     int count = 0;
     for (char c : str) {
       if (std::isalpha(static_cast<unsigned char>(c))) {
@@ -64,7 +59,7 @@ class KichanovaKCountLettersInStrFuncTests : public ppc::util::BaseRunFuncTests<
   }
 
   std::string input_string_;
-  int expected_output_;
+  int expected_output_{0};
 };
 
 namespace {

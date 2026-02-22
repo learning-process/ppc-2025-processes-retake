@@ -1,5 +1,9 @@
 #include <gtest/gtest.h>
 
+#include <cstddef>
+#include <string>
+#include <cctype> 
+
 #include "kichanova_k_count_letters_in_str/common/include/common.hpp"
 #include "kichanova_k_count_letters_in_str/mpi/include/ops_mpi.hpp"
 #include "kichanova_k_count_letters_in_str/seq/include/ops_seq.hpp"
@@ -8,7 +12,7 @@
 namespace kichanova_k_count_letters_in_str {
 
 class KichanovaKCountLettersInStrPerfTest : public ppc::util::BaseRunPerfTests<InType, OutType> {
-  InType input_data_{};
+  InType input_data_;
   int expected_output_{};
 
   void SetUp() override {
@@ -19,10 +23,10 @@ class KichanovaKCountLettersInStrPerfTest : public ppc::util::BaseRunPerfTests<I
 
     for (size_t i = 0; i < str_size; ++i) {
       if (i % 3 == 0) {
-        generated_string += (i % 2 == 0) ? 'a' + (i % 26) : 'A' + (i % 26);
+        generated_string += static_cast<char>((i % 2 == 0) ? 'a' + (i % 26) : 'A' + (i % 26));
         expected_output_++;
       } else {
-        generated_string += (i % 2 == 0) ? '0' + (i % 10) : '!' + (i % 15);
+        generated_string += static_cast<char>((i % 2 == 0) ? '0' + (i % 10) : '!' + (i % 15));
       }
     }
 
