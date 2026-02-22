@@ -63,19 +63,20 @@ void KazennovaAImageSmoothMPI::DistributeImage() {
   result_strip_.resize(static_cast<size_t>(strip_height_) * static_cast<size_t>(row_size), 0);
 }
 
-uint8_t KazennovaAImageSmoothMPI::ApplyKernelToPixel(int local_y, int x, int c, const std::vector<uint8_t> &strip) {
+uint8_t KazennovaAImageSmoothMPI::ApplyKernelToPixel(int local_y, int x, int c, const std::vector<uint8_t>& strip) {
   float sum = 0.0F;
   const auto &in = GetInput();
   int row_size = in.width * in.channels;
   int local_height = static_cast<int>(strip.size()) / row_size;
 
   for (int ky = -1; ky <= 1; ++ky) {
+    const auto& kernel_row = kKernel[ky + 1];
     for (int kx = -1; kx <= 1; ++kx) {
       int nx = std::clamp(x + kx, 0, in.width - 1);
       int ny_local = std::clamp(local_y + ky, 0, local_height - 1);
 
       int idx = (ny_local * row_size) + (nx * in.channels) + c;
-      sum += static_cast<float>(strip[idx]) * kKernel[ky + 1][kx + 1];  // NOLINT
+      sum += static_cast<float>(strip[idx]) * kernel_row[kx + 1];
     }
   }
 

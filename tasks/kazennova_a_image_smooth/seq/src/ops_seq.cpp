@@ -34,15 +34,15 @@ uint8_t KazennovaAImageSmoothSEQ::ApplyKernelToPixel(int x, int y, int c) {
   float sum = 0.0F;
 
   for (int ky = -1; ky <= 1; ++ky) {
+    const auto& kernel_row = kKernel[ky + 1];
     for (int kx = -1; kx <= 1; ++kx) {
       int nx = std::clamp(x + kx, 0, in.width - 1);
       int ny = std::clamp(y + ky, 0, in.height - 1);
 
       int idx = ((ny * in.width + nx) * in.channels) + c;
-      sum += static_cast<float>(in.data[idx]) * kKernel[ky + 1][kx + 1];  // NOLINT
+      sum += static_cast<float>(in.data[idx]) * kernel_row[kx + 1];
     }
   }
-
   return static_cast<uint8_t>(std::round(sum));
 }
 
