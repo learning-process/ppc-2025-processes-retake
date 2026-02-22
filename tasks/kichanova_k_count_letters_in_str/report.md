@@ -90,8 +90,9 @@ MPI реализация демонстрирует положительное �
 1. Лекции и практики курса "Параллельное программирование для кластерных систем"
 
 ## Appendix
-```
-ops_seq.cpp:
+
+```cpp
+//ops_seq.cpp:
 bool KichanovaKCountLettersInStrSEQ::RunImpl() {
   const std::string &input_str = GetInput();
 
@@ -104,7 +105,7 @@ bool KichanovaKCountLettersInStrSEQ::RunImpl() {
   return GetOutput() >= 0;
 }
 
-ops_mpi.cpp:
+//ops_mpi.cpp:
 bool KichanovaKCountLettersInStrMPI::RunImpl() {
   auto input_str = GetInput();
   if (input_str.empty()) {
