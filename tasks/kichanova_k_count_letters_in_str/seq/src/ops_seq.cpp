@@ -4,7 +4,6 @@
 #include <string>
 
 #include "kichanova_k_count_letters_in_str/common/include/common.hpp"
-#include "util/include/util.hpp"
 
 namespace kichanova_k_count_letters_in_str {
 

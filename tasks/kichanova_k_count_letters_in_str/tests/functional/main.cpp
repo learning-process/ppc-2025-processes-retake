@@ -51,7 +51,7 @@ class KichanovaKCountLettersInStrFuncTests : public ppc::util::BaseRunFuncTests<
   static int CalculateExpectedCount(const std::string &str) {
     int count = 0;
     for (char c : str) {
-      if (std::isalpha(static_cast<unsigned char>(c))) {
+      if (std::isalpha(static_cast<unsigned char>(c)) != 0) {
         count++;
       }
     }

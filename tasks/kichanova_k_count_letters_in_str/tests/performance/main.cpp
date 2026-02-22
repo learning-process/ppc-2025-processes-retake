@@ -53,7 +53,7 @@ const auto kAllPerfTasks =
 const auto kGtestValues = ppc::util::TupleToGTestValues(kAllPerfTasks);
 
 const auto kPerfTestName = KichanovaKCountLettersInStrPerfTest::CustomPerfTestName;
-
+namespace {
 INSTANTIATE_TEST_SUITE_P(RunModeTests, KichanovaKCountLettersInStrPerfTest, kGtestValues, kPerfTestName);
-
+}
 }  // namespace kichanova_k_count_letters_in_str
