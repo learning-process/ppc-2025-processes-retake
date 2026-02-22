@@ -21,13 +21,13 @@ class KichanovaKIncreaseContrastPerfTests : public ppc::util::BaseRunPerfTests<I
     input_data_.width = kWidth_;
     input_data_.height = kHeight_;
     input_data_.channels = 3;
-    input_data_.pixels.resize(kWidth_ * kHeight_ * 3);
+    input_data_.pixels.resize(static_cast<size_t>(kWidth_) * kHeight_ * 3);
 
-    for (int y = 0; y < kHeight_; ++y) {
-      for (int x = 0; x < kWidth_; ++x) {
-        size_t idx = (y * kWidth_ + x) * 3;
-        input_data_.pixels[idx] = static_cast<uint8_t>((x * 255) / kWidth_);
-        input_data_.pixels[idx + 1] = static_cast<uint8_t>((y * 255) / kHeight_);
+    for (int row = 0; row < kHeight_; ++row) {
+      for (int col = 0; col < kWidth_; ++col) {
+        size_t idx = (static_cast<size_t>(row) * kWidth_ + col) * 3;
+        input_data_.pixels[idx] = static_cast<uint8_t>((col * 255) / kWidth_);
+        input_data_.pixels[idx + 1] = static_cast<uint8_t>((row * 255) / kHeight_);
         input_data_.pixels[idx + 2] = 128;
       }
     }
@@ -59,6 +59,8 @@ const auto kGtestValues = ppc::util::TupleToGTestValues(kAllPerfTasks);
 
 const auto kPerfTestName = KichanovaKIncreaseContrastPerfTests::CustomPerfTestName;
 
+namespace {
 INSTANTIATE_TEST_SUITE_P(RunModeTests, KichanovaKIncreaseContrastPerfTests, kGtestValues, kPerfTestName);
+}
 
 }  // namespace kichanova_k_increase_contrast

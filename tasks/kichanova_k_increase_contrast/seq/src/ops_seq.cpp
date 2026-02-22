@@ -6,7 +6,6 @@
 #include <vector>
 
 #include "kichanova_k_increase_contrast/common/include/common.hpp"
-#include "util/include/util.hpp"
 
 namespace kichanova_k_increase_contrast {
 
@@ -21,7 +20,7 @@ KichanovaKIncreaseContrastSEQ::KichanovaKIncreaseContrastSEQ(const InType &in) {
 
 bool KichanovaKIncreaseContrastSEQ::ValidationImpl() {
   return (GetInput().width > 0) && (GetInput().height > 0) && (GetInput().channels == 3) &&
-         (GetInput().pixels.size() == static_cast<size_t>(GetInput().width * GetInput().height * GetInput().channels));
+         (GetInput().pixels.size() == static_cast<size_t>(GetInput().width) * GetInput().height * GetInput().channels);
 }
 
 bool KichanovaKIncreaseContrastSEQ::PreProcessingImpl() {
@@ -59,18 +58,20 @@ bool KichanovaKIncreaseContrastSEQ::RunImpl() {
     max_b = std::max(b, max_b);
   }
 
-  float scale_r = 0.0F, scale_g = 0.0F, scale_b = 0.0F;
+  float scale_r = 0.0F;
+  float scale_g = 0.0F;
+  float scale_b = 0.0F;
 
   if (max_r > min_r) {
-    scale_r = 255.0F / (max_r - min_r);
+    scale_r = 255.0F / static_cast<float>(max_r - min_r);
   }
 
   if (max_g > min_g) {
-    scale_g = 255.0F / (max_g - min_g);
+    scale_g = 255.0F / static_cast<float>(max_g - min_g);
   }
 
   if (max_b > min_b) {
-    scale_b = 255.0F / (max_b - min_b);
+    scale_b = 255.0F / static_cast<float>(max_b - min_b);
   }
 
   for (size_t i = 0; i < total_pixels; ++i) {

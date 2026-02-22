@@ -4,7 +4,6 @@
 
 #include <algorithm>
 #include <array>
-#include <cstddef>
 #include <cstdint>
 #include <vector>
 
@@ -23,7 +22,7 @@ KichanovaKIncreaseContrastMPI::KichanovaKIncreaseContrastMPI(const InType &in) {
 
 bool KichanovaKIncreaseContrastMPI::ValidationImpl() {
   return (GetInput().width > 0) && (GetInput().height > 0) && (GetInput().channels == 3) &&
-         (GetInput().pixels.size() == static_cast<size_t>(GetInput().width * GetInput().height * GetInput().channels));
+         (GetInput().pixels.size() == static_cast<size_t>(GetInput().width) * GetInput().height * GetInput().channels);
 }
 
 bool KichanovaKIncreaseContrastMPI::PreProcessingImpl() {
@@ -55,7 +54,7 @@ bool KichanovaKIncreaseContrastMPI::RunImpl() {
 
   for (int row = start_row; row < end_row; ++row) {
     for (int col = 0; col < width; ++col) {
-      size_t idx = static_cast<size_t>(row) * static_cast<size_t>(width) + static_cast<size_t>(col);
+      size_t idx = (static_cast<size_t>(row) * static_cast<size_t>(width)) + static_cast<size_t>(col);
       idx *= static_cast<size_t>(channels);
       for (int channel = 0; channel < 3; ++channel) {
         uint8_t val = input.pixels[idx + channel];
@@ -72,26 +71,26 @@ bool KichanovaKIncreaseContrastMPI::RunImpl() {
 
   std::array<float, 3> scale{};
   std::array<bool, 3> need_scale{};
-  for (int c = 0; c < 3; ++c) {
-    if (global_max[c] > global_min[c]) {
-      scale[c] = 255.0F / (global_max[c] - global_min[c]);
-      need_scale[c] = true;
+  for (int channel = 0; channel < 3; ++channel) {
+    if (global_max[channel] > global_min[channel]) {
+      scale[channel] = 255.0F / static_cast<float>(global_max[channel] - global_min[channel]);
+      need_scale[channel] = true;
     } else {
-      scale[c] = 0.0F;
-      need_scale[c] = false;
+      scale[channel] = 0.0F;
+      need_scale[channel] = false;
     }
   }
 
-  std::vector<uint8_t> local_output(local_rows * row_size);
+  std::vector<uint8_t> local_output(static_cast<size_t>(local_rows) * row_size);
   for (int i = 0; i < local_rows; ++i) {
     int global_row = start_row + i;
     for (int col = 0; col < width; ++col) {
-      size_t in_idx = (global_row * width + col) * channels;
-      size_t out_idx = (i * width + col) * channels;
+      size_t in_idx = (static_cast<size_t>(global_row) * width + col) * channels;
+      size_t out_idx = (static_cast<size_t>(i) * width + col) * channels;
       for (int channel = 0; channel < 3; ++channel) {
         uint8_t val = input.pixels[in_idx + channel];
         if (need_scale[channel]) {
-          float new_val = (val - global_min[channel]) * scale[channel];
+          float new_val = (static_cast<float>(val) - static_cast<float>(global_min[channel])) * scale[channel];
           local_output[out_idx + channel] = static_cast<uint8_t>(std::clamp(new_val, 0.0F, 255.0F));
         } else {
           local_output[out_idx + channel] = val;
@@ -103,7 +102,7 @@ bool KichanovaKIncreaseContrastMPI::RunImpl() {
   std::vector<int> recv_counts(size);
   std::vector<int> displs(size);
   for (int i = 0; i < size; ++i) {
-    int i_start_row = i * rows_per_process + std::min(i, remainder);
+    int i_start_row = (i * rows_per_process) + std::min(i, remainder);
     int i_end_row = i_start_row + rows_per_process + (i < remainder ? 1 : 0);
     int i_rows = i_end_row - i_start_row;
     recv_counts[i] = i_rows * row_size;

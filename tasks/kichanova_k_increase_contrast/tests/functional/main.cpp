@@ -4,7 +4,6 @@
 #include <algorithm>
 #include <array>
 #include <cstddef>
-#include <cstdint>
 #include <string>
 #include <tuple>
 #include <vector>
@@ -34,17 +33,17 @@ class KichanovaKIncreaseContrastFuncTests : public ppc::util::BaseRunFuncTests<I
       input_data_.height = 4;
       input_data_.channels = 3;
       input_data_.pixels.resize(static_cast<size_t>(4) * 4 * 3);
-      std::fill(input_data_.pixels.begin(), input_data_.pixels.end(), 128);
+      std::ranges::fill(input_data_.pixels.begin(), input_data_.pixels.end(), 128);
 
     } else if (test_name == "gradient") {
       input_data_.width = 8;
       input_data_.height = 8;
       input_data_.channels = 3;
-      input_data_.pixels.resize(8 * 8 * 3);
+      input_data_.pixels.resize(static_cast<size_t>(8) * 8 * 3);
 
       for (int row = 0; row < 8; ++row) {
         for (int col = 0; col < 8; ++col) {
-          size_t idx = (row * 8 + col) * 3;
+          size_t idx = (static_cast<size_t>(row) * 8 + col) * 3;
           input_data_.pixels[idx] = col * 32;
           input_data_.pixels[idx + 1] = row * 32;
           input_data_.pixels[idx + 2] = (col + row) * 16;
@@ -68,7 +67,7 @@ class KichanovaKIncreaseContrastFuncTests : public ppc::util::BaseRunFuncTests<I
       input_data_.width = width;
       input_data_.height = height;
       input_data_.channels = channels;
-      size_t total_pixels = width * height * channels;
+      size_t total_pixels = static_cast<size_t>(width) * height * channels;
       input_data_.pixels.assign(data, data + total_pixels);
       stbi_image_free(data);
     }
