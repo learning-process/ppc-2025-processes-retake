@@ -75,7 +75,7 @@ uint8_t KazennovaAImageSmoothMPI::ApplyKernelToPixel(int local_y, int x, int c, 
       int ny_local = std::clamp(local_y + ky, 0, local_height - 1);
 
       int idx = (ny_local * row_size) + (nx * in.channels) + c;
-      sum += static_cast<float>(strip[idx]) * kKernel[ky + 1][kx + 1];  // NOLINT
+      sum += static_cast<float>(strip[idx]) * kKernel[ky + 1][kx + 1];
     }
   }
 
