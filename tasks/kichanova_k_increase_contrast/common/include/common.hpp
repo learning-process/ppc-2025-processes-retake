@@ -1,5 +1,7 @@
 #pragma once
 
+#include <cstddef>
+#include <cstdint>
 #include <string>
 #include <tuple>
 #include <vector>
@@ -10,9 +12,9 @@ namespace kichanova_k_increase_contrast {
 
 struct Image {
   std::vector<uint8_t> pixels;
-  int width;
-  int height;
-  int channels;
+  int width{0};
+  int height{0};
+  int channels{0};
 };
 
 using InType = Image;

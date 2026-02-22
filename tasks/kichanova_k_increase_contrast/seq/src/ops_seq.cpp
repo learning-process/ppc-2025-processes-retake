@@ -1,6 +1,7 @@
 #include "kichanova_k_increase_contrast/seq/include/ops_seq.hpp"
 
 #include <algorithm>
+#include <cstddef>
 #include <cstdint>
 #include <vector>
 
@@ -34,11 +35,14 @@ bool KichanovaKIncreaseContrastSEQ::RunImpl() {
   const int width = input.width;
   const int height = input.height;
   const int channels = 3;
-  const size_t total_pixels = width * height;
+  const size_t total_pixels = static_cast<size_t>(width) * static_cast<size_t>(height);
 
-  uint8_t min_r = 255, max_r = 0;
-  uint8_t min_g = 255, max_g = 0;
-  uint8_t min_b = 255, max_b = 0;
+  uint8_t min_r = 255;
+  uint8_t max_r = 0;
+  uint8_t min_g = 255;
+  uint8_t max_g = 0;
+  uint8_t min_b = 255;
+  uint8_t max_b = 0;
 
   for (size_t i = 0; i < total_pixels; ++i) {
     size_t idx = i * channels;
@@ -47,38 +51,26 @@ bool KichanovaKIncreaseContrastSEQ::RunImpl() {
     uint8_t g = input.pixels[idx + 1];
     uint8_t b = input.pixels[idx + 2];
 
-    if (r < min_r) {
-      min_r = r;
-    }
-    if (r > max_r) {
-      max_r = r;
-    }
-    if (g < min_g) {
-      min_g = g;
-    }
-    if (g > max_g) {
-      max_g = g;
-    }
-    if (b < min_b) {
-      min_b = b;
-    }
-    if (b > max_b) {
-      max_b = b;
-    }
+    min_r = std::min(r, min_r);
+    max_r = std::max(r, max_r);
+    min_g = std::min(g, min_g);
+    max_g = std::max(g, max_g);
+    min_b = std::min(b, min_b);
+    max_b = std::max(b, max_b);
   }
 
-  float scale_r = 0.0f, scale_g = 0.0f, scale_b = 0.0f;
+  float scale_r = 0.0F, scale_g = 0.0F, scale_b = 0.0F;
 
   if (max_r > min_r) {
-    scale_r = 255.0f / (max_r - min_r);
+    scale_r = 255.0F / (max_r - min_r);
   }
 
   if (max_g > min_g) {
-    scale_g = 255.0f / (max_g - min_g);
+    scale_g = 255.0F / (max_g - min_g);
   }
 
   if (max_b > min_b) {
-    scale_b = 255.0f / (max_b - min_b);
+    scale_b = 255.0F / (max_b - min_b);
   }
 
   for (size_t i = 0; i < total_pixels; ++i) {
@@ -89,22 +81,22 @@ bool KichanovaKIncreaseContrastSEQ::RunImpl() {
     uint8_t b = input.pixels[idx + 2];
 
     if (max_r > min_r) {
-      float new_r = (r - min_r) * scale_r;
-      output.pixels[idx] = static_cast<uint8_t>(std::clamp(new_r, 0.0f, 255.0f));
+      float new_r = (static_cast<float>(r) - static_cast<float>(min_r)) * scale_r;
+      output.pixels[idx] = static_cast<uint8_t>(std::clamp(new_r, 0.0F, 255.0F));
     } else {
       output.pixels[idx] = r;
     }
 
     if (max_g > min_g) {
-      float new_g = (g - min_g) * scale_g;
-      output.pixels[idx + 1] = static_cast<uint8_t>(std::clamp(new_g, 0.0f, 255.0f));
+      float new_g = (static_cast<float>(g) - static_cast<float>(min_g)) * scale_g;
+      output.pixels[idx + 1] = static_cast<uint8_t>(std::clamp(new_g, 0.0F, 255.0F));
     } else {
       output.pixels[idx + 1] = g;
     }
 
     if (max_b > min_b) {
-      float new_b = (b - min_b) * scale_b;
-      output.pixels[idx + 2] = static_cast<uint8_t>(std::clamp(new_b, 0.0f, 255.0f));
+      float new_b = (static_cast<float>(b) - static_cast<float>(min_b)) * scale_b;
+      output.pixels[idx + 2] = static_cast<uint8_t>(std::clamp(new_b, 0.0F, 255.0F));
     } else {
       output.pixels[idx + 2] = b;
     }

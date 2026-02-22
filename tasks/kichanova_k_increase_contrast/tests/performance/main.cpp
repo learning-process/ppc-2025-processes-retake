@@ -1,7 +1,7 @@
 #include <gtest/gtest.h>
 
-#include <algorithm>
 #include <cstddef>
+#include <cstdint>
 #include <vector>
 
 #include "kichanova_k_increase_contrast/common/include/common.hpp"

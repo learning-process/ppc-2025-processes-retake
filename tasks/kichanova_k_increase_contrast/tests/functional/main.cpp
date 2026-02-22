@@ -1,6 +1,7 @@
 #include <gtest/gtest.h>
 #include <stb/stb_image.h>
 
+#include <algorithm>
 #include <array>
 #include <cstddef>
 #include <cstdint>
@@ -32,7 +33,7 @@ class KichanovaKIncreaseContrastFuncTests : public ppc::util::BaseRunFuncTests<I
       input_data_.width = 4;
       input_data_.height = 4;
       input_data_.channels = 3;
-      input_data_.pixels.resize(4 * 4 * 3);
+      input_data_.pixels.resize(static_cast<size_t>(4) * 4 * 3);
       std::fill(input_data_.pixels.begin(), input_data_.pixels.end(), 128);
 
     } else if (test_name == "gradient") {
@@ -41,12 +42,12 @@ class KichanovaKIncreaseContrastFuncTests : public ppc::util::BaseRunFuncTests<I
       input_data_.channels = 3;
       input_data_.pixels.resize(8 * 8 * 3);
 
-      for (int y = 0; y < 8; ++y) {
-        for (int x = 0; x < 8; ++x) {
-          size_t idx = (y * 8 + x) * 3;
-          input_data_.pixels[idx] = x * 32;
-          input_data_.pixels[idx + 1] = y * 32;
-          input_data_.pixels[idx + 2] = (x + y) * 16;
+      for (int row = 0; row < 8; ++row) {
+        for (int col = 0; col < 8; ++col) {
+          size_t idx = (row * 8 + col) * 3;
+          input_data_.pixels[idx] = col * 32;
+          input_data_.pixels[idx + 1] = row * 32;
+          input_data_.pixels[idx + 2] = (col + row) * 16;
         }
       }
 

@@ -3,6 +3,8 @@
 #include <mpi.h>
 
 #include <algorithm>
+#include <array>
+#include <cstddef>
 #include <cstdint>
 #include <vector>
 
@@ -37,46 +39,45 @@ bool KichanovaKIncreaseContrastMPI::RunImpl() {
   const int channels = 3;
   const int row_size = width * channels;
 
-  int rank, size;
+  int rank = 0;
+  int size = 0;
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
   MPI_Comm_size(MPI_COMM_WORLD, &size);
 
   int rows_per_process = height / size;
   int remainder = height % size;
-  int start_row = rank * rows_per_process + std::min(rank, remainder);
+  int start_row = (rank * rows_per_process) + std::min(rank, remainder);
   int end_row = start_row + rows_per_process + (rank < remainder ? 1 : 0);
   int local_rows = end_row - start_row;
 
-  uint8_t local_min[3] = {255, 255, 255};
-  uint8_t local_max[3] = {0, 0, 0};
+  std::array<uint8_t, 3> local_min = {255, 255, 255};
+  std::array<uint8_t, 3> local_max = {0, 0, 0};
 
   for (int row = start_row; row < end_row; ++row) {
     for (int col = 0; col < width; ++col) {
-      size_t idx = (row * width + col) * channels;
-      for (int c = 0; c < 3; ++c) {
-        uint8_t val = input.pixels[idx + c];
-        if (val < local_min[c]) {
-          local_min[c] = val;
-        }
-        if (val > local_max[c]) {
-          local_max[c] = val;
-        }
+      size_t idx = static_cast<size_t>(row) * static_cast<size_t>(width) + static_cast<size_t>(col);
+      idx *= static_cast<size_t>(channels);
+      for (int channel = 0; channel < 3; ++channel) {
+        uint8_t val = input.pixels[idx + channel];
+        local_min[channel] = std::min(val, local_min[channel]);
+        local_max[channel] = std::max(val, local_max[channel]);
       }
     }
   }
 
-  uint8_t global_min[3], global_max[3];
-  MPI_Allreduce(local_min, global_min, 3, MPI_UINT8_T, MPI_MIN, MPI_COMM_WORLD);
-  MPI_Allreduce(local_max, global_max, 3, MPI_UINT8_T, MPI_MAX, MPI_COMM_WORLD);
+  std::array<uint8_t, 3> global_min{};
+  std::array<uint8_t, 3> global_max{};
+  MPI_Allreduce(local_min.data(), global_min.data(), 3, MPI_UINT8_T, MPI_MIN, MPI_COMM_WORLD);
+  MPI_Allreduce(local_max.data(), global_max.data(), 3, MPI_UINT8_T, MPI_MAX, MPI_COMM_WORLD);
 
-  float scale[3];
-  bool need_scale[3];
+  std::array<float, 3> scale{};
+  std::array<bool, 3> need_scale{};
   for (int c = 0; c < 3; ++c) {
     if (global_max[c] > global_min[c]) {
-      scale[c] = 255.0f / (global_max[c] - global_min[c]);
+      scale[c] = 255.0F / (global_max[c] - global_min[c]);
       need_scale[c] = true;
     } else {
-      scale[c] = 0.0f;
+      scale[c] = 0.0F;
       need_scale[c] = false;
     }
   }
@@ -87,13 +88,13 @@ bool KichanovaKIncreaseContrastMPI::RunImpl() {
     for (int col = 0; col < width; ++col) {
       size_t in_idx = (global_row * width + col) * channels;
       size_t out_idx = (i * width + col) * channels;
-      for (int c = 0; c < 3; ++c) {
-        uint8_t val = input.pixels[in_idx + c];
-        if (need_scale[c]) {
-          float new_val = (val - global_min[c]) * scale[c];
-          local_output[out_idx + c] = static_cast<uint8_t>(std::clamp(new_val, 0.0f, 255.0f));
+      for (int channel = 0; channel < 3; ++channel) {
+        uint8_t val = input.pixels[in_idx + channel];
+        if (need_scale[channel]) {
+          float new_val = (val - global_min[channel]) * scale[channel];
+          local_output[out_idx + channel] = static_cast<uint8_t>(std::clamp(new_val, 0.0F, 255.0F));
         } else {
-          local_output[out_idx + c] = val;
+          local_output[out_idx + channel] = val;
         }
       }
     }
