@@ -41,7 +41,8 @@ class KulikovMatrixMultiplyRunPerfTests : public ppc::util::BaseRunPerfTests<InT
     input_data.vector.resize(static_cast<size_t>(cols));
     expected_data.resize(static_cast<size_t>(rows));
 
-    std::mt19937 gen(42);
+    std::random_device rd;
+    std::mt19937 gen(rd());
     std::uniform_int_distribution<int> dist(-5, 5);
 
     for (int j = 0; j < cols; ++j) {
