@@ -1,8 +1,8 @@
 #include <gtest/gtest.h>
 
+#include <cctype>
 #include <cstddef>
 #include <string>
-#include <cctype> 
 
 #include "kichanova_k_count_letters_in_str/common/include/common.hpp"
 #include "kichanova_k_count_letters_in_str/mpi/include/ops_mpi.hpp"

@@ -2,10 +2,10 @@
 #include <stb/stb_image.h>
 
 #include <array>
+#include <cctype>
 #include <cstddef>
 #include <string>
 #include <tuple>
-#include <cctype>
 
 #include "kichanova_k_count_letters_in_str/common/include/common.hpp"
 #include "kichanova_k_count_letters_in_str/mpi/include/ops_mpi.hpp"
