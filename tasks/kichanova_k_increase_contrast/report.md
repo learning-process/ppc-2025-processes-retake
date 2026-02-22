@@ -99,6 +99,7 @@ MPI реализация алгоритма увеличения контрас�
 ## Appendix
 
 ops_seq.cpp:
+
 ```cpp
 bool KichanovaKIncreaseContrastSEQ::RunImpl() {
   const auto& input = GetInput();
@@ -174,7 +175,9 @@ bool KichanovaKIncreaseContrastSEQ::RunImpl() {
   return true;
 }
 ```
+
 ops_mpi.cpp:
+
 ```cpp
 bool KichanovaKIncreaseContrastMPI::RunImpl() {
   const auto &input = GetInput();
