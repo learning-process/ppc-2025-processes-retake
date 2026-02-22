@@ -31,21 +31,18 @@ class SavvaDMinElemVecPerfTest : public ppc::util::BaseRunPerfTests<InType, OutT
     int vector_size = 0;
     file >> vector_size;
 
-    // Читаем ожидаемый минимум
     file >> expected_min_;
 
     // Читаем данные вектора
-    input_data_.resize(vector_size + 9000000);
-    for (int i = 0; i < 9000000; ++i) {
+    input_data_.resize(vector_size * 51);
+    for (int i = 0; i < vector_size; ++i) {
       file >> input_data_[i];
     }
 
-    for (int i = 0; i < 9000000; ++i) {
-      input_data_[9000000 + i] = input_data_[i] - 9;
-    }
-
-    for (int i = 9000000; i < vector_size; ++i) {
-      file >> input_data_[i];
+    for (int i = 1; i < 51; ++i) {
+      for (int j = 0; j < vector_size; ++j) {
+        input_data_[(vector_size * i) + j] = input_data_[(vector_size * (i - 1)) + j] - 50000;
+      }
     }
 
     file.close();
@@ -55,9 +52,6 @@ class SavvaDMinElemVecPerfTest : public ppc::util::BaseRunPerfTests<InType, OutT
       throw std::runtime_error("Test data is empty!");
     }
   }
-
-  // случайная генерация в SetUp будет блокироваться, так как производительность зависит от сгенерированных данных
-  // данные для perfomance должны быть сгенерированы в data,упакованы, распакованы в SetUp()
 
   bool CheckTestOutputData(OutType &output_data) final {
     return expected_min_ == output_data;
