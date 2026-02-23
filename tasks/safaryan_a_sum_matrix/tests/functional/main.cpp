@@ -84,7 +84,7 @@ const auto kGtestValues = ppc::util::ExpandToValues(kTestTasksList);
 
 const auto kPerfTestName = SafaryanASumMatrixFuncTests::PrintFuncTestName<SafaryanASumMatrixFuncTests>;
 
-INSTANTIATE_TEST_SUITE_P(MatrixRowSum, SafaryanASumMatrixFuncTests, kGtestValues, kPerfTestName)
+INSTANTIATE_TEST_SUITE_P(MatrixRowSum, SafaryanASumMatrixFuncTests, kGtestValues, kPerfTestName);
 
 }  // namespace
 
