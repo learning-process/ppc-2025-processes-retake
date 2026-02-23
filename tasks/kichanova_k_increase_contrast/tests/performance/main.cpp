@@ -61,6 +61,6 @@ const auto kPerfTestName = KichanovaKIncreaseContrastPerfTests::CustomPerfTestNa
 
 namespace {
 INSTANTIATE_TEST_SUITE_P(RunModeTests, KichanovaKIncreaseContrastPerfTests, kGtestValues, kPerfTestName);
-}
+}  // namespace
 
 }  // namespace kichanova_k_increase_contrast
