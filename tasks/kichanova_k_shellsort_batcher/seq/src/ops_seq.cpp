@@ -41,7 +41,7 @@ bool KichanovaKShellsortBatcherSEQ::RunImpl() {
   }
 
   std::vector<int> expected = data;
-  std::sort(expected.begin(), expected.end());
+  std::ranges::sort(expected.begin(), expected.end());
 
   ShellSort(data);
 
@@ -52,7 +52,7 @@ bool KichanovaKShellsortBatcherSEQ::RunImpl() {
   OddEvenBatcherMerge(left, right, merged);
   data.swap(merged);
 
-  if (!std::is_sorted(data.begin(), data.end())) {
+  if (!std::ranges::is_sorted(data.begin(), data.end())) {
     return false;
   }
   if (data != expected) {
@@ -93,7 +93,7 @@ void KichanovaKShellsortBatcherSEQ::ShellSort(std::vector<int> &arr) {
 void KichanovaKShellsortBatcherSEQ::OddEvenBatcherMerge(const std::vector<int> &left, const std::vector<int> &right,
                                                         std::vector<int> &merged) {
   merged.resize(left.size() + right.size());
-  std::merge(left.begin(), left.end(), right.begin(), right.end(), merged.begin());
+  std::ranges::merge(left.begin(), left.end(), right.begin(), right.end(), merged.begin());
 
   for (int j = 0; j < 2; ++j) {
     auto start = static_cast<std::size_t>(j);

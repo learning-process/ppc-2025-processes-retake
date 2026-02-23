@@ -90,15 +90,14 @@ void KichanovaKShellsortBatcherMPI::PerformOddEvenSort(std::vector<int> &local_d
   }
 }
 
-int KichanovaKShellsortBatcherMPI::GetPartner(int phase, int rank) const {
+int KichanovaKShellsortBatcherMPI::GetPartner(int phase, int rank) {
   if (phase % 2 == 0) {
     return (rank % 2 == 0) ? rank + 1 : rank - 1;
-  } else {
-    return (rank % 2 == 1) ? rank + 1 : rank - 1;
   }
+  return (rank % 2 == 1) ? rank + 1 : rank - 1;
 }
 
-std::int64_t KichanovaKShellsortBatcherMPI::CalculateChecksum(const std::vector<int> &data) const {
+std::int64_t KichanovaKShellsortBatcherMPI::CalculateChecksum(const std::vector<int> &data) {
   std::int64_t checksum = 0;
   for (const auto &val : data) {
     checksum += val;
