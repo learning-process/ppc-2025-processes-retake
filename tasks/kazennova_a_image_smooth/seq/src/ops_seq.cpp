@@ -36,14 +36,67 @@ uint8_t KazennovaAImageSmoothSEQ::ApplyKernelToPixel(int x, int y, int c) {
   const auto &in = GetInput();
   float sum = 0.0F;
 
-  for (int ky = -1; ky <= 1; ++ky) {
-    for (int kx = -1; kx <= 1; ++kx) {
-      int nx = std::clamp(x + kx, 0, in.width - 1);
-      int ny = std::clamp(y + ky, 0, in.height - 1);
+  {
+    int nx = std::clamp(x - 1, 0, in.width - 1);
+    int ny = std::clamp(y - 1, 0, in.height - 1);
+    int idx = ((ny * in.width + nx) * in.channels) + c;
+    sum += static_cast<float>(in.data[idx]) * kKernel[0][0];
+  }
 
-      int idx = ((ny * in.width + nx) * in.channels) + c;
-      sum += static_cast<float>(in.data[idx]) * kKernel[ky + 1][kx + 1];
-    }
+  {
+    int nx = std::clamp(x, 0, in.width - 1);
+    int ny = std::clamp(y - 1, 0, in.height - 1);
+    int idx = ((ny * in.width + nx) * in.channels) + c;
+    sum += static_cast<float>(in.data[idx]) * kKernel[0][1];
+  }
+
+  {
+    int nx = std::clamp(x + 1, 0, in.width - 1);
+    int ny = std::clamp(y - 1, 0, in.height - 1);
+    int idx = ((ny * in.width + nx) * in.channels) + c;
+    sum += static_cast<float>(in.data[idx]) * kKernel[0][2];
+  }
+
+  {
+    int nx = std::clamp(x - 1, 0, in.width - 1);
+    int ny = std::clamp(y, 0, in.height - 1);
+    int idx = ((ny * in.width + nx) * in.channels) + c;
+    sum += static_cast<float>(in.data[idx]) * kKernel[1][0];
+  }
+
+  {
+    int nx = std::clamp(x, 0, in.width - 1);
+    int ny = std::clamp(y, 0, in.height - 1);
+    int idx = ((ny * in.width + nx) * in.channels) + c;
+    sum += static_cast<float>(in.data[idx]) * kKernel[1][1];
+  }
+
+  {
+    int nx = std::clamp(x + 1, 0, in.width - 1);
+    int ny = std::clamp(y, 0, in.height - 1);
+    int idx = ((ny * in.width + nx) * in.channels) + c;
+    sum += static_cast<float>(in.data[idx]) * kKernel[1][2];
+  }
+
+  {
+    int nx = std::clamp(x - 1, 0, in.width - 1);
+    int ny = std::clamp(y + 1, 0, in.height - 1);
+    int idx = ((ny * in.width + nx) * in.channels) + c;
+    sum += static_cast<float>(in.data[idx]) * kKernel[2][0];
+  }
+
+  {
+    int nx = std::clamp(x, 0, in.width - 1);
+    int ny = std::clamp(y + 1, 0, in.height - 1);
+    int idx = ((ny * in.width + nx) * in.channels) + c;
+    sum += static_cast<float>(in.data[idx]) * kKernel[2][1];
+  }
+
+  {
+    int nx = std::clamp(x + 1, 0, in.width - 1);
+    int ny = std::clamp(y + 1, 0, in.height - 1);
+    int idx = ((ny * in.width + nx) * in.channels) + c;
+    sum += static_cast<float>(in.data[idx]) * kKernel[2][2];
   }
 
   return static_cast<uint8_t>(std::round(sum));

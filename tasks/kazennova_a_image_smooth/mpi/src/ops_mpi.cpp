@@ -74,14 +74,67 @@ uint8_t KazennovaAImageSmoothMPI::ApplyKernelToPixel(int local_y, int x, int c, 
   int row_size = in.width * in.channels;
   int local_height = static_cast<int>(strip.size()) / row_size;
 
-  for (int ky = -1; ky <= 1; ++ky) {
-    for (int kx = -1; kx <= 1; ++kx) {
-      int nx = std::clamp(x + kx, 0, in.width - 1);
-      int ny_local = std::clamp(local_y + ky, 0, local_height - 1);
+  {
+    int nx = std::clamp(x - 1, 0, in.width - 1);
+    int ny_local = std::clamp(local_y - 1, 0, local_height - 1);
+    int idx = (ny_local * row_size) + (nx * in.channels) + c;
+    sum += static_cast<float>(strip[idx]) * kKernel[0][0];
+  }
 
-      int idx = (ny_local * row_size) + (nx * in.channels) + c;
-      sum += static_cast<float>(strip[idx]) * kKernel[ky + 1][kx + 1];
-    }
+  {
+    int nx = std::clamp(x, 0, in.width - 1);
+    int ny_local = std::clamp(local_y - 1, 0, local_height - 1);
+    int idx = (ny_local * row_size) + (nx * in.channels) + c;
+    sum += static_cast<float>(strip[idx]) * kKernel[0][1];
+  }
+
+  {
+    int nx = std::clamp(x + 1, 0, in.width - 1);
+    int ny_local = std::clamp(local_y - 1, 0, local_height - 1);
+    int idx = (ny_local * row_size) + (nx * in.channels) + c;
+    sum += static_cast<float>(strip[idx]) * kKernel[0][2];
+  }
+
+  {
+    int nx = std::clamp(x - 1, 0, in.width - 1);
+    int ny_local = std::clamp(local_y, 0, local_height - 1);
+    int idx = (ny_local * row_size) + (nx * in.channels) + c;
+    sum += static_cast<float>(strip[idx]) * kKernel[1][0];
+  }
+
+  {
+    int nx = std::clamp(x, 0, in.width - 1);
+    int ny_local = std::clamp(local_y, 0, local_height - 1);
+    int idx = (ny_local * row_size) + (nx * in.channels) + c;
+    sum += static_cast<float>(strip[idx]) * kKernel[1][1];
+  }
+
+  {
+    int nx = std::clamp(x + 1, 0, in.width - 1);
+    int ny_local = std::clamp(local_y, 0, local_height - 1);
+    int idx = (ny_local * row_size) + (nx * in.channels) + c;
+    sum += static_cast<float>(strip[idx]) * kKernel[1][2];
+  }
+
+  {
+    int nx = std::clamp(x - 1, 0, in.width - 1);
+    int ny_local = std::clamp(local_y + 1, 0, local_height - 1);
+    int idx = (ny_local * row_size) + (nx * in.channels) + c;
+    sum += static_cast<float>(strip[idx]) * kKernel[2][0];
+  }
+
+  {
+    int nx = std::clamp(x, 0, in.width - 1);
+    int ny_local = std::clamp(local_y + 1, 0, local_height - 1);
+    int idx = (ny_local * row_size) + (nx * in.channels) + c;
+    sum += static_cast<float>(strip[idx]) * kKernel[2][1];
+  }
+
+  {
+    int nx = std::clamp(x + 1, 0, in.width - 1);
+    int ny_local = std::clamp(local_y + 1, 0, local_height - 1);
+    int idx = (ny_local * row_size) + (nx * in.channels) + c;
+    sum += static_cast<float>(strip[idx]) * kKernel[2][2];
   }
 
   return static_cast<uint8_t>(std::round(sum));
@@ -104,7 +157,9 @@ void KazennovaAImageSmoothMPI::ApplyKernelToStrip() {
 }
 
 void KazennovaAImageSmoothMPI::ExchangeBoundaries() {
-  if (strip_height_ == 0) return;
+  if (strip_height_ == 0) {
+    return;
+  }
 
   const auto &in = GetInput();
   int world_size = 0;
