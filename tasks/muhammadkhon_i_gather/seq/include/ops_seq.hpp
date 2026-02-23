@@ -1,16 +1,16 @@
 #pragma once
 
-#include "muhammadkhon_i_strings_difference/common/include/common.hpp"
+#include "muhammadkhon_i_gather/common/include/common.hpp"
 #include "task/include/task.hpp"
 
-namespace muhammadkhon_i_strings_difference {
+namespace muhammadkhon_i_gather {
 
-class MuhammadkhonIStringsDifferenceSEQ : public BaseTask {
+class MuhammadkhonIGatherSEQ : public BaseTask {
  public:
   static constexpr ppc::task::TypeOfTask GetStaticTypeOfTask() {
     return ppc::task::TypeOfTask::kSEQ;
   }
-  explicit MuhammadkhonIStringsDifferenceSEQ(const InType &in);
+  explicit MuhammadkhonIGatherSEQ(const InType &in);
 
  private:
   bool ValidationImpl() override;
@@ -19,4 +19,4 @@ class MuhammadkhonIStringsDifferenceSEQ : public BaseTask {
   bool PostProcessingImpl() override;
 };
 
-}  // namespace muhammadkhon_i_strings_difference
+}  // namespace muhammadkhon_i_gather
