@@ -9,25 +9,33 @@ namespace safaryan_a_sum_matrix {
 
 SafaryanASumMatrixSEQ::SafaryanASumMatrixSEQ(const InType &in) {
   SetTypeOfTask(GetStaticTypeOfTask());
-  GetInput().assign(in.begin(), in.end());
+  GetInput() = in;
+  GetOutput() = {};
 }
 
 bool SafaryanASumMatrixSEQ::ValidationImpl() {
-  return !GetInput().empty();
+  int rows = std::get<1>(GetInput());
+  int cols = std::get<2>(GetInput());
+  const auto &matrix_data = std::get<0>(GetInput());
+
+  return matrix_data.size() == static_cast<size_t>(rows) * static_cast<size_t>(cols) && rows > 0 && cols > 0;
 }
 
 bool SafaryanASumMatrixSEQ::PreProcessingImpl() {
-  GetOutput().clear();
-  GetOutput().resize(GetInput().size());
-  std::fill(GetOutput().begin(), GetOutput().end(), 0);
+  int rows = std::get<1>(GetInput());
+  GetOutput().resize(rows, 0);
   return true;
 }
 
 bool SafaryanASumMatrixSEQ::RunImpl() {
-  for (size_t i = 0; i < GetInput().size(); ++i) {
+  int rows = std::get<1>(GetInput());
+  int cols = std::get<2>(GetInput());
+  const auto &matrix_data = std::get<0>(GetInput());
+
+  for (int i = 0; i < rows; ++i) {
     int row_sum = 0;
-    for (int val : GetInput()[i]) {
-      row_sum += val;
+    for (int j = 0; j < cols; ++j) {
+      row_sum += matrix_data[(i * cols) + j];
     }
     GetOutput()[i] = row_sum;
   }
@@ -35,6 +43,6 @@ bool SafaryanASumMatrixSEQ::RunImpl() {
 }
 
 bool SafaryanASumMatrixSEQ::PostProcessingImpl() {
-  return !GetOutput().empty();
+  return true;
 }
 }  // namespace safaryan_a_sum_matrix

@@ -1,5 +1,7 @@
 #include <gtest/gtest.h>
 
+#include <cstddef>
+#include <tuple>
 #include <vector>
 
 #include "safaryan_a_sum_matrix/common/include/common.hpp"
@@ -10,17 +12,38 @@
 namespace safaryan_a_sum_matrix {
 
 class SafaryanASumMatrixPerfTests : public ppc::util::BaseRunPerfTests<InType, OutType> {
-  const int kMatrixSize_ = 1000;
+  const int kMatrixRows_ = 10000;
+  const int kMatrixCols_ = 10000;
   InType input_data_;
   OutType expected_result_;
 
   void SetUp() override {
-    input_data_.resize(kMatrixSize_, std::vector<int>(kMatrixSize_, 1));
-    expected_result_.resize(kMatrixSize_, kMatrixSize_);
+    std::vector<int> matrix_data(static_cast<size_t>(kMatrixRows_) * static_cast<size_t>(kMatrixCols_));
+    for (int i = 0; i < kMatrixRows_ * kMatrixCols_; ++i) {
+      matrix_data[i] = (i % 100) + 1;
+    }
+
+    input_data_ = std::make_tuple(matrix_data, kMatrixRows_, kMatrixCols_);
+
+    expected_result_.resize(kMatrixRows_);
+    for (int i = 0; i < kMatrixRows_; ++i) {
+      expected_result_[i] = 0;
+      for (int j = 0; j < kMatrixCols_; ++j) {
+        expected_result_[i] += matrix_data[(i * kMatrixCols_) + j];
+      }
+    }
   }
 
   bool CheckTestOutputData(OutType &output_data) final {
-    return output_data == expected_result_;
+    if (output_data.size() != expected_result_.size()) {
+      return false;
+    }
+    for (size_t i = 0; i < output_data.size(); ++i) {
+      if (output_data[i] != expected_result_[i]) {
+        return false;
+      }
+    }
+    return true;
   }
 
   InType GetTestInputData() final {

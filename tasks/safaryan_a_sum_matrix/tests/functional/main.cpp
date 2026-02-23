@@ -4,7 +4,6 @@
 #include <array>
 #include <cstddef>
 #include <fstream>
-#include <numeric>
 #include <string>
 #include <tuple>
 #include <vector>
@@ -36,16 +35,22 @@ class SafaryanASumMatrixFuncTests : public ppc::util::BaseRunFuncTests<InType, O
 
     file >> rows >> cols;
 
-    input_data_.resize(rows, std::vector<int>(cols));
+    std::vector<int> matrix_data(static_cast<size_t>(rows) * static_cast<size_t>(cols));
     for (int i = 0; i < rows; ++i) {
       for (int j = 0; j < cols; ++j) {
-        file >> input_data_[i][j];
+        file >> matrix_data[(i * cols) + j];
       }
     }
 
+    input_data_ = std::make_tuple(matrix_data, rows, cols);
+
     expected_result_.resize(rows);
     for (int i = 0; i < rows; ++i) {
-      expected_result_[i] = std::accumulate(input_data_[i].begin(), input_data_[i].end(), 0);
+      int row_sum = 0;
+      for (int j = 0; j < cols; ++j) {
+        row_sum += matrix_data[(i * cols) + j];
+      }
+      expected_result_[i] = row_sum;
     }
   }
 
@@ -79,7 +84,7 @@ const auto kGtestValues = ppc::util::ExpandToValues(kTestTasksList);
 
 const auto kPerfTestName = SafaryanASumMatrixFuncTests::PrintFuncTestName<SafaryanASumMatrixFuncTests>;
 
-INSTANTIATE_TEST_SUITE_P(MatrixRowSum, SafaryanASumMatrixFuncTests, kGtestValues, kPerfTestName);
+INSTANTIATE_TEST_SUITE_P(MatrixRowSum, SafaryanASumMatrixFuncTests, kGtestValues, kPerfTestName)
 
 }  // namespace
 

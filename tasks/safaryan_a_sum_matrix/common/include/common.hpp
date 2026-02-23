@@ -8,7 +8,7 @@
 
 namespace safaryan_a_sum_matrix {
 
-using InType = std::vector<std::vector<int>>;
+using InType = std::tuple<std::vector<int>, int, int>;
 using OutType = std::vector<int>;
 using TestType = std::tuple<int, std::string>;
 using BaseTask = ppc::task::Task<InType, OutType>;
