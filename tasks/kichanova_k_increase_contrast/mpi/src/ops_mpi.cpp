@@ -6,6 +6,7 @@
 #include <array>
 #include <cstddef>
 #include <cstdint>
+#include <tuple>
 #include <vector>
 
 #include "kichanova_k_increase_contrast/common/include/common.hpp"
@@ -30,7 +31,8 @@ bool KichanovaKIncreaseContrastMPI::PreProcessingImpl() {
   return true;
 }
 
-std::tuple<int, int, int> KichanovaKIncreaseContrastMPI::CalculateRowsDistribution(int rank, int size, int height) {
+static std::tuple<int, int, int> KichanovaKIncreaseContrastMPI::CalculateRowsDistribution(int rank, int size,
+                                                                                          int height) {
   int rows_per_process = height / size;
   int remainder = height % size;
   int start_row = (rank * rows_per_process) + std::min(rank, remainder);
@@ -39,8 +41,8 @@ std::tuple<int, int, int> KichanovaKIncreaseContrastMPI::CalculateRowsDistributi
   return {start_row, end_row, local_rows};
 }
 
-std::array<uint8_t, 3> KichanovaKIncreaseContrastMPI::FindLocalMin(const Image &input, int start_row, int end_row,
-                                                                   int width) {
+static std::array<uint8_t, 3> KichanovaKIncreaseContrastMPI::FindLocalMin(const Image &input, int start_row,
+                                                                          int end_row, int width) {
   std::array<uint8_t, 3> local_min = {255, 255, 255};
   const int channels = 3;
 
@@ -50,17 +52,15 @@ std::array<uint8_t, 3> KichanovaKIncreaseContrastMPI::FindLocalMin(const Image &
       idx *= static_cast<size_t>(channels);
       for (int channel = 0; channel < 3; ++channel) {
         uint8_t val = input.pixels[idx + channel];
-        if (val < local_min[channel]) {
-          local_min[channel] = val;
-        }
+        local_min[channel] = std::min(val, local_min[channel]);
       }
     }
   }
   return local_min;
 }
 
-std::array<uint8_t, 3> KichanovaKIncreaseContrastMPI::FindLocalMax(const Image &input, int start_row, int end_row,
-                                                                   int width) {
+static std::array<uint8_t, 3> KichanovaKIncreaseContrastMPI::FindLocalMax(const Image &input, int start_row,
+                                                                          int end_row, int width) {
   std::array<uint8_t, 3> local_max = {0, 0, 0};
   const int channels = 3;
 
@@ -70,16 +70,14 @@ std::array<uint8_t, 3> KichanovaKIncreaseContrastMPI::FindLocalMax(const Image &
       idx *= static_cast<size_t>(channels);
       for (int channel = 0; channel < 3; ++channel) {
         uint8_t val = input.pixels[idx + channel];
-        if (val > local_max[channel]) {
-          local_max[channel] = val;
-        }
+        local_max[channel] = std::max(val, local_max[channel]);
       }
     }
   }
   return local_max;
 }
 
-std::tuple<std::array<float, 3>, std::array<bool, 3>> KichanovaKIncreaseContrastMPI::CalculateScaleFactors(
+static std::tuple<std::array<float, 3>, std::array<bool, 3>> KichanovaKIncreaseContrastMPI::CalculateScaleFactors(
     const std::array<uint8_t, 3> &global_min, const std::array<uint8_t, 3> &global_max) {
   std::array<float, 3> scale{};
   std::array<bool, 3> need_scale{};
@@ -96,11 +94,11 @@ std::tuple<std::array<float, 3>, std::array<bool, 3>> KichanovaKIncreaseContrast
   return {scale, need_scale};
 }
 
-std::vector<uint8_t> KichanovaKIncreaseContrastMPI::ProcessLocalRows(const Image &input, int start_row, int local_rows,
-                                                                     int width,
-                                                                     const std::array<uint8_t, 3> &global_min,
-                                                                     const std::array<float, 3> &scale,
-                                                                     const std::array<bool, 3> &need_scale) {
+static std::vector<uint8_t> KichanovaKIncreaseContrastMPI::ProcessLocalRows(const Image &input, int start_row,
+                                                                            int local_rows, int width,
+                                                                            const std::array<uint8_t, 3> &global_min,
+                                                                            const std::array<float, 3> &scale,
+                                                                            const std::array<bool, 3> &need_scale) {
   const int channels = 3;
   const int row_size = width * channels;
   std::vector<uint8_t> local_output(static_cast<size_t>(local_rows) * row_size);
