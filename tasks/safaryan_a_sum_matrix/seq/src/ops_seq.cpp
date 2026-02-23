@@ -1,9 +1,9 @@
-#include "safaryan_a_sum_matrix  /seq/include/ops_seq.hpp"
+#include "safaryan_a_sum_matrix/seq/include/ops_seq.hpp"
 
 #include <cstddef>
 #include <vector>
 
-#include "safaryan_a_sum_matrix  /common/include/common.hpp"
+#include "safaryan_a_sum_matrix/common/include/common.hpp"
 
 namespace safaryan_a_sum_matrix {
 

@@ -9,9 +9,9 @@
 #include <tuple>
 #include <vector>
 
-#include "safaryan_a_sum_matrix  /common/include/common.hpp"
-#include "safaryan_a_sum_matrix  /mpi/include/ops_mpi.hpp"
-#include "safaryan_a_sum_matrix  /seq/include/ops_seq.hpp"
+#include "safaryan_a_sum_matrix/common/include/common.hpp"
+#include "safaryan_a_sum_matrix/mpi/include/ops_mpi.hpp"
+#include "safaryan_a_sum_matrix/seq/include/ops_seq.hpp"
 #include "util/include/func_test_util.hpp"
 #include "util/include/util.hpp"
 

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "safaryan_a_sum_matrix  /common/include/common.hpp"
+#include "safaryan_a_sum_matrix/common/include/common.hpp"
 #include "task/include/task.hpp"
 
 namespace safaryan_a_sum_matrix {
