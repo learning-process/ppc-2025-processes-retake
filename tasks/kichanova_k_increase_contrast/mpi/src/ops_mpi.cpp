@@ -47,12 +47,11 @@ std::array<uint8_t, 3> KichanovaKIncreaseContrastMPI::FindLocalMin(const Image &
 
   for (int row = start_row; row < end_row; ++row) {
     for (int col = 0; col < width; ++col) {
-      size_t idx = (static_cast<size_t>(row) * static_cast<size_t>(width)) + static_cast<size_t>(col);
-      idx *= static_cast<size_t>(channels);
-      for (int channel = 0; channel < 3; ++channel) {
-        uint8_t val = input.pixels[idx + channel];
-        local_min.data()[channel] = std::min(val, local_min[channel]);
-      }
+      size_t idx = (static_cast<size_t>(row) * static_cast<size_t>(width) + static_cast<size_t>(col)) *
+                   static_cast<size_t>(channels);
+      local_min[0] = std::min(input.pixels[idx], local_min[0]);
+      local_min[1] = std::min(input.pixels[idx + 1], local_min[1]);
+      local_min[2] = std::min(input.pixels[idx + 2], local_min[2]);
     }
   }
   return local_min;
@@ -65,12 +64,11 @@ std::array<uint8_t, 3> KichanovaKIncreaseContrastMPI::FindLocalMax(const Image &
 
   for (int row = start_row; row < end_row; ++row) {
     for (int col = 0; col < width; ++col) {
-      size_t idx = (static_cast<size_t>(row) * static_cast<size_t>(width)) + static_cast<size_t>(col);
-      idx *= static_cast<size_t>(channels);
-      for (int channel = 0; channel < 3; ++channel) {
-        uint8_t val = input.pixels[idx + channel];
-        local_max.data()[channel] = std::max(val, local_max[channel]);
-      }
+      size_t idx = (static_cast<size_t>(row) * static_cast<size_t>(width) + static_cast<size_t>(col)) *
+                   static_cast<size_t>(channels);
+      local_max[0] = std::max(input.pixels[idx], local_max[0]);
+      local_max[1] = std::max(input.pixels[idx + 1], local_max[1]);
+      local_max[2] = std::max(input.pixels[idx + 2], local_max[2]);
     }
   }
   return local_max;
@@ -81,15 +79,30 @@ std::tuple<std::array<float, 3>, std::array<bool, 3>> KichanovaKIncreaseContrast
   std::array<float, 3> scale{};
   std::array<bool, 3> need_scale{};
 
-  for (int channel = 0; channel < 3; ++channel) {
-    if (global_max.data()[channel] > global_min.data()[channel]) {
-      scale.data()[channel] = 255.0F / static_cast<float>(global_max.data()[channel] - global_min.data()[channel]);
-      need_scale.data()[channel] = true;
-    } else {
-      scale.data()[channel] = 0.0F;
-      need_scale.data()[channel] = false;
-    }
+  if (global_max[0] > global_min[0]) {
+    scale[0] = 255.0F / static_cast<float>(global_max[0] - global_min[0]);
+    need_scale[0] = true;
+  } else {
+    scale[0] = 0.0F;
+    need_scale[0] = false;
   }
+
+  if (global_max[1] > global_min[1]) {
+    scale[1] = 255.0F / static_cast<float>(global_max[1] - global_min[1]);
+    need_scale[1] = true;
+  } else {
+    scale[1] = 0.0F;
+    need_scale[1] = false;
+  }
+
+  if (global_max[2] > global_min[2]) {
+    scale[2] = 255.0F / static_cast<float>(global_max[2] - global_min[2]);
+    need_scale[2] = true;
+  } else {
+    scale[2] = 0.0F;
+    need_scale[2] = false;
+  }
+
   return {scale, need_scale};
 }
 
@@ -107,15 +120,30 @@ std::vector<uint8_t> KichanovaKIncreaseContrastMPI::ProcessLocalRows(const Image
     for (int col = 0; col < width; ++col) {
       size_t in_idx = (static_cast<size_t>(global_row) * width + col) * channels;
       size_t out_idx = (static_cast<size_t>(i) * width + col) * channels;
-      for (int channel = 0; channel < 3; ++channel) {
-        uint8_t val = input.pixels[in_idx + channel];
-        if (need_scale.data()[channel]) {
-          float new_val =
-              (static_cast<float>(val) - static_cast<float>(global_min.data()[channel])) * scale.data()[channel];
-          local_output[out_idx + channel] = static_cast<uint8_t>(std::clamp(new_val, 0.0F, 255.0F));
-        } else {
-          local_output[out_idx + channel] = val;
-        }
+
+      uint8_t val_r = input.pixels[in_idx];
+      uint8_t val_g = input.pixels[in_idx + 1];
+      uint8_t val_b = input.pixels[in_idx + 2];
+
+      if (need_scale[0]) {
+        float new_val_r = (static_cast<float>(val_r) - static_cast<float>(global_min[0])) * scale[0];
+        local_output[out_idx] = static_cast<uint8_t>(std::clamp(new_val_r, 0.0F, 255.0F));
+      } else {
+        local_output[out_idx] = val_r;
+      }
+
+      if (need_scale[1]) {
+        float new_val_g = (static_cast<float>(val_g) - static_cast<float>(global_min[1])) * scale[1];
+        local_output[out_idx + 1] = static_cast<uint8_t>(std::clamp(new_val_g, 0.0F, 255.0F));
+      } else {
+        local_output[out_idx + 1] = val_g;
+      }
+
+      if (need_scale[2]) {
+        float new_val_b = (static_cast<float>(val_b) - static_cast<float>(global_min[2])) * scale[2];
+        local_output[out_idx + 2] = static_cast<uint8_t>(std::clamp(new_val_b, 0.0F, 255.0F));
+      } else {
+        local_output[out_idx + 2] = val_b;
       }
     }
   }
