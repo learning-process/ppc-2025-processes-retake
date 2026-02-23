@@ -10,6 +10,12 @@
 
 namespace kazennova_a_image_smooth {
 
+const std::array<std::array<float, 3>, 3> kKernel = {{
+    {{1.0F / 16, 2.0F / 16, 1.0F / 16}},
+    {{2.0F / 16, 4.0F / 16, 2.0F / 16}},
+    {{1.0F / 16, 2.0F / 16, 1.0F / 16}}
+}};
+
 KazennovaAImageSmoothSEQ::KazennovaAImageSmoothSEQ(const InType &in) {
   SetTypeOfTask(GetStaticTypeOfTask());
   GetInput() = in;
@@ -30,20 +36,13 @@ uint8_t KazennovaAImageSmoothSEQ::ApplyKernelToPixel(int x, int y, int c) {
   const auto &in = GetInput();
   float sum = 0.0F;
 
-  static const float kernel_weights[3][3] = {
-    {1.0F / 16, 2.0F / 16, 1.0F / 16},
-    {2.0F / 16, 4.0F / 16, 2.0F / 16},
-    {1.0F / 16, 2.0F / 16, 1.0F / 16}
-  };
-
   for (int ky = -1; ky <= 1; ++ky) {
-    int kernel_y = ky + 1;
     for (int kx = -1; kx <= 1; ++kx) {
       int nx = std::clamp(x + kx, 0, in.width - 1);
       int ny = std::clamp(y + ky, 0, in.height - 1);
 
       int idx = ((ny * in.width + nx) * in.channels) + c;
-      sum += static_cast<float>(in.data[idx]) * kernel_weights[kernel_y][kx + 1];
+      sum += static_cast<float>(in.data[idx]) * kKernel[ky + 1][kx + 1];
     }
   }
 

@@ -13,6 +13,12 @@
 
 namespace kazennova_a_image_smooth {
 
+const std::array<std::array<float, 3>, 3> kKernel = {{
+    {{1.0F / 16, 2.0F / 16, 1.0F / 16}},
+    {{2.0F / 16, 4.0F / 16, 2.0F / 16}},
+    {{1.0F / 16, 2.0F / 16, 1.0F / 16}}
+}};
+
 KazennovaAImageSmoothMPI::KazennovaAImageSmoothMPI(const InType &in) {
   SetTypeOfTask(GetStaticTypeOfTask());
   GetInput() = in;
@@ -54,7 +60,9 @@ void KazennovaAImageSmoothMPI::DistributeImage() {
     int src_offset = global_y * row_size;
     int dst_offset = (row + 1) * row_size;
 
-    std::copy(in.data.begin() + src_offset, in.data.begin() + src_offset + row_size, local_strip_.begin() + dst_offset);
+    std::copy(in.data.begin() + src_offset,
+              in.data.begin() + src_offset + row_size,
+              local_strip_.begin() + dst_offset);
   }
 
   result_strip_.resize(static_cast<size_t>(strip_height_) * static_cast<size_t>(row_size), 0);
@@ -66,25 +74,19 @@ uint8_t KazennovaAImageSmoothMPI::ApplyKernelToPixel(int local_y, int x, int c, 
   int row_size = in.width * in.channels;
   int local_height = static_cast<int>(strip.size()) / row_size;
 
-  static const float kernel_weights[3][3] = {
-    {1.0F / 16, 2.0F / 16, 1.0F / 16},
-    {2.0F / 16, 4.0F / 16, 2.0F / 16},
-    {1.0F / 16, 2.0F / 16, 1.0F / 16}
-  };
-
   for (int ky = -1; ky <= 1; ++ky) {
-    int kernel_y = ky + 1;
     for (int kx = -1; kx <= 1; ++kx) {
       int nx = std::clamp(x + kx, 0, in.width - 1);
       int ny_local = std::clamp(local_y + ky, 0, local_height - 1);
 
       int idx = (ny_local * row_size) + (nx * in.channels) + c;
-      sum += static_cast<float>(strip[idx]) * kernel_weights[kernel_y][kx + 1];
+      sum += static_cast<float>(strip[idx]) * kKernel[ky + 1][kx + 1];
     }
   }
 
   return static_cast<uint8_t>(std::round(sum));
 }
+
 void KazennovaAImageSmoothMPI::ApplyKernelToStrip() {
   const auto &in = GetInput();
   int row_size = in.width * in.channels;
@@ -102,9 +104,7 @@ void KazennovaAImageSmoothMPI::ApplyKernelToStrip() {
 }
 
 void KazennovaAImageSmoothMPI::ExchangeBoundaries() {
-  if (strip_height_ == 0) {
-    return;
-  }
+  if (strip_height_ == 0) return;
 
   const auto &in = GetInput();
   int world_size = 0;
@@ -115,11 +115,13 @@ void KazennovaAImageSmoothMPI::ExchangeBoundaries() {
   int row_size = in.width * in.channels;
 
   if (world_size == 1) {
-    std::copy(local_strip_.begin() + row_size, local_strip_.begin() + static_cast<ptrdiff_t>(2) * row_size,
+    std::copy(local_strip_.begin() + row_size,
+              local_strip_.begin() + static_cast<ptrdiff_t>(2) * row_size,
               local_strip_.begin());
 
     int last_data_row = strip_height_ * row_size;
-    std::copy(local_strip_.begin() + last_data_row, local_strip_.begin() + last_data_row + row_size,
+    std::copy(local_strip_.begin() + last_data_row,
+              local_strip_.begin() + last_data_row + row_size,
               local_strip_.begin() + last_data_row + row_size);
     return;
   }
@@ -127,21 +129,26 @@ void KazennovaAImageSmoothMPI::ExchangeBoundaries() {
   MPI_Status status;
 
   if (world_rank > 0) {
-    MPI_Sendrecv(local_strip_.data() + row_size, row_size, MPI_BYTE, world_rank - 1, 0, local_strip_.data(), row_size,
-                 MPI_BYTE, world_rank - 1, 1, MPI_COMM_WORLD, &status);
+    MPI_Sendrecv(local_strip_.data() + row_size, row_size, MPI_BYTE,
+                 world_rank - 1, 0,
+                 local_strip_.data(), row_size, MPI_BYTE,
+                 world_rank - 1, 1, MPI_COMM_WORLD, &status);
   } else {
-    std::copy(local_strip_.begin() + row_size, local_strip_.begin() + static_cast<ptrdiff_t>(2) * row_size,
+    std::copy(local_strip_.begin() + row_size,
+              local_strip_.begin() + static_cast<ptrdiff_t>(2) * row_size,
               local_strip_.begin());
   }
 
   if (world_rank < world_size - 1) {
     int last_data_row = strip_height_ * row_size;
-    MPI_Sendrecv(local_strip_.data() + last_data_row, row_size, MPI_BYTE, world_rank + 1, 1,
-                 local_strip_.data() + last_data_row + row_size, row_size, MPI_BYTE, world_rank + 1, 0, MPI_COMM_WORLD,
-                 &status);
+    MPI_Sendrecv(local_strip_.data() + last_data_row, row_size, MPI_BYTE,
+                 world_rank + 1, 1,
+                 local_strip_.data() + last_data_row + row_size, row_size, MPI_BYTE,
+                 world_rank + 1, 0, MPI_COMM_WORLD, &status);
   } else {
     int last_data_row = strip_height_ * row_size;
-    std::copy(local_strip_.begin() + last_data_row, local_strip_.begin() + last_data_row + row_size,
+    std::copy(local_strip_.begin() + last_data_row,
+              local_strip_.begin() + last_data_row + row_size,
               local_strip_.begin() + last_data_row + row_size);
   }
 }
@@ -168,11 +175,13 @@ void KazennovaAImageSmoothMPI::GatherResult() {
       recv_displs[i] = recv_displs[i - 1] + recv_counts[i - 1];
     }
 
-    MPI_Gatherv(result_strip_.data(), my_bytes, MPI_BYTE, out.data.data(), recv_counts.data(), recv_displs.data(),
+    MPI_Gatherv(result_strip_.data(), my_bytes, MPI_BYTE,
+                out.data.data(), recv_counts.data(), recv_displs.data(),
                 MPI_BYTE, 0, MPI_COMM_WORLD);
   } else {
     MPI_Gather(&my_bytes, 1, MPI_INT, nullptr, 0, MPI_INT, 0, MPI_COMM_WORLD);
-    MPI_Gatherv(result_strip_.data(), my_bytes, MPI_BYTE, nullptr, nullptr, nullptr, MPI_BYTE, 0, MPI_COMM_WORLD);
+    MPI_Gatherv(result_strip_.data(), my_bytes, MPI_BYTE,
+                nullptr, nullptr, nullptr, MPI_BYTE, 0, MPI_COMM_WORLD);
   }
 }
 
