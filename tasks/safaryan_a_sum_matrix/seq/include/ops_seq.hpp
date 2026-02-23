@@ -1,7 +1,7 @@
 #pragma once
 
-#include "safaryan_a_sum_matrix/common/include/common.hpp"
 #include "task/include/task.hpp"
+#include "safaryan_a_sum_matrix/common/include/common.hpp"
 
 namespace safaryan_a_sum_matrix {
 
@@ -10,7 +10,8 @@ class SafaryanASumMatrixSEQ : public BaseTask {
   static constexpr ppc::task::TypeOfTask GetStaticTypeOfTask() {
     return ppc::task::TypeOfTask::kSEQ;
   }
-  explicit SafaryanASumMatrixSEQ(const InType &in);
+
+  explicit SafaryanASumMatrixSEQ(const InType& in);
 
  private:
   bool ValidationImpl() override;
@@ -18,4 +19,5 @@ class SafaryanASumMatrixSEQ : public BaseTask {
   bool RunImpl() override;
   bool PostProcessingImpl() override;
 };
+
 }  // namespace safaryan_a_sum_matrix

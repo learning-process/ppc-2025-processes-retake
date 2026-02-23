@@ -4,16 +4,19 @@
 #include <tuple>
 #include <vector>
 
+#include "util/include/perf_test_util.hpp"
 #include "safaryan_a_sum_matrix/common/include/common.hpp"
 #include "safaryan_a_sum_matrix/mpi/include/ops_mpi.hpp"
 #include "safaryan_a_sum_matrix/seq/include/ops_seq.hpp"
-#include "util/include/perf_test_util.hpp"
 
 namespace safaryan_a_sum_matrix {
 
 class SafaryanASumMatrixPerfTests : public ppc::util::BaseRunPerfTests<InType, OutType> {
-  const int kMatrixRows_ = 10000;
-  const int kMatrixCols_ = 10000;
+  // ВАЖНО: 10000x10000 = ~400MB только под матрицу.
+  // На CI это легко приводит к падению MPI процесса.
+  const int kMatrixRows_ = 2000;
+  const int kMatrixCols_ = 2000;
+
   InType input_data_;
   OutType expected_result_;
 
@@ -27,23 +30,16 @@ class SafaryanASumMatrixPerfTests : public ppc::util::BaseRunPerfTests<InType, O
 
     expected_result_.resize(kMatrixRows_);
     for (int i = 0; i < kMatrixRows_; ++i) {
-      expected_result_[i] = 0;
+      int sum = 0;
       for (int j = 0; j < kMatrixCols_; ++j) {
-        expected_result_[i] += matrix_data[(i * kMatrixCols_) + j];
+        sum += matrix_data[(i * kMatrixCols_) + j];
       }
+      expected_result_[i] = sum;
     }
   }
 
-  bool CheckTestOutputData(OutType &output_data) final {
-    if (output_data.size() != expected_result_.size()) {
-      return false;
-    }
-    for (size_t i = 0; i < output_data.size(); ++i) {
-      if (output_data[i] != expected_result_[i]) {
-        return false;
-      }
-    }
-    return true;
+  bool CheckTestOutputData(OutType& output_data) final {
+    return output_data == expected_result_;
   }
 
   InType GetTestInputData() final {
@@ -65,5 +61,3 @@ const auto kPerfTestName = SafaryanASumMatrixPerfTests::CustomPerfTestName;
 INSTANTIATE_TEST_SUITE_P(RunModeTests, SafaryanASumMatrixPerfTests, kGtestValues, kPerfTestName);
 
 }  // namespace safaryan_a_sum_matrix
-
-// namespace safaryan_a_sum_matrix
