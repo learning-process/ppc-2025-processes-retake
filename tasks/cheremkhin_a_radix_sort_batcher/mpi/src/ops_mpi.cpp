@@ -108,7 +108,7 @@ void OddEvenMergeSort(int lo, int n, std::vector<std::pair<int, int>> *comps) {
   }
 }
 
-}  
+}  // namespace
 
 CheremkhinARadixSortBatcherMPI::CheremkhinARadixSortBatcherMPI(const InType &in) {
   SetTypeOfTask(GetStaticTypeOfTask());
