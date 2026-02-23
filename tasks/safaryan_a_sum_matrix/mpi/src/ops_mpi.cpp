@@ -62,7 +62,7 @@ bool NesterovATestTaskMPI::RunImpl() {
 
   MPI_Barrier(MPI_COMM_WORLD);
   return GetOutput() > 0;
-} 
+}
 
 bool NesterovATestTaskMPI::PostProcessingImpl() {
   GetOutput() -= GetInput();

@@ -1,18 +1,16 @@
 #pragma once
 
-#include "task/include/task.hpp"
 #include "safaryan_a_sum_matrix  /common/include/common.hpp"
+#include "task/include/task.hpp"
 
-namespace safaryan_a_sum_matrix   {
+namespace safaryan_a_sum_matrix {
 
-class SafaryanASumMatrixMPI
- : public BaseTask {
+class SafaryanASumMatrixMPI : public BaseTask {
  public:
   static constexpr ppc::task::TypeOfTask GetStaticTypeOfTask() {
     return ppc::task::TypeOfTask::kMPI;
   }
-  explicit SafaryanASumMatrixMPI
-(const InType &in);
+  explicit SafaryanASumMatrixMPI(const InType &in);
 
  private:
   bool ValidationImpl() override;

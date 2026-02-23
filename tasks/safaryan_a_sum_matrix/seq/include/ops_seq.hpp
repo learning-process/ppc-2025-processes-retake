@@ -1,9 +1,9 @@
 #pragma once
 
-#include "task/include/task.hpp"
 #include "safaryan_a_sum_matrix  /common/include/common.hpp"
+#include "task/include/task.hpp"
 
-namespace safaryan_a_sum_matrix   {
+namespace safaryan_a_sum_matrix {
 
 class SafaryanASumMatrixSEQ : public BaseTask {
  public:

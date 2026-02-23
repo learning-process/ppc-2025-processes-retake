@@ -6,7 +6,7 @@
 
 #include "task/include/task.hpp"
 
-namespace safaryan_a_sum_matrix   {
+namespace safaryan_a_sum_matrix {
 
 using InType = std::vector<std::vector<int>>;
 using OutType = std::vector<int>;

@@ -2,12 +2,12 @@
 
 #include <vector>
 
-#include "util/include/perf_test_util.hpp"
 #include "safaryan_a_sum_matrix  /common/include/common.hpp"
 #include "safaryan_a_sum_matrix  /mpi/include/ops_mpi.hpp"
 #include "safaryan_a_sum_matrix  /seq/include/ops_seq.hpp"
+#include "util/include/perf_test_util.hpp"
 
-namespace safaryan_a_sum_matrix   {
+namespace safaryan_a_sum_matrix {
 
 class SafaryanASumMatrixPerfTests : public ppc::util::BaseRunPerfTests<InType, OutType> {
   const int kMatrixSize_ = 1000;
@@ -32,9 +32,8 @@ TEST_P(SafaryanASumMatrixPerfTests, RunPerfModes) {
   ExecuteTest(GetParam());
 }
 
-const auto kAllPerfTasks = ppc::util::MakeAllPerfTasks<InType, SafaryanASumMatrixMPI
-, SafaryanASumMatrixSEQ>(
-    PPC_SETTINGS_safaryan_a_sum_matrix  );
+const auto kAllPerfTasks = ppc::util::MakeAllPerfTasks<InType, SafaryanASumMatrixMPI, SafaryanASumMatrixSEQ>(
+    PPC_SETTINGS_safaryan_a_sum_matrix);
 
 const auto kGtestValues = ppc::util::TupleToGTestValues(kAllPerfTasks);
 
@@ -42,6 +41,6 @@ const auto kPerfTestName = SafaryanASumMatrixPerfTests::CustomPerfTestName;
 
 INSTANTIATE_TEST_SUITE_P(RunModeTests, SafaryanASumMatrixPerfTests, kGtestValues, kPerfTestName);
 
-}   // namespace
+}  // namespace safaryan_a_sum_matrix
 
-  // namespace safaryan_a_sum_matrix
+// namespace safaryan_a_sum_matrix

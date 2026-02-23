@@ -5,7 +5,7 @@
 
 #include "safaryan_a_sum_matrix  /common/include/common.hpp"
 
-namespace safaryan_a_sum_matrix   {
+namespace safaryan_a_sum_matrix {
 
 SafaryanASumMatrixSEQ::SafaryanASumMatrixSEQ(const InType &in) {
   SetTypeOfTask(GetStaticTypeOfTask());
