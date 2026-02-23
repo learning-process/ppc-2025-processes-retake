@@ -39,7 +39,6 @@ bool CheremkhinAGausVertSEQ::PreProcessingImpl() {
   return true;
 }
 
-// NOLINTNEXTLINE(readability-function-cognitive-complexity)
 bool CheremkhinAGausVertSEQ::RunImpl() {
   const auto &in = GetInput();
   const int n = in.n;

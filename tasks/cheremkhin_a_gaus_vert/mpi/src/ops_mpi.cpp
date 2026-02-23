@@ -74,7 +74,7 @@ bool CheremkhinAGausVertMPI::PreProcessingImpl() {
   return true;
 }
 
-// NOLINTNEXTLINE(readability-function-cognitive-complexity)
+
 bool CheremkhinAGausVertMPI::RunImpl() {
   const auto &in = GetInput();
 
@@ -87,7 +87,6 @@ bool CheremkhinAGausVertMPI::RunImpl() {
   const ColRange local_cols = GetColRange(rank, size, n);
   const int local_cols_count = local_cols.end - local_cols.start;
 
-  // Build local vertical stripe of A: n x local_cols_count (row-major)
   std::vector<double> local_a(static_cast<std::size_t>(n) * static_cast<std::size_t>(local_cols_count));
   for (int row = 0; row < n; ++row) {
     for (int gc = local_cols.start; gc < local_cols.end; ++gc) {
@@ -97,10 +96,9 @@ bool CheremkhinAGausVertMPI::RunImpl() {
     }
   }
 
-  std::vector<double> b = in.b;  // replicated
+  std::vector<double> b = in.b;  
   std::vector<double> x(static_cast<std::size_t>(n), 0.0);
 
-  // Forward elimination
   for (int k = 0; k < n; ++k) {
     const int owner = FindOwnerRank(k, size, n);
 
@@ -152,7 +150,6 @@ bool CheremkhinAGausVertMPI::RunImpl() {
         const double v = local_a[(static_cast<std::size_t>(row) * static_cast<std::size_t>(local_cols_count)) +
                                  static_cast<std::size_t>(lc_k)];
         multipliers[static_cast<std::size_t>(row - (k + 1))] = v / pivot;
-        // zero out pivot col under diagonal on owner
         local_a[(static_cast<std::size_t>(row) * static_cast<std::size_t>(local_cols_count)) +
                 static_cast<std::size_t>(lc_k)] = 0.0;
       }
@@ -164,7 +161,6 @@ bool CheremkhinAGausVertMPI::RunImpl() {
       MPI_Bcast(multipliers.data(), static_cast<int>(multipliers.size()), MPI_DOUBLE, owner, MPI_COMM_WORLD);
     }
 
-    // Update local columns for rows > k
     for (int row = k + 1; row < n; ++row) {
       const double m = multipliers[static_cast<std::size_t>(row - (k + 1))];
       for (int gc = std::max(k + 1, local_cols.start); gc < local_cols.end; ++gc) {
@@ -178,7 +174,6 @@ bool CheremkhinAGausVertMPI::RunImpl() {
     }
   }
 
-  // Back substitution (replicated x)
   for (int i = n - 1; i >= 0; --i) {
     double partial_sum = 0.0;
     for (int gc = std::max(i + 1, local_cols.start); gc < local_cols.end; ++gc) {
