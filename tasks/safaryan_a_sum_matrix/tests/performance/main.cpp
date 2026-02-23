@@ -4,10 +4,10 @@
 #include <tuple>
 #include <vector>
 
-#include "util/include/perf_test_util.hpp"
 #include "safaryan_a_sum_matrix/common/include/common.hpp"
 #include "safaryan_a_sum_matrix/mpi/include/ops_mpi.hpp"
 #include "safaryan_a_sum_matrix/seq/include/ops_seq.hpp"
+#include "util/include/perf_test_util.hpp"
 
 namespace safaryan_a_sum_matrix {
 
@@ -38,7 +38,7 @@ class SafaryanASumMatrixPerfTests : public ppc::util::BaseRunPerfTests<InType, O
     }
   }
 
-  bool CheckTestOutputData(OutType& output_data) final {
+  bool CheckTestOutputData(OutType &output_data) final {
     return output_data == expected_result_;
   }
 

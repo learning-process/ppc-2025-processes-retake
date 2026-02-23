@@ -11,7 +11,7 @@
 
 namespace safaryan_a_sum_matrix {
 
-SafaryanASumMatrixMPI::SafaryanASumMatrixMPI(const InType& in) {
+SafaryanASumMatrixMPI::SafaryanASumMatrixMPI(const InType &in) {
   SetTypeOfTask(GetStaticTypeOfTask());
   GetOutput() = {};
 
@@ -38,10 +38,9 @@ bool SafaryanASumMatrixMPI::ValidationImpl() {
 
   const int rows = std::get<1>(GetInput());
   const int cols = std::get<2>(GetInput());
-  const auto& matrix_data = std::get<0>(GetInput());
+  const auto &matrix_data = std::get<0>(GetInput());
 
-  return rows > 0 && cols > 0 &&
-         matrix_data.size() == static_cast<size_t>(rows) * static_cast<size_t>(cols);
+  return rows > 0 && cols > 0 && matrix_data.size() == static_cast<size_t>(rows) * static_cast<size_t>(cols);
 }
 
 bool SafaryanASumMatrixMPI::PreProcessingImpl() {
@@ -97,15 +96,14 @@ bool SafaryanASumMatrixMPI::RunImpl() {
   }
 
   // Важно: на не-root можно передать nullptr как sendbuf (это безопаснее, чем .data() у пустого vector)
-  const int* sendbuf = nullptr;
+  const int *sendbuf = nullptr;
   if (rank == 0) {
-    const auto& global_data = std::get<0>(GetInput());
+    const auto &global_data = std::get<0>(GetInput());
     sendbuf = global_data.data();
   }
 
-  MPI_Scatterv(sendbuf, send_counts.data(), displacements.data(), MPI_INT,
-               local_matrix_data.data(), local_row_count * total_cols, MPI_INT,
-               0, MPI_COMM_WORLD);
+  MPI_Scatterv(sendbuf, send_counts.data(), displacements.data(), MPI_INT, local_matrix_data.data(),
+               local_row_count * total_cols, MPI_INT, 0, MPI_COMM_WORLD);
 
   // Считаем суммы только для "своих" строк, но складываем их в вектор размером total_rows,
   // чтобы потом через Allreduce получить полный результат на всех ранках.
