@@ -23,7 +23,7 @@ class KichanovaKShellsortBatcherMPI : public BaseTask {
   bool PostProcessingImpl() override;
 
   [[nodiscard]] static std::vector<int> GenerateLocalData(InType n, int rank, int size);
-  void PerformOddEvenSort(std::vector<int> &local_data, int rank, int size);
+  static void PerformOddEvenSort(std::vector<int> &local_data, int rank, int size);
   [[nodiscard]] static int GetPartner(int phase, int rank);
   [[nodiscard]] static std::int64_t CalculateChecksum(const std::vector<int> &data);
 
