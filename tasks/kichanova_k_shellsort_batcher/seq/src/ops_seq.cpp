@@ -41,7 +41,7 @@ bool KichanovaKShellsortBatcherSEQ::RunImpl() {
   }
 
   std::vector<int> expected = data;
-  std::sort(expected);
+  std::sort(expected.begin(), expected.end());
 
   ShellSort(data);
 
@@ -52,7 +52,7 @@ bool KichanovaKShellsortBatcherSEQ::RunImpl() {
   OddEvenBatcherMerge(left, right, merged);
   data.swap(merged);
 
-  if (!std::is_sorted(data)) {
+  if (!std::is_sorted(data.begin(), data.end())) {
     return false;
   }
   if (data != expected) {
@@ -65,7 +65,7 @@ bool KichanovaKShellsortBatcherSEQ::RunImpl() {
   return true;
 }
 
-static void KichanovaKShellsortBatcherSEQ::ShellSort(std::vector<int> &arr) {
+void KichanovaKShellsortBatcherSEQ::ShellSort(std::vector<int> &arr) {
   const std::size_t n = arr.size();
   if (n < 2) {
     return;
@@ -90,9 +90,8 @@ static void KichanovaKShellsortBatcherSEQ::ShellSort(std::vector<int> &arr) {
   }
 }
 
-static void KichanovaKShellsortBatcherSEQ::OddEvenBatcherMerge(const std::vector<int> &left,
-                                                               const std::vector<int> &right,
-                                                               std::vector<int> &merged) {
+void KichanovaKShellsortBatcherSEQ::OddEvenBatcherMerge(const std::vector<int> &left, const std::vector<int> &right,
+                                                        std::vector<int> &merged) {
   merged.resize(left.size() + right.size());
   std::merge(left.begin(), left.end(), right.begin(), right.end(), merged.begin());
 
