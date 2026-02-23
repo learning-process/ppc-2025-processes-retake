@@ -58,7 +58,7 @@ class KichanovaKShellsortBatcherPerfTests : public ppc::util::BaseRunPerfTests<I
     std::vector<int> right(data.begin() + static_cast<std::vector<int>::difference_type>(mid), data.end());
 
     std::vector<int> merged(left.size() + right.size());
-    std::merge(left, right, merged.begin());
+    std::merge(left.begin(), left.end(), right.begin(), right.end(), merged.begin());
 
     for (int phase = 0; phase < 2; ++phase) {
       auto start = static_cast<std::size_t>(phase);
@@ -89,7 +89,7 @@ class KichanovaKShellsortBatcherPerfTests : public ppc::util::BaseRunPerfTests<I
       }
     }
 
-    if (!std::is_sorted(merged)) {
+    if (!std::is_sorted(merged.begin(), merged.end())) {
       return false;
     }
 
