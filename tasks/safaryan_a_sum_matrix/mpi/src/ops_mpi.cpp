@@ -1,83 +1,72 @@
-#include "safaryan_a_sum_matrix  /mpi/include/ops_mpi.hpp"
+#include "example_processes/mpi/include/ops_mpi.hpp"
 
 #include <mpi.h>
 
-#include <algorithm>
-#include <cstddef>
+#include <numeric>
 #include <vector>
 
-#include "safaryan_a_sum_matrix  /common/include/common.hpp"
+#include "example_processes/common/include/common.hpp"
+#include "util/include/util.hpp"
 
-namespace safaryan_a_sum_matrix   {
+namespace nesterov_a_test_task_processes {
 
-SafaryanASumMatrixMPI
-::SafaryanASumMatrixMPI
-(const InType &in) {
+NesterovATestTaskMPI::NesterovATestTaskMPI(const InType &in) {
   SetTypeOfTask(GetStaticTypeOfTask());
-  GetInput().assign(in.begin(), in.end());
+  GetInput() = in;
+  GetOutput() = 0;
 }
 
-bool SafaryanASumMatrixMPI
-::ValidationImpl() {
-  return !GetInput().empty();
+bool NesterovATestTaskMPI::ValidationImpl() {
+  return (GetInput() > 0) && (GetOutput() == 0);
 }
 
-bool SafaryanASumMatrixMPI
-::PreProcessingImpl() {
-  GetOutput().clear();
-  GetOutput().resize(GetInput().size());
-  std::fill(GetOutput().begin(), GetOutput().end(), 0);
-  return true;
+bool NesterovATestTaskMPI::PreProcessingImpl() {
+  GetOutput() = 2 * GetInput();
+  return GetOutput() > 0;
 }
 
-bool SafaryanASumMatrixMPI
-::RunImpl() {
-  int rank = 0;
-  int size = 0;
-  MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-  MPI_Comm_size(MPI_COMM_WORLD, &size);
+bool NesterovATestTaskMPI::RunImpl() {
+  auto input = GetInput();
+  if (input == 0) {
+    return false;
+  }
 
-  size_t total_rows = GetInput().size();
-
-  size_t rows_per_process = total_rows / size;
-  int remainder = static_cast<int>(total_rows % size);
-
-  size_t start = (rank * rows_per_process) + std::min(rank, remainder);
-  size_t end = start + rows_per_process + (rank < remainder ? 1 : 0);
-  size_t local_size = end - start;
-
-  std::vector<int> local_results(local_size);
-  for (size_t i = start; i < end; i++) {
-    int row_sum = 0;
-    const auto &row = GetInput()[i];
-    for (int val : row) {
-      row_sum += val;
+  for (InType i = 0; i < GetInput(); i++) {
+    for (InType j = 0; j < GetInput(); j++) {
+      for (InType k = 0; k < GetInput(); k++) {
+        std::vector<InType> tmp(i + j + k, 1);
+        GetOutput() += std::accumulate(tmp.begin(), tmp.end(), 0);
+        GetOutput() -= i + j + k;
+      }
     }
-    local_results[i - start] = row_sum;
   }
 
-  std::vector<int> recv_counts(size);
-  std::vector<int> displs(size);
+  const int num_threads = ppc::util::GetNumThreads();
+  GetOutput() *= num_threads;
 
-  int current_displ = 0;
-  for (int proc = 0; proc < size; proc++) {
-    size_t proc_start = (proc * rows_per_process) + std::min(proc, remainder);
-    size_t proc_end = proc_start + rows_per_process + (proc < remainder ? 1 : 0);
-    recv_counts[proc] = static_cast<int>(proc_end - proc_start);
-    displs[proc] = current_displ;
-    current_displ += recv_counts[proc];
+  int rank = 0;
+  MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+
+  if (rank == 0) {
+    GetOutput() /= num_threads;
+  } else {
+    int counter = 0;
+    for (int i = 0; i < num_threads; i++) {
+      counter++;
+    }
+
+    if (counter != 0) {
+      GetOutput() /= counter;
+    }
   }
 
-  MPI_Allgatherv(local_results.data(), static_cast<int>(local_size), MPI_INT, GetOutput().data(), recv_counts.data(),
-                 displs.data(), MPI_INT, MPI_COMM_WORLD);
+  MPI_Barrier(MPI_COMM_WORLD);
+  return GetOutput() > 0;
+} 
 
-  return true;
+bool NesterovATestTaskMPI::PostProcessingImpl() {
+  GetOutput() -= GetInput();
+  return GetOutput() > 0;
 }
 
-bool SafaryanASumMatrixMPI
-::PostProcessingImpl() {
-  return !GetOutput().empty();
-}
-
-}  // namespace safaryan_a_sum_matrix
-
+}  // namespace nesterov_a_test_task_processes
