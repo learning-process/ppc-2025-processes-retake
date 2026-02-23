@@ -31,8 +31,7 @@ bool KichanovaKIncreaseContrastMPI::PreProcessingImpl() {
   return true;
 }
 
-static std::tuple<int, int, int> KichanovaKIncreaseContrastMPI::CalculateRowsDistribution(int rank, int size,
-                                                                                          int height) {
+std::tuple<int, int, int> KichanovaKIncreaseContrastMPI::CalculateRowsDistribution(int rank, int size, int height) {
   int rows_per_process = height / size;
   int remainder = height % size;
   int start_row = (rank * rows_per_process) + std::min(rank, remainder);
@@ -41,8 +40,8 @@ static std::tuple<int, int, int> KichanovaKIncreaseContrastMPI::CalculateRowsDis
   return {start_row, end_row, local_rows};
 }
 
-static std::array<uint8_t, 3> KichanovaKIncreaseContrastMPI::FindLocalMin(const Image &input, int start_row,
-                                                                          int end_row, int width) {
+std::array<uint8_t, 3> KichanovaKIncreaseContrastMPI::FindLocalMin(const Image &input, int start_row, int end_row,
+                                                                   int width) {
   std::array<uint8_t, 3> local_min = {255, 255, 255};
   const int channels = 3;
 
@@ -59,8 +58,8 @@ static std::array<uint8_t, 3> KichanovaKIncreaseContrastMPI::FindLocalMin(const 
   return local_min;
 }
 
-static std::array<uint8_t, 3> KichanovaKIncreaseContrastMPI::FindLocalMax(const Image &input, int start_row,
-                                                                          int end_row, int width) {
+std::array<uint8_t, 3> KichanovaKIncreaseContrastMPI::FindLocalMax(const Image &input, int start_row, int end_row,
+                                                                   int width) {
   std::array<uint8_t, 3> local_max = {0, 0, 0};
   const int channels = 3;
 
@@ -77,7 +76,7 @@ static std::array<uint8_t, 3> KichanovaKIncreaseContrastMPI::FindLocalMax(const 
   return local_max;
 }
 
-static std::tuple<std::array<float, 3>, std::array<bool, 3>> KichanovaKIncreaseContrastMPI::CalculateScaleFactors(
+std::tuple<std::array<float, 3>, std::array<bool, 3>> KichanovaKIncreaseContrastMPI::CalculateScaleFactors(
     const std::array<uint8_t, 3> &global_min, const std::array<uint8_t, 3> &global_max) {
   std::array<float, 3> scale{};
   std::array<bool, 3> need_scale{};
@@ -94,11 +93,11 @@ static std::tuple<std::array<float, 3>, std::array<bool, 3>> KichanovaKIncreaseC
   return {scale, need_scale};
 }
 
-static std::vector<uint8_t> KichanovaKIncreaseContrastMPI::ProcessLocalRows(const Image &input, int start_row,
-                                                                            int local_rows, int width,
-                                                                            const std::array<uint8_t, 3> &global_min,
-                                                                            const std::array<float, 3> &scale,
-                                                                            const std::array<bool, 3> &need_scale) {
+std::vector<uint8_t> KichanovaKIncreaseContrastMPI::ProcessLocalRows(const Image &input, int start_row, int local_rows,
+                                                                     int width,
+                                                                     const std::array<uint8_t, 3> &global_min,
+                                                                     const std::array<float, 3> &scale,
+                                                                     const std::array<bool, 3> &need_scale) {
   const int channels = 3;
   const int row_size = width * channels;
   std::vector<uint8_t> local_output(static_cast<size_t>(local_rows) * row_size);
