@@ -10,11 +10,8 @@
 
 namespace kazennova_a_image_smooth {
 
-const std::array<std::array<float, 3>, 3> kKernel = {{
-    {{1.0F / 16, 2.0F / 16, 1.0F / 16}},
-    {{2.0F / 16, 4.0F / 16, 2.0F / 16}},
-    {{1.0F / 16, 2.0F / 16, 1.0F / 16}}
-}};
+const std::array<std::array<float, 3>, 3> kKernel = {
+    {{{1.0F / 16, 2.0F / 16, 1.0F / 16}}, {{2.0F / 16, 4.0F / 16, 2.0F / 16}}, {{1.0F / 16, 2.0F / 16, 1.0F / 16}}}};
 
 KazennovaAImageSmoothSEQ::KazennovaAImageSmoothSEQ(const InType &in) {
   SetTypeOfTask(GetStaticTypeOfTask());
