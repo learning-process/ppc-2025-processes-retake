@@ -1,16 +1,17 @@
 #pragma once
 
-#include "muhammadkhon_i_gather/common/include/common.hpp"
+#include "muhammadkhon_i_batcher_sort/common/include/common.hpp"
 #include "task/include/task.hpp"
 
-namespace muhammadkhon_i_gather {
+namespace muhammadkhon_i_batcher_sort {
 
-class MuhammadkhonIGatherSEQ : public BaseTask {
+class MuhammadkhonIBatcherSortSEQ : public BaseTask {
  public:
   static constexpr ppc::task::TypeOfTask GetStaticTypeOfTask() {
     return ppc::task::TypeOfTask::kSEQ;
   }
-  explicit MuhammadkhonIGatherSEQ(const InType &in);
+
+  explicit MuhammadkhonIBatcherSortSEQ(const InType &in);
 
  private:
   bool ValidationImpl() override;
@@ -19,4 +20,4 @@ class MuhammadkhonIGatherSEQ : public BaseTask {
   bool PostProcessingImpl() override;
 };
 
-}  // namespace muhammadkhon_i_gather
+}  // namespace muhammadkhon_i_batcher_sort
