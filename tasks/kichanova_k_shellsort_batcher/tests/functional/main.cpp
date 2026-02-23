@@ -66,7 +66,7 @@ class KichanovaKShellsortBatcherFuncTests : public ppc::util::BaseRunFuncTests<I
     std::vector<int> right(data.begin() + static_cast<std::vector<int>::difference_type>(mid), data.end());
 
     std::vector<int> merged(left.size() + right.size());
-    std::merge(left.begin(), left.end(), right.begin(), right.end(), merged.begin());
+    std::merge(left, right, merged.begin());
 
     for (int phase = 0; phase < 2; ++phase) {
       auto start = static_cast<std::size_t>(phase);
@@ -97,7 +97,7 @@ class KichanovaKShellsortBatcherFuncTests : public ppc::util::BaseRunFuncTests<I
       }
     }
 
-    if (!std::is_sorted(merged.begin(), merged.end())) {
+    if (!std::is_sorted(merged)) {
       return false;
     }
 
@@ -131,8 +131,7 @@ const auto kTestTasksList = std::tuple_cat(ppc::util::AddFuncTask<KichanovaKShel
 
 const auto kGtestValues = ppc::util::ExpandToValues(kTestTasksList);
 
-const auto kPerfTestName =
-    KichanovaKShellsortBatcherFuncTests::PrintFuncTestName<KichanovaKShellsortBatcherFuncTests>;
+const auto kPerfTestName = KichanovaKShellsortBatcherFuncTests::PrintFuncTestName<KichanovaKShellsortBatcherFuncTests>;
 
 INSTANTIATE_TEST_SUITE_P(PicMatrixTests, KichanovaKShellsortBatcherFuncTests, kGtestValues, kPerfTestName);
 

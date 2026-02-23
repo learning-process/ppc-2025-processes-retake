@@ -6,12 +6,10 @@
 #include <cmath>
 #include <cstddef>
 #include <cstdint>
-#include <numeric>
 #include <random>
 #include <vector>
 
 #include "kichanova_k_shellsort_batcher/common/include/common.hpp"
-#include "util/include/util.hpp"
 
 namespace kichanova_k_shellsort_batcher {
 
@@ -37,16 +35,29 @@ bool KichanovaKShellsortBatcherMPI::RunImpl() {
     return false;
   }
 
-  int rank = 0, size = 1;
+  int rank = 0;
+  int size = 1;
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
   MPI_Comm_size(MPI_COMM_WORLD, &size);
 
-  const InType base = n / size;
-  const InType rem = n % size;
-  const InType local_n = base + (rank < rem ? 1 : 0);
+  auto local_data = GenerateLocalData(n, rank, size);
+  ShellSort(local_data);
+  PerformOddEvenSort(local_data, rank, size);
+
+  std::int64_t local_checksum = CalculateChecksum(local_data);
+  std::int64_t global_checksum = 0;
+  MPI_Allreduce(&local_checksum, &global_checksum, 1, MPI_INT64_T, MPI_SUM, MPI_COMM_WORLD);
+
+  GetOutput() = static_cast<OutType>(global_checksum & 0x7FFFFFFF);
+  return true;
+}
+
+std::vector<int> KichanovaKShellsortBatcherMPI::GenerateLocalData(InType n, int rank, int size) {
+  InType base = n / size;
+  InType rem = n % size;
+  InType local_n = base + (rank < rem ? 1 : 0);
 
   std::vector<int> local_data(local_n);
-
   std::mt19937 rng(static_cast<unsigned int>(n));
   std::uniform_int_distribution<int> dist(0, 1000000);
 
@@ -64,24 +75,12 @@ bool KichanovaKShellsortBatcherMPI::RunImpl() {
     local_data[i] = dist(rng);
   }
 
-  ShellSort(local_data);
+  return local_data;
+}
 
+void KichanovaKShellsortBatcherMPI::PerformOddEvenSort(std::vector<int> &local_data, int rank, int size) {
   for (int phase = 0; phase < size; ++phase) {
-    int partner = -1;
-
-    if (phase % 2 == 0) {
-      if (rank % 2 == 0) {
-        partner = rank + 1;
-      } else {
-        partner = rank - 1;
-      }
-    } else {
-      if (rank % 2 == 1) {
-        partner = rank + 1;
-      } else {
-        partner = rank - 1;
-      }
-    }
+    int partner = GetPartner(phase, rank);
 
     if (partner >= 0 && partner < size) {
       ExchangeAndMerge(local_data, partner, rank, 1000 + phase);
@@ -89,18 +88,22 @@ bool KichanovaKShellsortBatcherMPI::RunImpl() {
 
     MPI_Barrier(MPI_COMM_WORLD);
   }
+}
 
-  std::int64_t local_checksum = 0;
-  for (const auto &val : local_data) {
-    local_checksum += val;
+int KichanovaKShellsortBatcherMPI::GetPartner(int phase, int rank) const {
+  if (phase % 2 == 0) {
+    return (rank % 2 == 0) ? rank + 1 : rank - 1;
+  } else {
+    return (rank % 2 == 1) ? rank + 1 : rank - 1;
   }
+}
 
-  std::int64_t global_checksum = 0;
-  MPI_Allreduce(&local_checksum, &global_checksum, 1, MPI_INT64_T, MPI_SUM, MPI_COMM_WORLD);
-
-  GetOutput() = static_cast<OutType>(global_checksum & 0x7FFFFFFF);
-
-  return true;
+std::int64_t KichanovaKShellsortBatcherMPI::CalculateChecksum(const std::vector<int> &data) const {
+  std::int64_t checksum = 0;
+  for (const auto &val : data) {
+    checksum += val;
+  }
+  return checksum;
 }
 
 void KichanovaKShellsortBatcherMPI::ShellSort(std::vector<int> &arr) {
@@ -128,8 +131,7 @@ void KichanovaKShellsortBatcherMPI::ShellSort(std::vector<int> &arr) {
   }
 }
 
-void KichanovaKShellsortBatcherMPI::ExchangeAndMerge(std::vector<int> &local_data, int partner, int rank,
-                                                                 int tag) {
+void KichanovaKShellsortBatcherMPI::ExchangeAndMerge(std::vector<int> &local_data, int partner, int rank, int tag) {
   if (partner == MPI_PROC_NULL || partner == rank) {
     return;
   }
@@ -137,16 +139,16 @@ void KichanovaKShellsortBatcherMPI::ExchangeAndMerge(std::vector<int> &local_dat
   int send_size = static_cast<int>(local_data.size());
   int recv_size = 0;
 
-  MPI_Sendrecv(&send_size, 1, MPI_INT, partner, tag * 2, &recv_size, 1, MPI_INT, partner, tag * 2, MPI_COMM_WORLD,
+  MPI_Sendrecv(&send_size, 1, MPI_INT, partner, (tag * 2), &recv_size, 1, MPI_INT, partner, (tag * 2), MPI_COMM_WORLD,
                MPI_STATUS_IGNORE);
 
   std::vector<int> recv_buffer(recv_size);
 
-  MPI_Sendrecv(local_data.data(), send_size, MPI_INT, partner, tag * 2 + 1, recv_buffer.data(), recv_size, MPI_INT,
-               partner, tag * 2 + 1, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+  MPI_Sendrecv(local_data.data(), send_size, MPI_INT, partner, (tag * 2) + 1, recv_buffer.data(), recv_size, MPI_INT,
+               partner, (tag * 2) + 1, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 
   std::vector<int> merged(send_size + recv_size);
-  std::merge(local_data.begin(), local_data.end(), recv_buffer.begin(), recv_buffer.end(), merged.begin());
+  std::ranges::merge(local_data, recv_buffer, merged.begin());
 
   if (rank < partner) {
     local_data.assign(merged.begin(), merged.begin() + send_size);

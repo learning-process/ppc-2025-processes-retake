@@ -8,7 +8,6 @@
 #include <vector>
 
 #include "kichanova_k_shellsort_batcher/common/include/common.hpp"
-#include "util/include/util.hpp"
 
 namespace kichanova_k_shellsort_batcher {
 
@@ -42,7 +41,7 @@ bool KichanovaKShellsortBatcherSEQ::RunImpl() {
   }
 
   std::vector<int> expected = data;
-  std::sort(expected.begin(), expected.end());
+  std::sort(expected);
 
   ShellSort(data);
 
@@ -53,7 +52,7 @@ bool KichanovaKShellsortBatcherSEQ::RunImpl() {
   OddEvenBatcherMerge(left, right, merged);
   data.swap(merged);
 
-  if (!std::is_sorted(data.begin(), data.end())) {
+  if (!std::is_sorted(data)) {
     return false;
   }
   if (data != expected) {
@@ -66,7 +65,7 @@ bool KichanovaKShellsortBatcherSEQ::RunImpl() {
   return true;
 }
 
-void KichanovaKShellsortBatcherSEQ::ShellSort(std::vector<int> &arr) {
+static void KichanovaKShellsortBatcherSEQ::ShellSort(std::vector<int> &arr) {
   const std::size_t n = arr.size();
   if (n < 2) {
     return;
@@ -91,9 +90,9 @@ void KichanovaKShellsortBatcherSEQ::ShellSort(std::vector<int> &arr) {
   }
 }
 
-void KichanovaKShellsortBatcherSEQ::OddEvenBatcherMerge(const std::vector<int> &left,
-                                                                    const std::vector<int> &right,
-                                                                    std::vector<int> &merged) {
+static void KichanovaKShellsortBatcherSEQ::OddEvenBatcherMerge(const std::vector<int> &left,
+                                                               const std::vector<int> &right,
+                                                               std::vector<int> &merged) {
   merged.resize(left.size() + right.size());
   std::merge(left.begin(), left.end(), right.begin(), right.end(), merged.begin());
 
