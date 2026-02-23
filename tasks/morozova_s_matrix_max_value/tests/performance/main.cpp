@@ -9,7 +9,7 @@
 
 namespace morozova_s_matrix_max_value {
 
-class MorozovaSRunPerfTestProcesses : public ppc::util::BaseRunPerfTests<InType, OutType> {
+class MorozovaSMatrixMaxValuePerfTests : public ppc::util::BaseRunPerfTests<InType, OutType> {
   InType input_data_;
 
   void SetUp() override {
@@ -32,7 +32,7 @@ class MorozovaSRunPerfTestProcesses : public ppc::util::BaseRunPerfTests<InType,
   }
 };
 
-TEST_P(MorozovaSRunPerfTestProcesses, RunPerfModes) {
+TEST_P(MorozovaSMatrixMaxValuePerfTests, RunPerfModes) {
   ExecuteTest(GetParam());
 }
 
@@ -41,8 +41,8 @@ const auto kAllPerfTasks = ppc::util::MakeAllPerfTasks<InType, MorozovaSMatrixMa
 
 const auto kGtestValues = ppc::util::TupleToGTestValues(kAllPerfTasks);
 
-const auto kPerfTestName = MorozovaSRunPerfTestProcesses::CustomPerfTestName;
+const auto kPerfTestName = MorozovaSMatrixMaxValuePerfTests::CustomPerfTestName;
 
-INSTANTIATE_TEST_SUITE_P(RunModeTests, MorozovaSRunPerfTestProcesses, kGtestValues, kPerfTestName);
+INSTANTIATE_TEST_SUITE_P(RunModeTests, MorozovaSMatrixMaxValuePerfTests, kGtestValues, kPerfTestName);
 
 }  // namespace morozova_s_matrix_max_value
