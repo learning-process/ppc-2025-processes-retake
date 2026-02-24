@@ -22,7 +22,7 @@ struct Image {
 
 Ограничения:
 
-- width и height > 0
+- ширина и высота > 0
 - data не пуст;
 - channels равен 1 или 3.
 
