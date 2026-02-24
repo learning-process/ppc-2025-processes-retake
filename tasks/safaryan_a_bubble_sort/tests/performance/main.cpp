@@ -2,7 +2,6 @@
 
 #include <algorithm>
 #include <cstddef>
-#include <vector>
 
 #include "safaryan_a_bubble_sort/common/include/common.hpp"
 #include "safaryan_a_bubble_sort/mpi/include/ops_mpi.hpp"
