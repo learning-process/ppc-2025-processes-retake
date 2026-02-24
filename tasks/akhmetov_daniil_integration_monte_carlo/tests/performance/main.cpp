@@ -33,18 +33,15 @@ class AkhmetovDaniilIntegrationMonteCarloRunPerfTestProcesses : public ppc::util
   }
 };
 
-TEST_P(AkhmetovDaniilIntegrationMonteCarloRunPerfTestProcesses, RunPerfModes) {
-  ExecuteTest(GetParam());
-}
-
+namespace {
 const auto kAllPerfTasks =
     ppc::util::MakeAllPerfTasks<InType, AkhmetovDaniilIntegrationMonteCarloMPI, AkhmetovDaniilIntegrationMonteCarloSEQ>(
         PPC_SETTINGS_akhmetov_daniil_integration_monte_carlo);
-
 const auto kGtestValues = ppc::util::TupleToGTestValues(kAllPerfTasks);
 const auto kPerfTestName = AkhmetovDaniilIntegrationMonteCarloRunPerfTestProcesses::CustomPerfTestName;
-
-namespace {
+TEST_P(AkhmetovDaniilIntegrationMonteCarloRunPerfTestProcesses, RunPerfModes) {
+  ExecuteTest(GetParam());
+}
 INSTANTIATE_TEST_SUITE_P(RunModeTests, AkhmetovDaniilIntegrationMonteCarloRunPerfTestProcesses, kGtestValues,
                          kPerfTestName);
 }  // namespace
