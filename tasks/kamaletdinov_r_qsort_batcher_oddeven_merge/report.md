@@ -147,5 +147,5 @@ RAM - 16 Gb;
 
 1. Лекции по параллельному программированию.  
 2. Практические занятия по параллельному программированию.  
-3. Batcher, K. E. (1968). Sorting networks and their applications.
+3. Batcher, K.E. (1968). Sorting networks and their applications.
  Proceedings of the Spring Joint Computer Conference (April 30 — May 2, 1968).
