@@ -86,7 +86,7 @@ void SparseMatrixMultiplicationCCSMPI::ComputeLocalProduct(
 
   for (int j = 0; j < local_cols; ++j) {
     int global_j = start_col + j;
-    std::fill(dense_col.begin(), dense_col.end(), 0.0);  // NOLINT
+    std::ranges::fill(dense_col, 0.0);
 
     for (int k_ptr = col_ptr_b[global_j]; k_ptr < col_ptr_b[global_j + 1]; ++k_ptr) {
       int k = rows_ind_b[k_ptr];
