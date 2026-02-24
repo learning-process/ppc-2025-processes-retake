@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <cstddef>
+#include <vector>
 
 #include "safaryan_a_bubble_sort/common/include/common.hpp"
 #include "safaryan_a_bubble_sort/mpi/include/ops_mpi.hpp"
@@ -9,7 +10,9 @@
 #include "util/include/perf_test_util.hpp"
 
 namespace safaryan_a_bubble_sort {
+
 class SafaryanABubbleSortRunPerfTestsProcesses : public ppc::util::BaseRunPerfTests<InType, OutType> {
+ private:
   const size_t size_params_ = 20000;
   InType input_data_;
 
@@ -40,15 +43,10 @@ const auto kGtestValues = ppc::util::TupleToGTestValues(kAllPerfTasks);
 
 const auto kPerfTestName = SafaryanABubbleSortRunPerfTestsProcesses::CustomPerfTestName;
 
-namespace safaryan_a_bubble_sort {
-
-class SafaryanABubbleSortRunPerfTestsProcesses : public ppc::util::BaseRunPerfTests<InType, OutType> {
-  ...
-};
-
 namespace {
 
 INSTANTIATE_TEST_SUITE_P(RunModeTests, SafaryanABubbleSortRunPerfTestsProcesses, kGtestValues, kPerfTestName);
+
 }  // namespace
 
 }  // namespace safaryan_a_bubble_sort
