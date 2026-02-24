@@ -9,7 +9,7 @@ class SafaryanABubbleSortSEQ : public BaseTask {
   static constexpr ppc::task::TypeOfTask GetStaticTypeOfTask() {
     return ppc::task::TypeOfTask::kSEQ;
   }
-  explicit SafaryanABubbleSortSEQ(const InType &in);  // comm
+  explicit SafaryanABubbleSortSEQ(const InType &in);  // com
 
   bool ValidationImpl() override;
   bool PreProcessingImpl() override;

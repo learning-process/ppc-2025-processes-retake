@@ -48,8 +48,7 @@ class SafaryanABubbleSortRunPerfTestsProcesses : public ppc::util::BaseRunPerfTe
 
 namespace {
 
-INSTANTIATE_TEST_SUITE_P(RunModeTests, SafaryanABubbleSortRunPerfTestsProcesses, kGtestValues,
-                         kPerfTestName);
+INSTANTIATE_TEST_SUITE_P(RunModeTests, SafaryanABubbleSortRunPerfTestsProcesses, kGtestValues, kPerfTestName);
 }  // namespace
 
 }  // namespace safaryan_a_bubble_sort
