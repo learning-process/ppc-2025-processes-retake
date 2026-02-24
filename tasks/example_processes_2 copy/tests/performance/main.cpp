@@ -40,5 +40,20 @@ const auto kGtestValues = ppc::util::TupleToGTestValues(kAllPerfTasks);
 
 const auto kPerfTestName = SafaryanABubbleSortRunPerfTestsProcesses::CustomPerfTestName;
 
-INSTANTIATE_TEST_SUITE_P(RunModeTests, SafaryanABubbleSortRunPerfTestsProcesses, kGtestValues, kPerfTestName);
+namespace safaryan_a_bubble_sort {
+
+class SafaryanABubbleSortRunPerfTestsProcesses : public ppc::util::BaseRunPerfTests<InType, OutType> {
+    ...
+};
+
+namespace {
+
+INSTANTIATE_TEST_SUITE_P(
+    RunModeTests,
+    SafaryanABubbleSortRunPerfTestsProcesses,
+    kGtestValues,
+    kPerfTestName);  // NOLINT(misc-use-anonymous-namespace)
+
+}  // namespace
+
 }  // namespace safaryan_a_bubble_sort
