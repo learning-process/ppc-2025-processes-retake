@@ -53,9 +53,9 @@ TEST_P(SafaryanABubbleSortRunFuncTestsProcesses, BubbleSortFromFiles) {
 
 const std::array<TestType, 3> kTestParam = {"test1.txt", "test2.txt", "test3.txt"};
 
-const auto kTestTasksList =
-    std::tuple_cat(ppc::util::AddFuncTask<SafaryanABubbleSortMPI, InType>(kTestParam, PPC_SETTINGS_safaryan_a_bubble_sort),
-                   ppc::util::AddFuncTask<SafaryanABubbleSortSEQ, InType>(kTestParam, PPC_SETTINGS_safaryan_a_bubble_sort));
+const auto kTestTasksList = std::tuple_cat(
+    ppc::util::AddFuncTask<SafaryanABubbleSortMPI, InType>(kTestParam, PPC_SETTINGS_safaryan_a_bubble_sort),
+    ppc::util::AddFuncTask<SafaryanABubbleSortSEQ, InType>(kTestParam, PPC_SETTINGS_safaryan_a_bubble_sort));
 
 const auto kGtestValues = ppc::util::ExpandToValues(kTestTasksList);
 

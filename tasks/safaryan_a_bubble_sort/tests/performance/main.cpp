@@ -33,8 +33,8 @@ TEST_P(SafaryanABubbleSortRunPerfTestsProcesses, RunPerfModes) {
   ExecuteTest(GetParam());
 }
 
-const auto kAllPerfTasks =
-    ppc::util::MakeAllPerfTasks<InType, SafaryanABubbleSortMPI, SafaryanABubbleSortSEQ>(PPC_SETTINGS_safaryan_a_bubble_sort);
+const auto kAllPerfTasks = ppc::util::MakeAllPerfTasks<InType, SafaryanABubbleSortMPI, SafaryanABubbleSortSEQ>(
+    PPC_SETTINGS_safaryan_a_bubble_sort);
 
 const auto kGtestValues = ppc::util::TupleToGTestValues(kAllPerfTasks);
 
