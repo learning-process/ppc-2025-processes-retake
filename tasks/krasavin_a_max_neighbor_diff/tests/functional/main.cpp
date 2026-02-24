@@ -1,58 +1,36 @@
 #include <gtest/gtest.h>
-#include <stb/stb_image.h>
 
-#include <algorithm>
 #include <array>
 #include <cstddef>
-#include <cstdint>
-#include <numeric>
-#include <stdexcept>
 #include <string>
 #include <tuple>
-#include <utility>
 #include <vector>
 
-#include "example_processes/common/include/common.hpp"
-#include "example_processes/mpi/include/ops_mpi.hpp"
-#include "example_processes/seq/include/ops_seq.hpp"
+#include "krasavin_a_max_neighbor_diff/common/include/common.hpp"
+#include "krasavin_a_max_neighbor_diff/mpi/include/ops_mpi.hpp"
+#include "krasavin_a_max_neighbor_diff/seq/include/ops_seq.hpp"
 #include "util/include/func_test_util.hpp"
 #include "util/include/util.hpp"
 
-namespace nesterov_a_test_task_processes {
+namespace krasavin_a_max_neighbor_diff {
 
-class NesterovARunFuncTestsProcesses : public ppc::util::BaseRunFuncTests<InType, OutType, TestType> {
+class KrasavinAMaxNeighborDiffFuncTests : public ppc::util::BaseRunFuncTests<InType, OutType, TestType> {
  public:
   static std::string PrintTestParam(const TestType &test_param) {
-    return std::to_string(std::get<0>(test_param)) + "_" + std::get<1>(test_param);
+    const auto &vec = std::get<0>(test_param);
+    int expected = std::get<1>(test_param);
+    return std::to_string(vec.size()) + "_expected_" + std::to_string(expected);
   }
 
  protected:
   void SetUp() override {
-    int width = -1;
-    int height = -1;
-    int channels = -1;
-    std::vector<uint8_t> img;
-    // Read image in RGB to ensure consistent channel count
-    {
-      std::string abs_path = ppc::util::GetAbsoluteTaskPath(PPC_ID_example_processes, "pic.ppm");
-      auto *data = stbi_load(abs_path.c_str(), &width, &height, &channels, STBI_rgb);
-      if (data == nullptr) {
-        throw std::runtime_error("Failed to load image: " + std::string(stbi_failure_reason()));
-      }
-      channels = STBI_rgb;
-      img = std::vector<uint8_t>(data, data + (static_cast<ptrdiff_t>(width * height * channels)));
-      stbi_image_free(data);
-      if (std::cmp_not_equal(width, height)) {
-        throw std::runtime_error("width != height: ");
-      }
-    }
-
-    TestType params = std::get<static_cast<std::size_t>(ppc::util::GTestParamIndex::kTestParams)>(GetParam());
-    input_data_ = width - height + std::min(std::accumulate(img.begin(), img.end(), 0), channels);
+    const auto &params = std::get<static_cast<std::size_t>(ppc::util::GTestParamIndex::kTestParams)>(GetParam());
+    input_data_ = std::get<0>(params);
+    expected_ = std::get<1>(params);
   }
 
   bool CheckTestOutputData(OutType &output_data) final {
-    return (input_data_ == output_data);
+    return output_data == expected_;
   }
 
   InType GetTestInputData() final {
@@ -60,27 +38,39 @@ class NesterovARunFuncTestsProcesses : public ppc::util::BaseRunFuncTests<InType
   }
 
  private:
-  InType input_data_ = 0;
+  InType input_data_;
+  OutType expected_{};
 };
 
 namespace {
 
-TEST_P(NesterovARunFuncTestsProcesses, MatmulFromPic) {
+const std::array<TestType, 10> kTestParam = {std::make_tuple(std::vector<int>{1, 5}, 4),
+                                             std::make_tuple(std::vector<int>{8, 10, 2, 4}, 8),
+                                             std::make_tuple(std::vector<int>{1, 2, 3, 4, 5}, 1),
+                                             std::make_tuple(std::vector<int>{100, 5, 8, 3, 4}, 95),
+                                             std::make_tuple(std::vector<int>{-1, -5, 10, 8, -7}, 15),
+                                             std::make_tuple(std::vector<int>{1, 1, 1, 1, 1}, 0),
+                                             std::make_tuple(std::vector<int>{0, 0, 5, 0, 0, 0}, 5),
+                                             std::make_tuple(std::vector<int>{100, 50, 75, 25}, 50),
+                                             std::make_tuple(std::vector<int>{5}, 0),
+                                             std::make_tuple(std::vector<int>{}, 0)};
+
+TEST_P(KrasavinAMaxNeighborDiffFuncTests, FindMaxDiff) {
   ExecuteTest(GetParam());
 }
 
-const std::array<TestType, 3> kTestParam = {std::make_tuple(3, "3"), std::make_tuple(5, "5"), std::make_tuple(7, "7")};
-
-const auto kTestTasksList =
-    std::tuple_cat(ppc::util::AddFuncTask<NesterovATestTaskMPI, InType>(kTestParam, PPC_SETTINGS_example_processes),
-                   ppc::util::AddFuncTask<NesterovATestTaskSEQ, InType>(kTestParam, PPC_SETTINGS_example_processes));
+const auto kTestTasksList = std::tuple_cat(ppc::util::AddFuncTask<KrasavinAMaxNeighborDiffMPI, InType>(
+                                               kTestParam, PPC_SETTINGS_krasavin_a_max_neighbor_diff),
+                                           ppc::util::AddFuncTask<KrasavinAMaxNeighborDiffSEQ, InType>(
+                                               kTestParam, PPC_SETTINGS_krasavin_a_max_neighbor_diff));
 
 const auto kGtestValues = ppc::util::ExpandToValues(kTestTasksList);
 
-const auto kPerfTestName = NesterovARunFuncTestsProcesses::PrintFuncTestName<NesterovARunFuncTestsProcesses>;
+const auto kPerfTestName =
+    KrasavinAMaxNeighborDiffFuncTests::PrintFuncTestName<KrasavinAMaxNeighborDiffFuncTests>;
 
-INSTANTIATE_TEST_SUITE_P(PicMatrixTests, NesterovARunFuncTestsProcesses, kGtestValues, kPerfTestName);
+INSTANTIATE_TEST_SUITE_P(FindMaxDiff, KrasavinAMaxNeighborDiffFuncTests, kGtestValues, kPerfTestName);
 
 }  // namespace
 
-}  // namespace nesterov_a_test_task_processes
+}  // namespace krasavin_a_max_neighbor_diff

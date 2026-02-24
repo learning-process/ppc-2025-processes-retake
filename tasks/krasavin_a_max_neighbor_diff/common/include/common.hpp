@@ -1,15 +1,15 @@
 #pragma once
 
-#include <string>
-#include <tuple>
 
+#include <tuple>
+#include <vector>
 #include "task/include/task.hpp"
 
-namespace nesterov_a_test_task_processes {
+namespace krasavin_a_max_neighbor_diff {
 
-using InType = int;
+using InType = std::vector<int>;
 using OutType = int;
-using TestType = std::tuple<int, std::string>;
+using TestType = std::tuple<std::vector<int>, int>;
 using BaseTask = ppc::task::Task<InType, OutType>;
 
-}  // namespace nesterov_a_test_task_processes
+}  // namespace krasavin_a_max_neighbor_diff

@@ -1,60 +1,47 @@
-#include "example_processes/seq/include/ops_seq.hpp"
+#include "krasavin_a_max_neighbor_diff/seq/include/ops_seq.hpp"
 
-#include <numeric>
+#include <algorithm>
+#include <cmath>
+#include <cstdlib>
 #include <vector>
+#include "krasavin_a_max_neighbor_diff/common/include/common.hpp"
 
-#include "example_processes/common/include/common.hpp"
-#include "util/include/util.hpp"
+namespace krasavin_a_max_neighbor_diff {
 
-namespace nesterov_a_test_task_processes {
-
-NesterovATestTaskSEQ::NesterovATestTaskSEQ(const InType &in) {
+KrasavinAMaxNeighborDiffSEQ::KrasavinAMaxNeighborDiffSEQ(const InType &in) {
   SetTypeOfTask(GetStaticTypeOfTask());
   GetInput() = in;
   GetOutput() = 0;
 }
 
-bool NesterovATestTaskSEQ::ValidationImpl() {
-  return (GetInput() > 0) && (GetOutput() == 0);
+bool KrasavinAMaxNeighborDiffSEQ::ValidationImpl() {
+  return true;
 }
 
-bool NesterovATestTaskSEQ::PreProcessingImpl() {
-  GetOutput() = 2 * GetInput();
-  return GetOutput() > 0;
+bool KrasavinAMaxNeighborDiffSEQ::PreProcessingImpl() {
+  return true;
 }
 
-bool NesterovATestTaskSEQ::RunImpl() {
-  if (GetInput() == 0) {
-    return false;
+bool KrasavinAMaxNeighborDiffSEQ::RunImpl() {
+  const std::vector<int> &vec = GetInput();
+  std::size_t n = vec.size();
+  if (n < 2) {
+    GetOutput() = 0;
+    return true;
   }
 
-  for (InType i = 0; i < GetInput(); i++) {
-    for (InType j = 0; j < GetInput(); j++) {
-      for (InType k = 0; k < GetInput(); k++) {
-        std::vector<InType> tmp(i + j + k, 1);
-        GetOutput() += std::accumulate(tmp.begin(), tmp.end(), 0);
-        GetOutput() -= i + j + k;
-      }
-    }
+  int max_diff = 0;
+  for (std::size_t i = 0; i < n - 1; i++) {
+    int diff = std::abs(vec[i + 1] - vec[i]);
+    max_diff = std::max(diff, max_diff);
   }
 
-  const int num_threads = ppc::util::GetNumThreads();
-  GetOutput() *= num_threads;
-
-  int counter = 0;
-  for (int i = 0; i < num_threads; i++) {
-    counter++;
-  }
-
-  if (counter != 0) {
-    GetOutput() /= counter;
-  }
-  return GetOutput() > 0;
+  GetOutput() = max_diff;
+  return true;
 }
 
-bool NesterovATestTaskSEQ::PostProcessingImpl() {
-  GetOutput() -= GetInput();
-  return GetOutput() > 0;
+bool KrasavinAMaxNeighborDiffSEQ::PostProcessingImpl() {
+  return true;
 }
 
-}  // namespace nesterov_a_test_task_processes
+}  // namespace krasavin_a_max_neighbor_diff
