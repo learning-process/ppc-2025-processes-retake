@@ -1,8 +1,8 @@
 #pragma once
 
-
 #include <tuple>
 #include <vector>
+
 #include "task/include/task.hpp"
 
 namespace krasavin_a_max_neighbor_diff {

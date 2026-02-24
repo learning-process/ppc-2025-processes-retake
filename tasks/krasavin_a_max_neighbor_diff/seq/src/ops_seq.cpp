@@ -4,6 +4,7 @@
 #include <cmath>
 #include <cstdlib>
 #include <vector>
+
 #include "krasavin_a_max_neighbor_diff/common/include/common.hpp"
 
 namespace krasavin_a_max_neighbor_diff {

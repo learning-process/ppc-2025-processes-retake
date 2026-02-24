@@ -55,8 +55,6 @@ TEST_P(KrasavinAMaxNeighborDiffPerfTests, RunPerfModes) {
   ExecuteTest(GetParam());
 }
 
-
-
 const auto kAllPerfTasks =
     ppc::util::MakeAllPerfTasks<InType, KrasavinAMaxNeighborDiffMPI, KrasavinAMaxNeighborDiffSEQ>(
         PPC_SETTINGS_krasavin_a_max_neighbor_diff);

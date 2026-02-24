@@ -59,15 +59,13 @@ TEST_P(KrasavinAMaxNeighborDiffFuncTests, FindMaxDiff) {
   ExecuteTest(GetParam());
 }
 
-const auto kTestTasksList = std::tuple_cat(ppc::util::AddFuncTask<KrasavinAMaxNeighborDiffMPI, InType>(
-                                               kTestParam, PPC_SETTINGS_krasavin_a_max_neighbor_diff),
-                                           ppc::util::AddFuncTask<KrasavinAMaxNeighborDiffSEQ, InType>(
-                                               kTestParam, PPC_SETTINGS_krasavin_a_max_neighbor_diff));
+const auto kTestTasksList = std::tuple_cat(
+    ppc::util::AddFuncTask<KrasavinAMaxNeighborDiffMPI, InType>(kTestParam, PPC_SETTINGS_krasavin_a_max_neighbor_diff),
+    ppc::util::AddFuncTask<KrasavinAMaxNeighborDiffSEQ, InType>(kTestParam, PPC_SETTINGS_krasavin_a_max_neighbor_diff));
 
 const auto kGtestValues = ppc::util::ExpandToValues(kTestTasksList);
 
-const auto kPerfTestName =
-    KrasavinAMaxNeighborDiffFuncTests::PrintFuncTestName<KrasavinAMaxNeighborDiffFuncTests>;
+const auto kPerfTestName = KrasavinAMaxNeighborDiffFuncTests::PrintFuncTestName<KrasavinAMaxNeighborDiffFuncTests>;
 
 INSTANTIATE_TEST_SUITE_P(FindMaxDiff, KrasavinAMaxNeighborDiffFuncTests, kGtestValues, kPerfTestName);
 

@@ -1,10 +1,12 @@
 #include "krasavin_a_max_neighbor_diff/mpi/include/ops_mpi.hpp"
 
 #include <mpi.h>
+
 #include <algorithm>
 #include <cmath>
 #include <cstddef>
 #include <vector>
+
 #include "krasavin_a_max_neighbor_diff/common/include/common.hpp"
 
 namespace krasavin_a_max_neighbor_diff {
