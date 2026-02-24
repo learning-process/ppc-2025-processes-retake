@@ -14,7 +14,7 @@ enum class FuncType : std::uint8_t {
   kQuadraticFunc = 1,  // x² + 1
   kSinFunc = 2,        // sin(x)
   kExpFunc = 3,        // e^x
-  kConstFunc = 4       // 5 (const)
+  kConstFunc = 4,      // 5 (const)
 };
 
 class FunctionPair {
