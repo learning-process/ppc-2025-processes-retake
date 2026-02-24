@@ -72,7 +72,6 @@ bool SafaryanASumMatrixMPI::RunImpl() {
   const int total_cols = dimensions[1];
 
   if (total_rows <= 0 || total_cols <= 0) {
-    // Ничего не считаем, но коллективные операции уже синхронизированы через Bcast.
     return true;
   }
 
@@ -95,7 +94,6 @@ bool SafaryanASumMatrixMPI::RunImpl() {
     current_displacement += send_counts[proc];
   }
 
-  // Важно: на не-root можно передать nullptr как sendbuf (это безопаснее, чем .data() у пустого vector)
   const int *sendbuf = nullptr;
   if (rank == 0) {
     const auto &global_data = std::get<0>(GetInput());
@@ -104,10 +102,6 @@ bool SafaryanASumMatrixMPI::RunImpl() {
 
   MPI_Scatterv(sendbuf, send_counts.data(), displacements.data(), MPI_INT, local_matrix_data.data(),
                local_row_count * total_cols, MPI_INT, 0, MPI_COMM_WORLD);
-
-  // Считаем суммы только для "своих" строк, но складываем их в вектор размером total_rows,
-  // чтобы потом через Allreduce получить полный результат на всех ранках.
-  std::vector<int> local_sums(total_rows, 0);
 
   for (int i = 0; i < local_row_count; ++i) {
     const int global_row_index = row_offset + i;
