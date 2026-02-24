@@ -43,16 +43,13 @@ const auto kPerfTestName = SafaryanABubbleSortRunPerfTestsProcesses::CustomPerfT
 namespace safaryan_a_bubble_sort {
 
 class SafaryanABubbleSortRunPerfTestsProcesses : public ppc::util::BaseRunPerfTests<InType, OutType> {
-    ...
+  ...
 };
 
 namespace {
 
-INSTANTIATE_TEST_SUITE_P(
-    RunModeTests,
-    SafaryanABubbleSortRunPerfTestsProcesses,
-    kGtestValues,
-    kPerfTestName);  // NOLINT(misc-use-anonymous-namespace)
+INSTANTIATE_TEST_SUITE_P(RunModeTests, SafaryanABubbleSortRunPerfTestsProcesses, kGtestValues,
+                         kPerfTestName);  // NOLINT(misc-use-anonymous-namespace)
 
 }  // namespace
 
