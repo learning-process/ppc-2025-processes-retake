@@ -20,10 +20,8 @@ class AkhmetovDaniilIntegrationMonteCarloRunPerfTestProcesses : public ppc::util
 
   bool CheckTestOutputData(OutType &output_data) final {
     const auto &[a, b, n, func_id] = input_data_;
-
     double exp_integral = 0.0;
     exp_integral = FunctionPair::Integral(func_id, b) - FunctionPair::Integral(func_id, a);
-
     double sredn = exp_integral / (b - a);
     double std_dev = (b - a) / std::sqrt(n) * std::max(std::abs(sredn), 1.0);
     double epsilon = std::max(10.0 * std_dev, 1e-2);
@@ -44,10 +42,11 @@ const auto kAllPerfTasks =
         PPC_SETTINGS_akhmetov_daniil_integration_monte_carlo);
 
 const auto kGtestValues = ppc::util::TupleToGTestValues(kAllPerfTasks);
-
 const auto kPerfTestName = AkhmetovDaniilIntegrationMonteCarloRunPerfTestProcesses::CustomPerfTestName;
 
+namespace {
 INSTANTIATE_TEST_SUITE_P(RunModeTests, AkhmetovDaniilIntegrationMonteCarloRunPerfTestProcesses, kGtestValues,
                          kPerfTestName);
+}  // namespace
 
 }  // namespace akhmetov_daniil_integration_monte_carlo
