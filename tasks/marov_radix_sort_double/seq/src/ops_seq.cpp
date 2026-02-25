@@ -1,65 +1,59 @@
 #include "ops_seq.h"
 #include <algorithm>
-#include <cstdint>
 #include <cstring>
+#include <cstdint>
 #include <vector>
 
 void radix_sort_double(std::vector<double> &arr) {
-  if (arr.empty())
-    return;
-
-  // Преобразование double в uint64_t для сортировки
-  std::vector<uint64_t> bits(arr.size());
-  for (size_t i = 0; i < arr.size(); i++) {
-    uint64_t val;
-    std::memcpy(&val, &arr[i], sizeof(double));
-    // Инвертируем бит знака для правильной сортировки
-    if (val >> 63) {
-      val = ~val;
-    } else {
-      val |= 1ULL << 63;
+    if (arr.empty()) {
+        return;
     }
-    bits[i] = val;
-  }
-
-  // Поразрядная сортировка по байтам
-  const int BITS_PER_PASS = 8;
-  const int RADIX = 1 << BITS_PER_PASS;
-  const int PASSES = sizeof(uint64_t) * 8 / BITS_PER_PASS;
-
-  std::vector<uint64_t> temp(arr.size());
-
-  for (int pass = 0; pass < PASSES; pass++) {
-    std::vector<int> count(RADIX, 0);
-
-    // Подсчёт
-    for (size_t i = 0; i < bits.size(); i++) {
-      int digit = (bits[i] >> (pass * BITS_PER_PASS)) & (RADIX - 1);
-      count[digit]++;
+    
+    std::vector<uint64_t> bits(arr.size());
+    for (size_t i = 0; i < arr.size(); ++i) {
+        uint64_t val = 0;
+        std::memcpy(&val, &arr[i], sizeof(double));
+        if ((val >> 63) != 0) {
+            val = ~val;
+        } else {
+            val |= (1ULL << 63);
+        }
+        bits[i] = val;
     }
-
-    // Преобразование в позиции
-    for (int i = 1; i < RADIX; i++) {
-      count[i] += count[i - 1];
+    
+    const int bits_per_pass = 8;
+    const int radix = 1 << bits_per_pass;
+    const int passes = sizeof(uint64_t) * 8 / bits_per_pass;
+    
+    std::vector<uint64_t> temp(arr.size());
+    
+    for (int pass = 0; pass < passes; ++pass) {
+        std::vector<int> count(radix, 0);
+        
+        for (size_t i = 0; i < bits.size(); ++i) {
+            int digit = static_cast<int>((bits[i] >> (pass * bits_per_pass)) & (radix - 1));
+            ++count[digit];
+        }
+        
+        for (int i = 1; i < radix; ++i) {
+            count[i] += count[i - 1];
+        }
+        
+        for (int i = static_cast<int>(bits.size()) - 1; i >= 0; --i) {
+            int digit = static_cast<int>((bits[i] >> (pass * bits_per_pass)) & (radix - 1));
+            temp[--count[digit]] = bits[i];
+        }
+        
+        bits.swap(temp);
     }
-
-    // Распределение
-    for (int i = bits.size() - 1; i >= 0; i--) {
-      int digit = (bits[i] >> (pass * BITS_PER_PASS)) & (RADIX - 1);
-      temp[--count[digit]] = bits[i];
+    
+    for (size_t i = 0; i < arr.size(); ++i) {
+        uint64_t val = bits[i];
+        if ((val >> 63) != 0) {
+            val &= ~(1ULL << 63);
+        } else {
+            val = ~val;
+        }
+        std::memcpy(&arr[i], &val, sizeof(double));
     }
-
-    bits.swap(temp);
-  }
-
-  // Обратное преобразование
-  for (size_t i = 0; i < arr.size(); i++) {
-    uint64_t val = bits[i];
-    if (val >> 63) {
-      val &= ~(1ULL << 63);
-    } else {
-      val = ~val;
-    }
-    std::memcpy(&arr[i], &val, sizeof(double));
-  }
 }
