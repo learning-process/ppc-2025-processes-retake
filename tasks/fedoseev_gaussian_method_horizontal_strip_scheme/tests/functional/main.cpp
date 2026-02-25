@@ -37,11 +37,15 @@ class FedoseevRunFuncTestsProcesses2 : public ppc::util::BaseRunFuncTests<InType
   }
 
   bool CheckTestOutputData(OutType &output_data) final {
-    if (output_data.size() != reference_solution_.size()) return false;
+    if (output_data.size() != reference_solution_.size()) {
+      return false;
+    }
 
     double tolerance = 1e-6;
     for (size_t i = 0; i < output_data.size(); ++i) {
-      if (std::abs(output_data[i] - reference_solution_[i]) > tolerance) return false;
+      if (std::abs(output_data[i] - reference_solution_[i]) > tolerance) {
+        return false;
+      }
     }
 
     const auto &A = input_data_;
@@ -51,12 +55,16 @@ class FedoseevRunFuncTestsProcesses2 : public ppc::util::BaseRunFuncTests<InType
       for (int j = 0; j < n; ++j) {
         sum += A[i][j] * output_data[j];
       }
-      if (std::abs(sum - A[i][n]) > tolerance * n) return false;
+      if (std::abs(sum - A[i][n]) > tolerance * n) {
+        return false;
+      }
     }
     return true;
   }
 
-  InType GetTestInputData() final { return input_data_; }
+  InType GetTestInputData() final {
+    return input_data_;
+  }
 
  private:
   InType input_data_;
@@ -77,7 +85,9 @@ InType generateTestSystem(int n, int seed) {
       } else {
         A[i][j] = dis(gen);
       }
-      if (i != j) sum += std::abs(A[i][j]);
+      if (i != j) {
+        sum += std::abs(A[i][j]);
+      }
     }
     if (std::abs(A[i][i]) <= sum) {
       A[i][i] = sum + 1.0;
@@ -98,11 +108,8 @@ TEST_P(FedoseevRunFuncTestsProcesses2, GaussianEliminationTest) {
   ExecuteTest(GetParam());
 }
 
-const std::array<TestType, 4> kTestParam = {
-    std::make_tuple(10, 1),
-    std::make_tuple(20, 2),
-    std::make_tuple(30, 3),
-    std::make_tuple(40, 4)};
+const std::array<TestType, 4> kTestParam = {std::make_tuple(10, 1), std::make_tuple(20, 2), std::make_tuple(30, 3),
+                                            std::make_tuple(40, 4)};
 
 using MPITask = FedoseevGaussianMethodHorizontalStripSchemeMPI;
 using SEQTask = FedoseevGaussianMethodHorizontalStripSchemeSEQ;

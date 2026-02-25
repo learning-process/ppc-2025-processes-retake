@@ -26,14 +26,15 @@ class FedoseevRunPerfTestProcesses2 : public ppc::util::BaseRunPerfTests<InType,
     std::string test_name = test_info->name();
 
     int size = kMediumSize;
-    if (test_name.find("Small") != std::string::npos)
+    if (test_name.find("Small") != std::string::npos) {
       size = kSmallSize;
-    else if (test_name.find("Medium") != std::string::npos)
+    } else if (test_name.find("Medium") != std::string::npos) {
       size = kMediumSize;
-    else if (test_name.find("Large") != std::string::npos)
+    } else if (test_name.find("Large") != std::string::npos) {
       size = kLargeSize;
-    else if (test_name.find("ExtraLarge") != std::string::npos)
+    } else if (test_name.find("ExtraLarge") != std::string::npos) {
       size = kExtraLargeSize;
+    }
 
     input_data_ = generatePerformanceTestSystem(size);
   }
@@ -43,7 +44,9 @@ class FedoseevRunPerfTestProcesses2 : public ppc::util::BaseRunPerfTests<InType,
     return !output_data.empty() && output_data.size() == A.size();
   }
 
-  InType GetTestInputData() final { return input_data_; }
+  InType GetTestInputData() final {
+    return input_data_;
+  }
 };
 
 InType generatePerformanceTestSystem(int n) {
@@ -64,18 +67,25 @@ InType generatePerformanceTestSystem(int n) {
   return A;
 }
 
-TEST_P(FedoseevRunPerfTestProcesses2, SmallSystem) { ExecuteTest(GetParam()); }
-TEST_P(FedoseevRunPerfTestProcesses2, MediumSystem) { ExecuteTest(GetParam()); }
-TEST_P(FedoseevRunPerfTestProcesses2, LargeSystem) { ExecuteTest(GetParam()); }
-TEST_P(FedoseevRunPerfTestProcesses2, ExtraLargeSystem) { ExecuteTest(GetParam()); }
+TEST_P(FedoseevRunPerfTestProcesses2, SmallSystem) {
+  ExecuteTest(GetParam());
+}
+TEST_P(FedoseevRunPerfTestProcesses2, MediumSystem) {
+  ExecuteTest(GetParam());
+}
+TEST_P(FedoseevRunPerfTestProcesses2, LargeSystem) {
+  ExecuteTest(GetParam());
+}
+TEST_P(FedoseevRunPerfTestProcesses2, ExtraLargeSystem) {
+  ExecuteTest(GetParam());
+}
 
 namespace {
 
 using MPITask = FedoseevGaussianMethodHorizontalStripSchemeMPI;
 using SEQTask = FedoseevGaussianMethodHorizontalStripSchemeSEQ;
 
-const auto kAllPerfTasks =
-    ppc::util::MakeAllPerfTasks<InType, MPITask, SEQTask>(PPC_SETTINGS_example_processes_2);
+const auto kAllPerfTasks = ppc::util::MakeAllPerfTasks<InType, MPITask, SEQTask>(PPC_SETTINGS_example_processes_2);
 
 const auto kGtestValues = ppc::util::TupleToGTestValues(kAllPerfTasks);
 const auto kPerfTestName = FedoseevRunPerfTestProcesses2::CustomPerfTestName;
