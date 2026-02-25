@@ -122,6 +122,7 @@ TEST_P(SafaryanASparseMatrixDoubleRunPerfTests, RunPerfModes) {
   ExecuteTest(GetParam());
 }
 
+
 const auto kAllPerfTasks =
     ppc::util::MakeAllPerfTasks<InType, SafaryanASparseMatrixDoubleMPI, SafaryanASparseMatrixDoubleSEQ>(
         PPC_SETTINGS_safaryan_a_sparse_matrix_double);
