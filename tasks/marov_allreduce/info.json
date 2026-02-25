@@ -1,5 +1,7 @@
 {
-    "task_id": 3,
-    "student": "marov",
-    "technologies": ["mpi"]
+  "student": "marov",
+  "task_id": 3,
+  "technologies": [
+    "mpi"
+  ]
 }

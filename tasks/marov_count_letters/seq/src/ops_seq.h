@@ -3,6 +3,6 @@
 
 #include <string>
 
-int count_letters(const std::string& str);
+int count_letters(const std::string &str);
 
 #endif

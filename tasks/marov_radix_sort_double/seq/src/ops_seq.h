@@ -3,6 +3,6 @@
 
 #include <vector>
 
-void radix_sort_double(std::vector<double>& arr);
+void radix_sort_double(std::vector<double> &arr);
 
 #endif
