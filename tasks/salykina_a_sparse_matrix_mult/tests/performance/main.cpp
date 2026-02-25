@@ -10,7 +10,9 @@
 
 namespace salykina_a_sparse_matrix_mult {
 
-static SparseMatrixCRS CreateSparseMatrix(int size, [[maybe_unused]] double sparsity) {
+namespace {
+
+SparseMatrixCRS CreateSparseMatrix(int size, [[maybe_unused]] double sparsity) {
   SparseMatrixCRS crs;
   crs.num_rows = size;
   crs.num_cols = size;
@@ -29,6 +31,8 @@ static SparseMatrixCRS CreateSparseMatrix(int size, [[maybe_unused]] double spar
 
   return crs;
 }
+
+}  // namespace
 
 class SalykinaAMultMatrixRunPerfTestProcesses : public ppc::util::BaseRunPerfTests<InType, OutType> {
   InType input_data_{};

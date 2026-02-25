@@ -15,16 +15,18 @@
 
 namespace salykina_a_sparse_matrix_mult {
 
-static SparseMatrixCRS DenseToCRS(const std::vector<std::vector<double>> &dense) {
+namespace {
+
+SparseMatrixCRS DenseToCRS(const std::vector<std::vector<double>> &dense) {
   SparseMatrixCRS crs;
   crs.num_rows = static_cast<int>(dense.size());
   crs.num_cols = dense.empty() ? 0 : static_cast<int>(dense[0].size());
   crs.row_ptr.push_back(0);
 
-  for (size_t i = 0; i < dense.size(); i++) {
-    for (size_t j = 0; j < dense[i].size(); j++) {
-      if (std::abs(dense[i][j]) > 1e-10) {
-        crs.values.push_back(dense[i][j]);
+  for (const auto &i : dense) {
+    for (size_t j = 0; j < i.size(); j++) {
+      if (std::abs(i[j]) > 1e-10) {
+        crs.values.push_back(i[j]);
         crs.col_indices.push_back(static_cast<int>(j));
       }
     }
@@ -35,7 +37,7 @@ static SparseMatrixCRS DenseToCRS(const std::vector<std::vector<double>> &dense)
   return crs;
 }
 
-static std::vector<std::vector<double>> CRSToDense(const SparseMatrixCRS &crs) {
+std::vector<std::vector<double>> CRSToDense(const SparseMatrixCRS &crs) {
   std::vector<std::vector<double>> dense(crs.num_rows, std::vector<double>(crs.num_cols, 0.0));
 
   for (int i = 0; i < crs.num_rows; i++) {
@@ -49,8 +51,8 @@ static std::vector<std::vector<double>> CRSToDense(const SparseMatrixCRS &crs) {
   return dense;
 }
 
-static std::vector<std::vector<double>> MultiplyDense(const std::vector<std::vector<double>> &a,
-                                                      const std::vector<std::vector<double>> &b) {
+std::vector<std::vector<double>> MultiplyDense(const std::vector<std::vector<double>> &a,
+                                               const std::vector<std::vector<double>> &b) {
   int rows_a = static_cast<int>(a.size());
   int cols_a = a.empty() ? 0 : static_cast<int>(a[0].size());
   int cols_b = b.empty() ? 0 : static_cast<int>(b[0].size());
@@ -66,6 +68,8 @@ static std::vector<std::vector<double>> MultiplyDense(const std::vector<std::vec
 
   return result;
 }
+
+}  // namespace
 
 class SalykinaASparseMatrixMultRunFuncTestsProcesses : public ppc::util::BaseRunFuncTests<InType, OutType, TestType> {
  public:
