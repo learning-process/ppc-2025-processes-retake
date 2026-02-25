@@ -13,8 +13,7 @@ class SafaryanASparseMatrixDoubleSEQ : public BaseTask {
     return ppc::task::TypeOfTask::kSEQ;
   }
 
-  explicit SafaryanASparseMatrixDoubleSEQ(InType in); //f
-
+  explicit SafaryanASparseMatrixDoubleSEQ(InType in);  // f
 
  private:
   bool ValidationImpl() override;
