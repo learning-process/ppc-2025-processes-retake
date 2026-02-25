@@ -1,6 +1,7 @@
 #include "fedoseev_count_words_in_string/mpi/include/ops_mpi.hpp"
 
 #include <mpi.h>
+
 #include <algorithm>
 #include <cctype>
 #include <cstddef>
@@ -44,7 +45,7 @@ int CountWordsChunk(const std::string &s, std::size_t begin, std::size_t end, bo
 
 }  // namespace
 
-FedoseevCountWordsInStringMPI::FedoseevCountWordsInStringMPI(const InType& in) {
+FedoseevCountWordsInStringMPI::FedoseevCountWordsInStringMPI(const InType &in) {
   SetTypeOfTask(GetStaticTypeOfTask());
   GetInput() = in;
   GetOutput() = 0;

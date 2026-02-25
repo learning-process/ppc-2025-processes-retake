@@ -2,10 +2,10 @@
 
 #include <algorithm>
 #include <array>
+#include <cctype>
 #include <cstddef>
 #include <cstdint>
 #include <numeric>
-#include <cctype>
 #include <string>
 #include <tuple>
 #include <utility>
@@ -26,10 +26,10 @@ using TestType = fedoseev_count_words_in_string::TestType;
 class FedoseevRunFuncTestsWordsCount : public ppc::util::BaseRunFuncTests<InType, OutType, TestType> {
  public:
   static std::string PrintTestParam(const TestType &test_param) {
-    const auto& input = std::get<0>(test_param);
-    const auto& expected = std::get<1>(test_param);
+    const auto &input = std::get<0>(test_param);
+    const auto &expected = std::get<1>(test_param);
     std::string safe_name;
-    
+
     if (input.empty()) {
       safe_name = "empty_string";
     } else if (input == "   ") {
@@ -61,7 +61,7 @@ class FedoseevRunFuncTestsWordsCount : public ppc::util::BaseRunFuncTests<InType
     } else {
       safe_name = "test_" + std::to_string(expected);
     }
-    
+
     return safe_name + "_expected_" + std::to_string(expected);
   }
 
@@ -106,8 +106,7 @@ const std::array<TestType, 14> kTestParam = {
     std::make_tuple(std::string{"punctuation,shouldn't-break!words?"}, 1),
     std::make_tuple(std::string{"C++ programming is fun!"}, 4),
     std::make_tuple(std::string{"русский  текст  да"}, 3),
-    std::make_tuple(std::string{"emoji 👍🏽rocks"}, 2)
-};
+    std::make_tuple(std::string{"emoji 👍🏽rocks"}, 2)};
 
 const auto kTestTasksList = std::tuple_cat(ppc::util::AddFuncTask<FedoseevCountWordsInStringMPI, InType>(
                                                kTestParam, PPC_SETTINGS_fedoseev_count_words_in_string),

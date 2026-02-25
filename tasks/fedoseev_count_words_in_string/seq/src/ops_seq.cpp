@@ -7,7 +7,7 @@
 
 namespace fedoseev_count_words_in_string {
 
-FedoseevCountWordsInStringSEQ::FedoseevCountWordsInStringSEQ(const InType& in) {
+FedoseevCountWordsInStringSEQ::FedoseevCountWordsInStringSEQ(const InType &in) {
   SetTypeOfTask(GetStaticTypeOfTask());
   GetInput() = in;
   GetOutput() = 0;
