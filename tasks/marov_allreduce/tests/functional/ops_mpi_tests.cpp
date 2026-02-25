@@ -1,7 +1,7 @@
 #include <gtest/gtest.h>
 #include <mpi.h>
 
-#include "ops_mpi.h"
+#include "../../mpi/src/ops_mpi.h"
 
 TEST(allreduce_test, sum_ints) {
   int rank;

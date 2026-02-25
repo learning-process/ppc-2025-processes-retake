@@ -1,6 +1,6 @@
 #include <gtest/gtest.h>
 
-#include "ops_seq.h"
+#include "../../seq/src/ops_seq.h"
 
 TEST(count_letters_seq, basic) {
   std::string str = "Hello, world!";

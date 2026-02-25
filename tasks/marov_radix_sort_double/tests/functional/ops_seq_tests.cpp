@@ -3,7 +3,7 @@
 #include <algorithm>
 #include <vector>
 
-#include "ops_seq.h"
+#include "../../seq/src/ops_seq.h"
 
 TEST(radix_sort_double_test, basic_sort) {
   std::vector<double> arr = {3.14, 1.41, 2.71, 0.58, 1.61};
