@@ -21,7 +21,7 @@ struct SparseMatrixCCS {
 
 using InType = std::vector<SparseMatrixCCS>;
 using OutType = SparseMatrixCCS;
-
+using TestType = std::tuple<int, std::string>;
 using BaseTask = ppc::task::Task<InType, OutType>;
 
 }  // namespace akhmetov_daniil_sparse_mm_ccs
