@@ -3,6 +3,7 @@
 #include <fstream>
 #include <stdexcept>
 #include <string>
+#include <cstddef>
 
 #include "savva_d_min_elem_vec//common/include/common.hpp"
 #include "savva_d_min_elem_vec/mpi/include/ops_mpi.hpp"
