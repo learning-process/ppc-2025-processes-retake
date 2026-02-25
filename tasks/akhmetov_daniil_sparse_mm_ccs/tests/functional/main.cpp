@@ -3,6 +3,8 @@
 #include <array>
 #include <cmath>
 #include <cstddef>
+#include <map>
+#include <stdexcept>
 #include <string>
 #include <tuple>
 #include <utility>
@@ -18,24 +20,69 @@ namespace akhmetov_daniil_sparse_mm_ccs {
 
 using InType = ::akhmetov_daniil_sparse_mm_ccs::InType;
 using OutType = ::akhmetov_daniil_sparse_mm_ccs::OutType;
-using TestType = std::tuple<int, std::vector<std::vector<double>>, std::vector<std::vector<double>>,
-                            std::vector<std::vector<double>>>;
+using TestType = ::akhmetov_daniil_sparse_mm_ccs::TestType;
+
+struct TestCaseData {
+  std::vector<std::vector<double>> a;
+  std::vector<std::vector<double>> b;
+  std::vector<std::vector<double>> expected;
+};
+
+const std::map<int, TestCaseData> kTestCases = {
+    {1, {.a = {{1.0, 2.0}, {3.0, 4.0}}, .b = {{5.0, 6.0}, {7.0, 8.0}}, .expected = {{19.0, 22.0}, {43.0, 50.0}}}},
+    {2, {.a = {{1.0, 0.0}, {0.0, 1.0}}, .b = {{1.0, 2.0}, {3.0, 4.0}}, .expected = {{1.0, 2.0}, {3.0, 4.0}}}},
+    {3,
+     {.a = {{1.0, 0.0, 0.0}, {0.0, 2.0, 0.0}, {0.0, 0.0, 3.0}},
+      .b = {{4.0, 0.0, 0.0}, {0.0, 5.0, 0.0}, {0.0, 0.0, 6.0}},
+      .expected = {{4.0, 0.0, 0.0}, {0.0, 10.0, 0.0}, {0.0, 0.0, 18.0}}}},
+    {4, {.a = {{0.0, 0.0}, {0.0, 0.0}}, .b = {{1.0, 2.0}, {3.0, 4.0}}, .expected = {{0.0, 0.0}, {0.0, 0.0}}}},
+    {5,
+     {.a = {{1.0, 2.0, 3.0}, {4.0, 5.0, 6.0}},
+      .b = {{7.0, 8.0}, {9.0, 10.0}, {11.0, 12.0}},
+      .expected = {{58.0, 64.0}, {139.0, 154.0}}}},
+    {6,
+     {.a = {{1.0, 0.0, 2.0}, {0.0, 3.0, 0.0}, {4.0, 0.0, 5.0}},
+      .b = {{6.0, 0.0}, {0.0, 7.0}, {8.0, 0.0}},
+      .expected = {{22.0, 0.0}, {0.0, 21.0}, {64.0, 0.0}}}},
+    {7, {.a = {{2.0}}, .b = {{3.0}}, .expected = {{6.0}}}},
+    {8, {.a = {{1.0, 2.0, 3.0}}, .b = {{4.0}, {5.0}, {6.0}}, .expected = {{32.0}}}},
+    {9,
+     {.a = {{-1.0, -2.0}, {-3.0, -4.0}}, .b = {{1.0, 2.0}, {3.0, 4.0}}, .expected = {{-7.0, -10.0}, {-15.0, -22.0}}}},
+    {10, {.a = {{0.5, 0.5}, {0.5, 0.5}}, .b = {{2.0, 4.0}, {6.0, 8.0}}, .expected = {{4.0, 6.0}, {4.0, 6.0}}}},
+    {11, {.a = {}, .b = {}, .expected = {}}},
+    {12, {.a = {{0.0, 0.0}, {0.0, 1.0}}, .b = {{2.0, 0.0}, {0.0, 0.0}}, .expected = {{0.0, 0.0}, {0.0, 0.0}}}},
+    {13,
+     {.a = {{1.0, 0.0, 0.0, 0.0}, {0.0, 0.0, 0.0, 0.0}, {0.0, 0.0, 2.0, 0.0}, {0.0, 3.0, 0.0, 0.0}},
+      .b = {{0.0, 1.0}, {0.0, 0.0}, {0.0, 0.0}, {4.0, 0.0}},
+      .expected = {{0.0, 1.0}, {0.0, 0.0}, {0.0, 0.0}, {0.0, 0.0}}}},
+    {14, {.a = {{1.0, 2.0}, {3.0, 4.0}}, .b = {{1.0, 0.0}, {0.0, 1.0}}, .expected = {{1.0, 2.0}, {3.0, 4.0}}}},
+    {15,
+     {.a = {{0.001, 0.002}, {0.003, 0.004}},
+      .b = {{1000.0, 2000.0}, {3000.0, 4000.0}},
+      .expected = {{7.0, 10.0}, {15.0, 22.0}}}},
+};
 
 class AkhmetovDaniilSparseMmCcsFuncTests : public ppc::util::BaseRunFuncTests<InType, OutType, TestType> {
  public:
   static std::string PrintTestParam(const TestType &test_param) {
-    return std::to_string(std::get<0>(test_param)) + "_sparse_mm_ccs";
+    return std::to_string(std::get<0>(test_param)) + "_" + std::get<1>(test_param);
   }
 
  protected:
   void SetUp() override {
     const auto params = std::get<static_cast<std::size_t>(ppc::util::GTestParamIndex::kTestParams)>(GetParam());
+    int test_id = std::get<0>(params);
 
-    dense_a_ = std::get<1>(params);
-    dense_b_ = std::get<2>(params);
-    dense_expected_ = std::get<3>(params);
+    auto it = kTestCases.find(test_id);
+    if (it == kTestCases.end()) {
+      throw std::runtime_error("Test case not found: " + std::to_string(test_id));
+    }
 
-    if (dense_a_.empty() || dense_a_.front().empty()) {
+    dense_a_ = it->second.a;
+    dense_b_ = it->second.b;
+    dense_expected_ = it->second.expected;
+
+    if (dense_a_.empty() || (!dense_a_.empty() && dense_a_.front().empty())) {
       col_ptr_a_.assign(1, 0);
       values_a_.clear();
       row_indices_a_.clear();
@@ -43,7 +90,7 @@ class AkhmetovDaniilSparseMmCcsFuncTests : public ppc::util::BaseRunFuncTests<In
       ConvertDenseToCcs(dense_a_, values_a_, row_indices_a_, col_ptr_a_);
     }
 
-    if (dense_b_.empty() || dense_b_.front().empty()) {
+    if (dense_b_.empty() || (!dense_b_.empty() && dense_b_.front().empty())) {
       col_ptr_b_.assign(1, 0);
       values_b_.clear();
       row_indices_b_.clear();
@@ -216,88 +263,36 @@ TEST_P(AkhmetovDaniilSparseMmCcsFuncTests, FunctionalTests) {
   ExecuteTest(GetParam());
 }
 
-TEST_P(AkhmetovDaniilSparseMmCcsFuncTests, CoverageTests) {
-  ExecuteTest(GetParam());
-}
-
-const std::array<TestType, 10> kFunctionalTests = {
-    // 1. Простое умножение 2x2
-    TestType{1, {{1.0, 2.0}, {3.0, 4.0}}, {{5.0, 6.0}, {7.0, 8.0}}, {{19.0, 22.0}, {43.0, 50.0}}},
-
-    // 2. Единичная матрица
-    TestType{2, {{1.0, 0.0}, {0.0, 1.0}}, {{1.0, 2.0}, {3.0, 4.0}}, {{1.0, 2.0}, {3.0, 4.0}}},
-
-    // 3. Разреженная диагональная матрица
-    TestType{3,
-             {{1.0, 0.0, 0.0}, {0.0, 2.0, 0.0}, {0.0, 0.0, 3.0}},
-             {{4.0, 0.0, 0.0}, {0.0, 5.0, 0.0}, {0.0, 0.0, 6.0}},
-             {{4.0, 0.0, 0.0}, {0.0, 10.0, 0.0}, {0.0, 0.0, 18.0}}},
-
-    // 4. Нулевая матрица
-    TestType{4, {{0.0, 0.0}, {0.0, 0.0}}, {{1.0, 2.0}, {3.0, 4.0}}, {{0.0, 0.0}, {0.0, 0.0}}},
-
-    // 5. 2x3 на 3x2
-    TestType{
-        5, {{1.0, 2.0, 3.0}, {4.0, 5.0, 6.0}}, {{7.0, 8.0}, {9.0, 10.0}, {11.0, 12.0}}, {{58.0, 64.0}, {139.0, 154.0}}},
-
-    // 6. Разреженная с несколькими ненулевыми в столбце
-    TestType{6,
-             {{1.0, 0.0, 2.0}, {0.0, 3.0, 0.0}, {4.0, 0.0, 5.0}},
-             {{6.0, 0.0}, {0.0, 7.0}, {8.0, 0.0}},
-             {{22.0, 0.0}, {0.0, 21.0}, {64.0, 0.0}}},
-
-    // 7. 1x1
-    TestType{7, {{2.0}}, {{3.0}}, {{6.0}}},
-
-    // 8. Вектор-строка на вектор-столбец
-    TestType{8, {{1.0, 2.0, 3.0}}, {{4.0}, {5.0}, {6.0}}, {{32.0}}},
-
-    // 9. Отрицательные числа
-    TestType{9, {{-1.0, -2.0}, {-3.0, -4.0}}, {{1.0, 2.0}, {3.0, 4.0}}, {{-7.0, -10.0}, {-15.0, -22.0}}},
-
-    // 10. Дробные числа
-    TestType{10, {{0.5, 0.5}, {0.5, 0.5}}, {{2.0, 4.0}, {6.0, 8.0}}, {{4.0, 6.0}, {4.0, 6.0}}},
-};
-
-const std::array<TestType, 5> kCoverageTests = {
-    // 11. Пустые матрицы
-    TestType{11, {}, {}, {}},
-
-    // 12. Один ненулевой элемент (произведение даст нули)
-    TestType{12, {{0.0, 0.0}, {0.0, 1.0}}, {{2.0, 0.0}, {0.0, 0.0}}, {{0.0, 0.0}, {0.0, 0.0}}},
-
-    // 13. Большие разреженные матрицы
-    TestType{13,
-             {{1.0, 0.0, 0.0, 0.0}, {0.0, 0.0, 0.0, 0.0}, {0.0, 0.0, 2.0, 0.0}, {0.0, 3.0, 0.0, 0.0}},
-             {{0.0, 1.0}, {0.0, 0.0}, {0.0, 0.0}, {4.0, 0.0}},
-             {{0.0, 1.0}, {0.0, 0.0}, {0.0, 0.0}, {0.0, 0.0}}},
-
-    // 14. Умножение на единичную (симметричное)
-    TestType{14, {{1.0, 2.0}, {3.0, 4.0}}, {{1.0, 0.0}, {0.0, 1.0}}, {{1.0, 2.0}, {3.0, 4.0}}},
-
-    // 15. Маленькие дробные числа
-    TestType{15, {{0.001, 0.002}, {0.003, 0.004}}, {{1000.0, 2000.0}, {3000.0, 4000.0}}, {{7.0, 10.0}, {15.0, 22.0}}},
+// Список всех тестов с идентификаторами и именами
+const std::array<TestType, 15> kAllTests = {
+    TestType{1, "simple_2x2"},
+    TestType{2, "identity_matrix"},
+    TestType{3, "diagonal_3x3"},
+    TestType{4, "zero_matrix"},
+    TestType{5, "2x3_3x2"},
+    TestType{6, "sparse_3x2"},
+    TestType{7, "1x1"},
+    TestType{8, "row_x_column"},
+    TestType{9, "negative_numbers"},
+    TestType{10, "fractional_numbers"},
+    TestType{11, "empty_matrices"},
+    TestType{12, "single_nonzero"},
+    TestType{13, "large_sparse"},
+    TestType{14, "multiply_by_identity"},
+    TestType{15, "small_fractional"},
 };
 
 const auto kFunctionalTasksList = std::tuple_cat(ppc::util::AddFuncTask<SparseMatrixMultiplicationCCSMPI, InType>(
-                                                     kFunctionalTests, PPC_SETTINGS_akhmetov_daniil_sparse_mm_ccs),
+                                                     kAllTests, PPC_SETTINGS_akhmetov_daniil_sparse_mm_ccs),
                                                  ppc::util::AddFuncTask<SparseMatrixMultiplicationCCSSeq, InType>(
-                                                     kFunctionalTests, PPC_SETTINGS_akhmetov_daniil_sparse_mm_ccs));
-
-const auto kCoverageTasksList = std::tuple_cat(ppc::util::AddFuncTask<SparseMatrixMultiplicationCCSMPI, InType>(
-                                                   kCoverageTests, PPC_SETTINGS_akhmetov_daniil_sparse_mm_ccs),
-                                               ppc::util::AddFuncTask<SparseMatrixMultiplicationCCSSeq, InType>(
-                                                   kCoverageTests, PPC_SETTINGS_akhmetov_daniil_sparse_mm_ccs));
+                                                     kAllTests, PPC_SETTINGS_akhmetov_daniil_sparse_mm_ccs));
 
 inline const auto kFunctionalGtestValues = ppc::util::ExpandToValues(kFunctionalTasksList);
-inline const auto kCoverageGtestValues = ppc::util::ExpandToValues(kCoverageTasksList);
 
 inline const auto kPerfTestName =
     AkhmetovDaniilSparseMmCcsFuncTests::PrintFuncTestName<AkhmetovDaniilSparseMmCcsFuncTests>;
 
 INSTANTIATE_TEST_SUITE_P(Functional, AkhmetovDaniilSparseMmCcsFuncTests, kFunctionalGtestValues, kPerfTestName);
-
-INSTANTIATE_TEST_SUITE_P(Coverage, AkhmetovDaniilSparseMmCcsFuncTests, kCoverageGtestValues, kPerfTestName);
 
 }  // namespace
 }  // namespace akhmetov_daniil_sparse_mm_ccs
