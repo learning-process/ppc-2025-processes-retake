@@ -172,7 +172,7 @@ void SafaryanASparseMatrixDoubleSEQ::ProcessRow(int row_idx,
 
 ### Псевдокод
 
-```
+```text
 function PreProcessingImpl():
     rank, size = MPI_comm_info()
     rank_ = rank
@@ -435,8 +435,8 @@ function PostProcessingImpl():
 
 ### Структура проекта
 
-```
-tasks/sosnina_a_sparse_matrix_mult_crs_double/
+```text
+tasks/safaryan_a_sparse_matrix_double/
 ├── common/
 │   └── include/
 │       └── common.hpp
