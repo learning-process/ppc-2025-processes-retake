@@ -18,7 +18,7 @@ class FedoseevCountWordsInStringMPI : public BaseTask {
   bool RunImpl() override;
   bool PostProcessingImpl() override;
 
-  static int count_words_mpi_impl(const char *text, int text_length, int process_id, int num_processes);
+  static int CountWordsMpiImpl(const char *text, int text_length, int process_id, int num_processes);
 };
 
 }  // namespace fedoseev_count_words_in_string

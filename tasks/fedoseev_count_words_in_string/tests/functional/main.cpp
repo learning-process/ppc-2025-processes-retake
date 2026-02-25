@@ -1,15 +1,10 @@
 #include <gtest/gtest.h>
 
-#include <algorithm>
 #include <array>
 #include <cctype>
 #include <cstddef>
-#include <cstdint>
-#include <numeric>
 #include <string>
 #include <tuple>
-#include <utility>
-#include <vector>
 
 #include "fedoseev_count_words_in_string/common/include/common.hpp"
 #include "fedoseev_count_words_in_string/mpi/include/ops_mpi.hpp"
@@ -82,7 +77,7 @@ class FedoseevRunFuncTestsWordsCount : public ppc::util::BaseRunFuncTests<InType
 
  private:
   InType input_data_;
-  OutType expected_output_;
+  OutType expected_output_ = 0;
 };
 
 namespace {
