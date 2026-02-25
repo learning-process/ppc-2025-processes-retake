@@ -34,7 +34,7 @@ class SavvaDMinElemVecPerfTest : public ppc::util::BaseRunPerfTests<InType, OutT
     file >> expected_min_;
 
     // Читаем данные вектора
-    input_data_.resize(vector_size * 51);
+    input_data_.resize(static_cast<size_t>(vector_size) * 51);
     for (int i = 0; i < vector_size; ++i) {
       file >> input_data_[i];
     }
