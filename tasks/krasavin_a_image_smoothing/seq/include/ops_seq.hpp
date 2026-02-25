@@ -5,7 +5,6 @@
 #include "krasavin_a_image_smoothing/common/include/common.hpp"
 #include "task/include/task.hpp"
 
-
 namespace krasavin_a_image_smoothing {
 
 class KrasavinAImageSmoothingSEQ : public BaseTask {

@@ -92,7 +92,7 @@ void GatherResultsFromProcesses(size_t size, size_t width, size_t channels, size
   }
 }
 
-}
+}  // namespace
 
 KrasavinAImageSmoothingMPI::KrasavinAImageSmoothingMPI(const InType &in) {
   SetTypeOfTask(GetStaticTypeOfTask());
