@@ -5,12 +5,12 @@
 #include <cstddef>
 #include <string>
 #include <tuple>
-#include <vector>
 
 #include "tsarkov_k_monte_carlo_integration/common/include/common.hpp"
 #include "tsarkov_k_monte_carlo_integration/mpi/include/ops_mpi.hpp"
 #include "tsarkov_k_monte_carlo_integration/seq/include/ops_seq.hpp"
 #include "util/include/func_test_util.hpp"
+#include "util/include/util.hpp"
 
 namespace tsarkov_k_monte_carlo_integration {
 
@@ -27,8 +27,6 @@ class TsarkovKMonteCarloFuncTests : public ppc::util::BaseRunFuncTests<InType, O
   }
 
   bool CheckTestOutputData(OutType &output_data) final {
-    // Для Monte-Carlo мы проверяем корректность по диапазону значений.
-    // f(x)=exp(-||x||^2) на [0,1]^d => значение интеграла строго (0,1].
     return std::isfinite(output_data) && (output_data > 0.0) && (output_data <= 1.0);
   }
 

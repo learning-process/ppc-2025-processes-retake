@@ -1,8 +1,9 @@
 #include <gtest/gtest.h>
 
+#include <cmath>
+
 #include "tsarkov_k_monte_carlo_integration/common/include/common.hpp"
 #include "tsarkov_k_monte_carlo_integration/mpi/include/ops_mpi.hpp"
-#include "tsarkov_k_monte_carlo_integration/seq/include/ops_seq.hpp"
 #include "util/include/perf_test_util.hpp"
 
 namespace tsarkov_k_monte_carlo_integration {
@@ -22,7 +23,7 @@ class TsarkovKMonteCarloPerfTests : public ppc::util::BaseRunPerfTests<InType, O
   }
 
  private:
-  InType input_data_{};
+  InType input_data_;
 };
 
 TEST_P(TsarkovKMonteCarloPerfTests, RunPerfModes) {
