@@ -79,7 +79,7 @@ bool FedoseevTestTaskSEQ::RunImpl() {
     }
   }
 
-  for (size_t i = n - 1; i >= 0; --i) {
+  for (size_t i = n; i-- > 0;) {
     x[i] = augmented_matrix[i][n];
     for (size_t j = i + 1; j < n; ++j) {
       x[i] -= augmented_matrix[i][j] * x[j];
