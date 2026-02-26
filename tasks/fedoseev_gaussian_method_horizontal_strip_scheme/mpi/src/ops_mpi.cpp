@@ -4,6 +4,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <limits>
 #include <vector>
 
 #include "fedoseev_gaussian_method_horizontal_strip_scheme/common/include/common.hpp"
@@ -25,9 +26,7 @@ bool FedoseevTestTaskMPI::ValidationImpl() {
   }
 
   return std::all_of(augmented_matrix.begin(), augmented_matrix.end(),
-                     [n](const auto &row) { return row.size() == static_cast<size_t>(n) + 1; });
-
-  return true;
+                     [n](const auto &row) { return row.size() == n + 1; });
 }
 
 bool FedoseevTestTaskMPI::PreProcessingImpl() {
@@ -61,26 +60,31 @@ bool FedoseevTestTaskMPI::RunImpl() {
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
   MPI_Comm_size(MPI_COMM_WORLD, &size);
 
-  int rows_per_process = n / size;
-  int remainder = n % size;
+  if (n > static_cast<size_t>(std::numeric_limits<int>::max())) {
+    return false;
+  }
+  int n_int = static_cast<int>(n);
+
+  int rows_per_process = n_int / size;
+  int remainder = n_int % size;
   int start_row = (rank * rows_per_process) + std::min(rank, remainder);
   int end_row = start_row + rows_per_process + (rank < remainder ? 1 : 0);
   int local_rows = end_row - start_row;
 
-  std::vector<std::vector<double>> local_matrix(local_rows, std::vector<double>(n + 1));
+  std::vector<std::vector<double>> local_matrix(local_rows, std::vector<double>(n_int + 1));
 
   for (int i = 0; i < local_rows; ++i) {
-    local_matrix[i] = full_matrix[start_row + i];
+    local_matrix[i] = full_matrix[static_cast<size_t>(start_row + i)];
   }
 
-  std::vector<double> pivot_row(n + 1);
+  std::vector<double> pivot_row(n_int + 1);
 
-  for (size_t k = 0; k < n; ++k) {
+  for (int k = 0; k < n_int; ++k) {
     int owner_of_k = 0;
     for (int proc = 0; proc < size; ++proc) {
       int p_start = (proc * rows_per_process) + std::min(proc, remainder);
       int p_end = p_start + rows_per_process + (proc < remainder ? 1 : 0);
-      if (static_cast<int>(k) >= p_start && static_cast<int>(k) < p_end) {
+      if (k >= p_start && k < p_end) {
         owner_of_k = proc;
         break;
       }
@@ -88,16 +92,15 @@ bool FedoseevTestTaskMPI::RunImpl() {
 
     if (owner_of_k == rank) {
       int local_k = k - start_row;
-
       pivot_row = local_matrix[local_k];
     }
 
-    MPI_Bcast(pivot_row.data(), n + 1, MPI_DOUBLE, owner_of_k, MPI_COMM_WORLD);
+    MPI_Bcast(pivot_row.data(), n_int + 1, MPI_DOUBLE, owner_of_k, MPI_COMM_WORLD);
     for (int i = 0; i < local_rows; ++i) {
       int global_i = start_row + i;
-      if (global_i > static_cast<int>(k)) {
+      if (global_i > k) {
         double factor = local_matrix[i][k] / pivot_row[k];
-        for (size_t j = k; j < n + 1; ++j) {
+        for (int j = k; j < n_int + 1; ++j) {
           local_matrix[i][j] -= factor * pivot_row[j];
         }
       }
@@ -110,7 +113,7 @@ bool FedoseevTestTaskMPI::RunImpl() {
   for (int proc = 0; proc < size; ++proc) {
     int p_start = (proc * rows_per_process) + std::min(proc, remainder);
     int p_end = p_start + rows_per_process + (proc < remainder ? 1 : 0);
-    recvcounts[proc] = (p_end - p_start) * (n + 1);
+    recvcounts[proc] = (p_end - p_start) * (n_int + 1);
     displs[proc] = (proc == 0) ? 0 : displs[proc - 1] + recvcounts[proc - 1];
   }
 
@@ -122,15 +125,16 @@ bool FedoseevTestTaskMPI::RunImpl() {
   }
 
   if (rank == 0) {
-    gathered_data.resize(n * (n + 1));
+    gathered_data.resize(static_cast<size_t>(n_int) * (n_int + 1));
   }
 
-  MPI_Gatherv(send_buffer.data(), local_rows * (n + 1), MPI_DOUBLE, gathered_data.data(), recvcounts.data(),
+  MPI_Gatherv(send_buffer.data(), local_rows * (n_int + 1), MPI_DOUBLE, gathered_data.data(), recvcounts.data(),
               displs.data(), MPI_DOUBLE, 0, MPI_COMM_WORLD);
 
-  std::vector<double> x(n, 0.0);
+  std::vector<double> x(static_cast<size_t>(n_int), 0.0);
   if (rank == 0) {
-    std::vector<std::vector<double>> full_triangular_matrix(n, std::vector<double>(n + 1));
+    std::vector<std::vector<double>> full_triangular_matrix(static_cast<size_t>(n_int),
+                                                            std::vector<double>(static_cast<size_t>(n_int) + 1));
 
     int idx = 0;
     for (int proc = 0; proc < size; ++proc) {
@@ -139,23 +143,23 @@ bool FedoseevTestTaskMPI::RunImpl() {
       int p_rows = p_end - p_start;
 
       for (int i = 0; i < p_rows; ++i) {
-        for (size_t j = 0; j < n + 1; ++j) {
-          full_triangular_matrix[p_start + i][j] = gathered_data[idx++];
+        for (int j = 0; j < n_int + 1; ++j) {
+          full_triangular_matrix[static_cast<size_t>(p_start + i)][static_cast<size_t>(j)] = gathered_data[idx++];
         }
       }
     }
 
-    int nn = static_cast<int>(n);
-    for (int i = nn - 1; i >= 0; --i) {
-      x[i] = full_triangular_matrix[i][nn];
-      for (int j = i + 1; j < nn; ++j) {
-        x[i] -= full_triangular_matrix[i][j] * x[j];
+    for (int i = n_int - 1; i >= 0; --i) {
+      x[static_cast<size_t>(i)] = full_triangular_matrix[static_cast<size_t>(i)][static_cast<size_t>(n_int)];
+      for (int j = i + 1; j < n_int; ++j) {
+        x[static_cast<size_t>(i)] -=
+            full_triangular_matrix[static_cast<size_t>(i)][static_cast<size_t>(j)] * x[static_cast<size_t>(j)];
       }
-      x[i] /= full_triangular_matrix[i][i];
+      x[static_cast<size_t>(i)] /= full_triangular_matrix[static_cast<size_t>(i)][static_cast<size_t>(i)];
     }
   }
 
-  MPI_Bcast(x.data(), n, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+  MPI_Bcast(x.data(), n_int, MPI_DOUBLE, 0, MPI_COMM_WORLD);
 
   GetOutput() = x;
   return !GetOutput().empty();
@@ -178,7 +182,7 @@ bool FedoseevTestTaskMPI::PostProcessingImpl() {
       }
       residual += std::abs(sum - augmented_matrix[i][n]);
     }
-    return residual < 1e-6 * n;
+    return residual < 1e-6 * static_cast<double>(n);
   }
 
   return true;

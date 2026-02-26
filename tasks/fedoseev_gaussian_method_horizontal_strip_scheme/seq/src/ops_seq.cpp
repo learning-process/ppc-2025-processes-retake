@@ -23,9 +23,7 @@ bool FedoseevTestTaskSEQ::ValidationImpl() {
   }
 
   return std::all_of(augmented_matrix.begin(), augmented_matrix.end(),
-                     [n](const auto &row) { return row.size() == static_cast<size_t>(n) + 1; });
-
-  return true;
+                     [n](const auto &row) { return row.size() == n + 1; });
 }
 
 bool FedoseevTestTaskSEQ::PreProcessingImpl() {
@@ -105,7 +103,7 @@ bool FedoseevTestTaskSEQ::PostProcessingImpl() {
     residual += std::abs(sum - augmented_matrix[i][n]);
   }
 
-  return residual < 1e-6 * n;
+  return residual < 1e-6 * static_cast<double>(n);
 }
 
 }  // namespace fedoseev_gaussian_method_horizontal_strip_scheme
