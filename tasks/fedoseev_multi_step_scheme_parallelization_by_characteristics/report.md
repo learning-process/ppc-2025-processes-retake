@@ -182,7 +182,7 @@ fedoseev_multi_step_scheme_parallelization_by_characteristics/
 
 #### 5.2.1 Базовые определения типов
 
-```cpp
+```
 namespace fedoseev_multi_step_scheme_parallelization_by_characteristics {
     using InType = int;      // Вход: размер сетки
     using OutType = double;  // Выход: нормированный максимум
@@ -193,7 +193,7 @@ namespace fedoseev_multi_step_scheme_parallelization_by_characteristics {
 
 #### 5.2.2 SEQ-реализация
 
-```cpp
+```
 class FedoseevMultiStepSchemeSEQ : public BaseTask {
 public:
     static constexpr ppc::task::TypeOfTask GetStaticTypeOfTask() {
@@ -211,7 +211,7 @@ private:
 
 #### 5.2.3 MPI-реализация
 
-```cpp
+```
 class FedoseevMultiStepSchemeMPI : public BaseTask {
 public:
     static constexpr ppc::task::TypeOfTask GetStaticTypeOfTask() {
