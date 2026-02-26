@@ -33,6 +33,8 @@ class UrinOEdgeImgSobelPerfTest : public ppc::util::BaseRunPerfTests<InType, Out
   }
 };
 
+namespace {
+
 TEST_P(UrinOEdgeImgSobelPerfTest, RunPerfModes) {
   ExecuteTest(GetParam());
 }
@@ -44,5 +46,5 @@ const auto kGtestValues = ppc::util::TupleToGTestValues(kAllPerfTasks);
 
 INSTANTIATE_TEST_SUITE_P(RunModeTests, UrinOEdgeImgSobelPerfTest, kGtestValues,
                          UrinOEdgeImgSobelPerfTest::CustomPerfTestName);
-
+}  // namespace
 }  // namespace urin_o_edge_img_sobel
