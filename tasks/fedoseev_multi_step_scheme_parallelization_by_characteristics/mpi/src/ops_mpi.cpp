@@ -25,7 +25,8 @@ bool FedoseevMultiStepSchemeMPI::PreProcessingImpl() {
 }
 
 bool FedoseevMultiStepSchemeMPI::RunImpl() {
-  int rank, size;
+  int rank = 0;
+  int size = 0;
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
   MPI_Comm_size(MPI_COMM_WORLD, &size);
 
@@ -37,14 +38,14 @@ bool FedoseevMultiStepSchemeMPI::RunImpl() {
   int start_x = rank * points_per_process;
   int end_x = (rank == size - 1) ? input : (rank + 1) * points_per_process;
 
-  for (int x = start_x; x < end_x; ++x) {
-    for (int y = 0; y < input; ++y) {
-      double val = std::sin(x * 0.1) * std::cos(y * 0.1);
+  for (int i = start_x; i < end_x; ++i) {
+    for (int j = 0; j < input; ++j) {
+      double val = std::sin(i * 0.1) * std::cos(j * 0.1);
       local_result += val;
 
       for (int step = 0; step < 3; ++step) {
         double delta = 0.01;
-        val = std::sin((x + step * delta) * 0.1) * std::cos((y + step * delta) * 0.1);
+        val = std::sin((i + step * delta) * 0.1) * std::cos((j + step * delta) * 0.1);
         local_result = std::max(local_result, val);
       }
     }
