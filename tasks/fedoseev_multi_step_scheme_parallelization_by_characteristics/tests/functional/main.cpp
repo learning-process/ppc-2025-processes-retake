@@ -1,15 +1,9 @@
 #include <gtest/gtest.h>
 
-#include <algorithm>
 #include <array>
 #include <cstddef>
-#include <cstdint>
-#include <numeric>
-#include <stdexcept>
 #include <string>
 #include <tuple>
-#include <utility>
-#include <vector>
 
 #include "fedoseev_multi_step_scheme_parallelization_by_characteristics/common/include/common.hpp"
 #include "fedoseev_multi_step_scheme_parallelization_by_characteristics/mpi/include/ops_mpi.hpp"

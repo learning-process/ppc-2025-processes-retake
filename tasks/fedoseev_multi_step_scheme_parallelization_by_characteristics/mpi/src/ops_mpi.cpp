@@ -4,10 +4,8 @@
 
 #include <algorithm>
 #include <cmath>
-#include <vector>
 
 #include "fedoseev_multi_step_scheme_parallelization_by_characteristics/common/include/common.hpp"
-#include "util/include/util.hpp"
 
 namespace fedoseev_multi_step_scheme_parallelization_by_characteristics {
 
