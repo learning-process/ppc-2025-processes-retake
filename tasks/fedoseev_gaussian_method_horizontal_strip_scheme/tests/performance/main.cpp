@@ -15,7 +15,7 @@ namespace fedoseev_gaussian_method_horizontal_strip_scheme {
 namespace {
 
 InType GeneratePerformanceTestSystem(int n) {
-  static std::mt19937 gen(42);
+  static std::mt19937 gen(std::random_device{}());
   std::uniform_real_distribution<> dis(1.0, 100.0);
 
   std::vector<std::vector<double>> augmented_matrix(static_cast<size_t>(n),
