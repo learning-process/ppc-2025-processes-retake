@@ -60,6 +60,6 @@ const auto kAllPerfTasks = ppc::util::MakeAllPerfTasks<InType, UrinOGaussVertDia
 const auto kGtestValues = ppc::util::TupleToGTestValues(kAllPerfTasks);
 
 INSTANTIATE_TEST_SUITE_P(RunModeTests, UrinRunPerfTestGaussVertical, kGtestValues,
-                         UrinRunPerfTestGaussVertical::CustomPerfTestName);
+                         UrinRunPerfTestGaussVertical::CustomPerfTestName); // NOLINT(misc-use-anonymous-namespace)
 
 }  // namespace urin_o_gauss_vert_diag
