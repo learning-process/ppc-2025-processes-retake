@@ -34,10 +34,10 @@ bool FedoseevTestTaskMPI::PreProcessingImpl() {
   const InType &augmented_matrix = GetInput();
   size_t n = augmented_matrix.size();
 
-  for (int i = 0; i < n; ++i) {
+  for (size_t i = 0; i < n; ++i) {
     if (std::abs(augmented_matrix[i][i]) < 1e-10) {
       bool found = false;
-      for (int j = i + 1; j < n; ++j) {
+      for (size_t j = i + 1; j < n; ++j) {
         if (std::abs(augmented_matrix[j][i]) > 1e-10) {
           found = true;
           break;
@@ -75,7 +75,7 @@ bool FedoseevTestTaskMPI::RunImpl() {
 
   std::vector<double> pivot_row(n + 1);
 
-  for (int k = 0; k < n; ++k) {
+  for (size_t k = 0; k < n; ++k) {
     int owner_of_k = 0;
     for (int proc = 0; proc < size; ++proc) {
       int p_start = (proc * rows_per_process) + std::min(proc, remainder);
@@ -97,7 +97,7 @@ bool FedoseevTestTaskMPI::RunImpl() {
       int global_i = start_row + i;
       if (global_i > k) {
         double factor = local_matrix[i][k] / pivot_row[k];
-        for (int j = k; j < n + 1; ++j) {
+        for (size_t j = k; j < n + 1; ++j) {
           local_matrix[i][j] -= factor * pivot_row[j];
         }
       }
@@ -135,19 +135,19 @@ bool FedoseevTestTaskMPI::RunImpl() {
     int idx = 0;
     for (int proc = 0; proc < size; ++proc) {
       int p_start = (proc * rows_per_process) + std::min(proc, remainder);
-      int p_end = p_start + rows_per_process + (p < remainder ? 1 : 0);
+      int p_end = p_start + rows_per_process + (proc < remainder ? 1 : 0);
       int p_rows = p_end - p_start;
 
       for (int i = 0; i < p_rows; ++i) {
-        for (int j = 0; j < n + 1; ++j) {
+        for (size_t j = 0; j < n + 1; ++j) {
           full_triangular_matrix[p_start + i][j] = gathered_data[idx++];
         }
       }
     }
 
-    for (int i = n - 1; i >= 0; --i) {
+    for (size_t i = n - 1; i >= 0; --i) {
       x[i] = full_triangular_matrix[i][n];
-      for (int j = i + 1; j < n; ++j) {
+      for (size_t j = i + 1; j < n; ++j) {
         x[i] -= full_triangular_matrix[i][j] * x[j];
       }
       x[i] /= full_triangular_matrix[i][i];
@@ -170,9 +170,9 @@ bool FedoseevTestTaskMPI::PostProcessingImpl() {
 
   if (rank == 0) {
     double residual = 0.0;
-    for (int i = 0; i < n; ++i) {
+    for (size_t i = 0; i < n; ++i) {
       double sum = 0.0;
-      for (int j = 0; j < n; ++j) {
+      for (size_t j = 0; j < n; ++j) {
         sum += augmented_matrix[i][j] * x[j];
       }
       residual += std::abs(sum - augmented_matrix[i][n]);

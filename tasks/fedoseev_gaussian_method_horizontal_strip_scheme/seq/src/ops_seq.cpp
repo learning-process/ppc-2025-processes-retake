@@ -32,10 +32,10 @@ bool FedoseevTestTaskSEQ::PreProcessingImpl() {
   const InType &augmented_matrix = GetInput();
   size_t n = augmented_matrix.size();
 
-  for (int i = 0; i < n; ++i) {
+  for (size_t i = 0; i < n; ++i) {
     if (std::abs(augmented_matrix[i][i]) < 1e-10) {
       bool found = false;
-      for (int j = i + 1; j < n; ++j) {
+      for (size_t j = i + 1; j < n; ++j) {
         if (std::abs(augmented_matrix[j][i]) > 1e-10) {
           found = true;
           break;
@@ -55,9 +55,9 @@ bool FedoseevTestTaskSEQ::RunImpl() {
   size_t n = augmented_matrix.size();
   std::vector<double> x(n, 0.0);
 
-  for (int i = 0; i < n; ++i) {
+  for (size_t i = 0; i < n; ++i) {
     int pivot = i;
-    for (int k = i + 1; k < n; ++k) {
+    for (size_t k = i + 1; k < n; ++k) {
       if (std::abs(augmented_matrix[k][i]) > std::abs(augmented_matrix[pivot][i])) {
         pivot = k;
       }
@@ -71,17 +71,17 @@ bool FedoseevTestTaskSEQ::RunImpl() {
       std::swap(augmented_matrix[i], augmented_matrix[pivot]);
     }
 
-    for (int k = i + 1; k < n; ++k) {
+    for (size_t k = i + 1; k < n; ++k) {
       double factor = augmented_matrix[k][i] / augmented_matrix[i][i];
-      for (int j = i; j < n + 1; ++j) {
+      for (size_t j = i; j < n + 1; ++j) {
         augmented_matrix[k][j] -= factor * augmented_matrix[i][j];
       }
     }
   }
 
-  for (int i = n - 1; i >= 0; --i) {
+  for (size_t i = n - 1; i >= 0; --i) {
     x[i] = augmented_matrix[i][n];
-    for (int j = i + 1; j < n; ++j) {
+    for (size_t j = i + 1; j < n; ++j) {
       x[i] -= augmented_matrix[i][j] * x[j];
     }
     x[i] /= augmented_matrix[i][i];
@@ -97,9 +97,9 @@ bool FedoseevTestTaskSEQ::PostProcessingImpl() {
   size_t n = augmented_matrix.size();
 
   double residual = 0.0;
-  for (int i = 0; i < n; ++i) {
+  for (size_t i = 0; i < n; ++i) {
     double sum = 0.0;
-    for (int j = 0; j < n; ++j) {
+    for (size_t j = 0; j < n; ++j) {
       sum += augmented_matrix[i][j] * x[j];
     }
     residual += std::abs(sum - augmented_matrix[i][n]);
