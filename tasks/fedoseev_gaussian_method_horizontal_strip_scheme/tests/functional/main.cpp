@@ -1,9 +1,10 @@
 #include <gtest/gtest.h>
 
-#include <algorithm>
+#include <array>
 #include <cmath>
 #include <cstddef>
 #include <random>
+#include <string>
 #include <tuple>
 #include <vector>
 
@@ -15,7 +16,9 @@
 
 namespace fedoseev_gaussian_method_horizontal_strip_scheme {
 
-InType generateTestSystem(int n, int seed);
+namespace {
+InType GenerateTestSystem(int n, int seed);
+}
 
 class FedoseevRunFuncTestsProcesses2 : public ppc::util::BaseRunFuncTests<InType, OutType, TestType> {
  public:
@@ -29,11 +32,11 @@ class FedoseevRunFuncTestsProcesses2 : public ppc::util::BaseRunFuncTests<InType
     int matrix_size = std::get<0>(params);
     int seed = std::get<1>(params);
 
-    input_data_ = generateTestSystem(matrix_size, seed);
+    input_data_ = GenerateTestSystem(matrix_size, seed);
 
-    reference_solution_.resize(matrix_size);
+    reference_solution_.resize(static_cast<size_t>(matrix_size));
     for (int i = 0; i < matrix_size; ++i) {
-      reference_solution_[i] = static_cast<double>(i + 1);
+      reference_solution_[static_cast<size_t>(i)] = static_cast<double>(i + 1);
     }
   }
 
@@ -50,14 +53,15 @@ class FedoseevRunFuncTestsProcesses2 : public ppc::util::BaseRunFuncTests<InType
     }
 
     const auto &augmented_matrix = input_data_;
-    int n = augmented_matrix.size();
 
-    for (int i = 0; i < n; ++i) {
+    size_t n = augmented_matrix.size();
+
+    for (size_t i = 0; i < n; ++i) {
       double sum = 0.0;
-      for (int j = 0; j < n; ++j) {
+      for (size_t j = 0; j < n; ++j) {
         sum += augmented_matrix[i][j] * output_data[j];
       }
-      if (std::abs(sum - augmented_matrix[i][n]) > tolerance * n) {
+      if (std::abs(sum - augmented_matrix[i][n]) > tolerance * static_cast<double>(n)) {
         return false;
       }
     }
@@ -74,8 +78,10 @@ class FedoseevRunFuncTestsProcesses2 : public ppc::util::BaseRunFuncTests<InType
   std::vector<double> reference_solution_;
 };
 
-InType generateTestSystem(int n, int seed) {
-  std::vector<std::vector<double>> augmented_matrix(n, std::vector<double>(n + 1));
+namespace {
+InType GenerateTestSystem(int n, int seed) {
+  std::vector<std::vector<double>> augmented_matrix(static_cast<size_t>(n),
+                                                    std::vector<double>(static_cast<size_t>(n) + 1));
 
   std::mt19937 gen(seed);
   std::uniform_real_distribution<> dis(0.1, 1.0);
@@ -84,27 +90,28 @@ InType generateTestSystem(int n, int seed) {
     double sum = 0.0;
     for (int j = 0; j < n; ++j) {
       if (i == j) {
-        augmented_matrix[i][j] = 10.0 * n + (i + 1);
+        augmented_matrix[static_cast<size_t>(i)][static_cast<size_t>(j)] = (10.0 * n) + (i + 1);  // FIXED: скобки
       } else {
-        augmented_matrix[i][j] = dis(gen);
+        augmented_matrix[static_cast<size_t>(i)][static_cast<size_t>(j)] = dis(gen);
       }
       if (i != j) {
-        sum += std::abs(augmented_matrix[i][j]);
+        sum += std::abs(augmented_matrix[static_cast<size_t>(i)][static_cast<size_t>(j)]);
       }
     }
-    if (std::abs(augmented_matrix[i][i]) <= sum) {
-      augmented_matrix[i][i] = sum + 1.0;
+    if (std::abs(augmented_matrix[static_cast<size_t>(i)][static_cast<size_t>(i)]) <= sum) {
+      augmented_matrix[static_cast<size_t>(i)][static_cast<size_t>(i)] = sum + 1.0;
     }
 
     double b = 0.0;
     for (int j = 0; j < n; ++j) {
-      b += augmented_matrix[i][j] * (j + 1);
+      b += augmented_matrix[static_cast<size_t>(i)][static_cast<size_t>(j)] * (j + 1);
     }
-    augmented_matrix[i][n] = b;
+    augmented_matrix[static_cast<size_t>(i)][static_cast<size_t>(n)] = b;
   }
 
   return augmented_matrix;
 }
+}  // namespace
 
 namespace {
 

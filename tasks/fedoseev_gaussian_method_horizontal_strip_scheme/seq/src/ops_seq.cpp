@@ -2,11 +2,9 @@
 
 #include <algorithm>
 #include <cmath>
-#include <stdexcept>
 #include <vector>
 
 #include "fedoseev_gaussian_method_horizontal_strip_scheme/common/include/common.hpp"
-#include "util/include/util.hpp"
 
 namespace fedoseev_gaussian_method_horizontal_strip_scheme {
 
@@ -18,24 +16,21 @@ FedoseevTestTaskSEQ::FedoseevTestTaskSEQ(const InType &in) {
 
 bool FedoseevTestTaskSEQ::ValidationImpl() {
   const InType &augmented_matrix = GetInput();
-  int n = augmented_matrix.size();
+  size_t n = augmented_matrix.size();
 
   if (n == 0) {
     return false;
   }
 
-  for (const auto &row : augmented_matrix) {
-    if (static_cast<int>(row.size()) != n + 1) {
-      return false;
-    }
-  }
+  return std::all_of(augmented_matrix.begin(), augmented_matrix.end(),
+                     [n](const auto &row) { return row.size() == static_cast<size_t>(n) + 1; });
 
   return true;
 }
 
 bool FedoseevTestTaskSEQ::PreProcessingImpl() {
   const InType &augmented_matrix = GetInput();
-  int n = augmented_matrix.size();
+  size_t n = augmented_matrix.size();
 
   for (int i = 0; i < n; ++i) {
     if (std::abs(augmented_matrix[i][i]) < 1e-10) {
@@ -57,7 +52,7 @@ bool FedoseevTestTaskSEQ::PreProcessingImpl() {
 
 bool FedoseevTestTaskSEQ::RunImpl() {
   InType augmented_matrix = GetInput();
-  int n = augmented_matrix.size();
+  size_t n = augmented_matrix.size();
   std::vector<double> x(n, 0.0);
 
   for (int i = 0; i < n; ++i) {
@@ -99,7 +94,7 @@ bool FedoseevTestTaskSEQ::RunImpl() {
 bool FedoseevTestTaskSEQ::PostProcessingImpl() {
   const InType &augmented_matrix = GetInput();
   const auto &x = GetOutput();
-  int n = augmented_matrix.size();
+  size_t n = augmented_matrix.size();
 
   double residual = 0.0;
   for (int i = 0; i < n; ++i) {

@@ -4,11 +4,9 @@
 
 #include <algorithm>
 #include <cmath>
-#include <stdexcept>
 #include <vector>
 
 #include "fedoseev_gaussian_method_horizontal_strip_scheme/common/include/common.hpp"
-#include "util/include/util.hpp"
 
 namespace fedoseev_gaussian_method_horizontal_strip_scheme {
 
@@ -20,24 +18,21 @@ FedoseevTestTaskMPI::FedoseevTestTaskMPI(const InType &in) {
 
 bool FedoseevTestTaskMPI::ValidationImpl() {
   const InType &augmented_matrix = GetInput();
-  int n = augmented_matrix.size();
+  size_t n = augmented_matrix.size();
 
   if (n == 0) {
     return false;
   }
 
-  for (const auto &row : augmented_matrix) {
-    if (static_cast<int>(row.size()) != n + 1) {
-      return false;
-    }
-  }
+  return std::all_of(augmented_matrix.begin(), augmented_matrix.end(),
+                     [n](const auto &row) { return row.size() == static_cast<size_t>(n) + 1; });
 
   return true;
 }
 
 bool FedoseevTestTaskMPI::PreProcessingImpl() {
   const InType &augmented_matrix = GetInput();
-  int n = augmented_matrix.size();
+  size_t n = augmented_matrix.size();
 
   for (int i = 0; i < n; ++i) {
     if (std::abs(augmented_matrix[i][i]) < 1e-10) {
@@ -59,15 +54,16 @@ bool FedoseevTestTaskMPI::PreProcessingImpl() {
 
 bool FedoseevTestTaskMPI::RunImpl() {
   const InType &full_matrix = GetInput();
-  int n = full_matrix.size();
+  size_t n = full_matrix.size();
 
-  int rank, size;
+  int rank = 0;
+  int size = 0;
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
   MPI_Comm_size(MPI_COMM_WORLD, &size);
 
   int rows_per_process = n / size;
   int remainder = n % size;
-  int start_row = rank * rows_per_process + std::min(rank, remainder);
+  int start_row = (rank * rows_per_process) + std::min(rank, remainder);
   int end_row = start_row + rows_per_process + (rank < remainder ? 1 : 0);
   int local_rows = end_row - start_row;
 
@@ -81,11 +77,11 @@ bool FedoseevTestTaskMPI::RunImpl() {
 
   for (int k = 0; k < n; ++k) {
     int owner_of_k = 0;
-    for (int p = 0; p < size; ++p) {
-      int p_start = p * rows_per_process + std::min(p, remainder);
-      int p_end = p_start + rows_per_process + (p < remainder ? 1 : 0);
+    for (int proc = 0; proc < size; ++proc) {
+      int p_start = (proc * rows_per_process) + std::min(proc, remainder);
+      int p_end = p_start + rows_per_process + (proc < remainder ? 1 : 0);
       if (k >= p_start && k < p_end) {
-        owner_of_k = p;
+        owner_of_k = proc;
         break;
       }
     }
@@ -111,11 +107,11 @@ bool FedoseevTestTaskMPI::RunImpl() {
   std::vector<int> recvcounts(size);
   std::vector<int> displs(size);
 
-  for (int p = 0; p < size; ++p) {
-    int p_start = p * rows_per_process + std::min(p, remainder);
-    int p_end = p_start + rows_per_process + (p < remainder ? 1 : 0);
-    recvcounts[p] = (p_end - p_start) * (n + 1);
-    displs[p] = (p == 0) ? 0 : displs[p - 1] + recvcounts[p - 1];
+  for (int proc = 0; proc < size; ++proc) {
+    int p_start = (proc * rows_per_process) + std::min(proc, remainder);
+    int p_end = p_start + rows_per_process + (proc < remainder ? 1 : 0);
+    recvcounts[proc] = (p_end - p_start) * (n + 1);
+    displs[proc] = (proc == 0) ? 0 : displs[proc - 1] + recvcounts[proc - 1];
   }
 
   std::vector<double> gathered_data;
@@ -137,8 +133,8 @@ bool FedoseevTestTaskMPI::RunImpl() {
     std::vector<std::vector<double>> full_triangular_matrix(n, std::vector<double>(n + 1));
 
     int idx = 0;
-    for (int p = 0; p < size; ++p) {
-      int p_start = p * rows_per_process + std::min(p, remainder);
+    for (int proc = 0; proc < size; ++proc) {
+      int p_start = (proc * rows_per_process) + std::min(proc, remainder);
       int p_end = p_start + rows_per_process + (p < remainder ? 1 : 0);
       int p_rows = p_end - p_start;
 
@@ -167,9 +163,9 @@ bool FedoseevTestTaskMPI::RunImpl() {
 bool FedoseevTestTaskMPI::PostProcessingImpl() {
   const InType &augmented_matrix = GetInput();
   const auto &x = GetOutput();
-  int n = augmented_matrix.size();
+  size_t n = augmented_matrix.size();
 
-  int rank;
+  int rank = 0;
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 
   if (rank == 0) {

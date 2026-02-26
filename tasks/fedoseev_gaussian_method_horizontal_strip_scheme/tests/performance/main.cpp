@@ -1,6 +1,6 @@
 #include <gtest/gtest.h>
 
-#include <chrono>
+#include <cmath>
 #include <random>
 #include <string>
 #include <tuple>
@@ -13,33 +13,35 @@
 
 namespace fedoseev_gaussian_method_horizontal_strip_scheme {
 
-InType generatePerformanceTestSystem(int n);
+namespace {
+InType GeneratePerformanceTestSystem(int n);
+}
 
 class FedoseevRunPerfTestProcesses2 : public ppc::util::BaseRunPerfTests<InType, OutType> {
-  const int kSmallSize = 100;
-  const int kMediumSize = 500;
-  const int kLargeSize = 1000;
-  const int kExtraLargeSize = 2000;
+  const int kSmallSize_ = 100;
+  const int kMediumSize_ = 500;
+  const int kLargeSize_ = 1000;
+  const int kExtraLargeSize_ = 2000;
 
-  InType input_data_{};
+  InType input_data_;
 
   void SetUp() override {
-    auto test_info = ::testing::UnitTest::GetInstance()->current_test_info();
+    const auto *test_info = ::testing::UnitTest::GetInstance()->current_test_info();
     std::string test_name = test_info->name();
 
-    int size = kMediumSize;
+    int size = kMediumSize_;
 
     if (test_name.find("Small") != std::string::npos) {
-      size = kSmallSize;
+      size = kSmallSize_;
     } else if (test_name.find("Medium") != std::string::npos) {
-      size = kMediumSize;
+      size = kMediumSize_;
     } else if (test_name.find("Large") != std::string::npos) {
-      size = kLargeSize;
+      size = kLargeSize_;
     } else if (test_name.find("ExtraLarge") != std::string::npos) {
-      size = kExtraLargeSize;
+      size = kExtraLargeSize_;
     }
 
-    input_data_ = generatePerformanceTestSystem(size);
+    input_data_ = GeneratePerformanceTestSystem(size);
   }
 
   bool CheckTestOutputData(OutType &output_data) final {
@@ -52,24 +54,27 @@ class FedoseevRunPerfTestProcesses2 : public ppc::util::BaseRunPerfTests<InType,
   }
 };
 
-InType generatePerformanceTestSystem(int n) {
+namespace {
+InType GeneratePerformanceTestSystem(int n) {
   static std::mt19937 gen(42);
   std::uniform_real_distribution<> dis(1.0, 100.0);
 
-  std::vector<std::vector<double>> augmented_matrix(n, std::vector<double>(n + 1));
+  std::vector<std::vector<double>> augmented_matrix(static_cast<size_t>(n),
+                                                    std::vector<double>(static_cast<size_t>(n) + 1));
 
   for (int i = 0; i < n; ++i) {
     double sum = 0.0;
     for (int j = 0; j < n; ++j) {
-      augmented_matrix[i][j] = dis(gen);
-      sum += std::abs(augmented_matrix[i][j]);
+      augmented_matrix[static_cast<size_t>(i)][static_cast<size_t>(j)] = dis(gen);
+      sum += std::abs(augmented_matrix[static_cast<size_t>(i)][static_cast<size_t>(j)]);
     }
-    augmented_matrix[i][i] = sum + 1.0;
-    augmented_matrix[i][n] = dis(gen);
+    augmented_matrix[static_cast<size_t>(i)][static_cast<size_t>(i)] = sum + 1.0;
+    augmented_matrix[static_cast<size_t>(i)][static_cast<size_t>(n)] = dis(gen);
   }
 
   return augmented_matrix;
 }
+}  // namespace
 
 TEST_P(FedoseevRunPerfTestProcesses2, SmallSystem) {
   ExecuteTest(GetParam());
