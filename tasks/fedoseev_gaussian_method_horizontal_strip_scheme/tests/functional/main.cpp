@@ -15,9 +15,39 @@
 #include "util/include/util.hpp"
 
 namespace fedoseev_gaussian_method_horizontal_strip_scheme {
-
 namespace {
-InType GenerateTestSystem(int n, int seed);
+
+InType GenerateTestSystem(int n, int seed) {
+  std::vector<std::vector<double>> augmented_matrix(static_cast<size_t>(n),
+                                                    std::vector<double>(static_cast<size_t>(n) + 1));
+
+  std::mt19937 gen(seed);
+  std::uniform_real_distribution<> dis(0.1, 1.0);
+
+  for (int i = 0; i < n; ++i) {
+    double sum = 0.0;
+    for (int j = 0; j < n; ++j) {
+      if (i == j) {
+        augmented_matrix[static_cast<size_t>(i)][static_cast<size_t>(j)] = (10.0 * n) + (i + 1);
+      } else {
+        augmented_matrix[static_cast<size_t>(i)][static_cast<size_t>(j)] = dis(gen);
+      }
+      if (i != j) {
+        sum += std::abs(augmented_matrix[static_cast<size_t>(i)][static_cast<size_t>(j)]);
+      }
+    }
+    if (std::abs(augmented_matrix[static_cast<size_t>(i)][static_cast<size_t>(i)]) <= sum) {
+      augmented_matrix[static_cast<size_t>(i)][static_cast<size_t>(i)] = sum + 1.0;
+    }
+
+    double b = 0.0;
+    for (int j = 0; j < n; ++j) {
+      b += augmented_matrix[static_cast<size_t>(i)][static_cast<size_t>(j)] * (j + 1);
+    }
+    augmented_matrix[static_cast<size_t>(i)][static_cast<size_t>(n)] = b;
+  }
+
+  return augmented_matrix;
 }
 
 class FedoseevRunFuncTestsProcesses2 : public ppc::util::BaseRunFuncTests<InType, OutType, TestType> {
@@ -77,43 +107,6 @@ class FedoseevRunFuncTestsProcesses2 : public ppc::util::BaseRunFuncTests<InType
   std::vector<double> reference_solution_;
 };
 
-namespace {
-InType GenerateTestSystem(int n, int seed) {
-  std::vector<std::vector<double>> augmented_matrix(static_cast<size_t>(n),
-                                                    std::vector<double>(static_cast<size_t>(n) + 1));
-
-  std::mt19937 gen(seed);
-  std::uniform_real_distribution<> dis(0.1, 1.0);
-
-  for (int i = 0; i < n; ++i) {
-    double sum = 0.0;
-    for (int j = 0; j < n; ++j) {
-      if (i == j) {
-        augmented_matrix[static_cast<size_t>(i)][static_cast<size_t>(j)] = (10.0 * n) + (i + 1);
-      } else {
-        augmented_matrix[static_cast<size_t>(i)][static_cast<size_t>(j)] = dis(gen);
-      }
-      if (i != j) {
-        sum += std::abs(augmented_matrix[static_cast<size_t>(i)][static_cast<size_t>(j)]);
-      }
-    }
-    if (std::abs(augmented_matrix[static_cast<size_t>(i)][static_cast<size_t>(i)]) <= sum) {
-      augmented_matrix[static_cast<size_t>(i)][static_cast<size_t>(i)] = sum + 1.0;
-    }
-
-    double b = 0.0;
-    for (int j = 0; j < n; ++j) {
-      b += augmented_matrix[static_cast<size_t>(i)][static_cast<size_t>(j)] * (j + 1);
-    }
-    augmented_matrix[static_cast<size_t>(i)][static_cast<size_t>(n)] = b;
-  }
-
-  return augmented_matrix;
-}
-}  // namespace
-
-namespace {
-
 TEST_P(FedoseevRunFuncTestsProcesses2, GaussianEliminationTest) {
   ExecuteTest(GetParam());
 }
@@ -132,5 +125,4 @@ const auto kPerfTestName = FedoseevRunFuncTestsProcesses2::PrintFuncTestName<Fed
 INSTANTIATE_TEST_SUITE_P(GaussianTests, FedoseevRunFuncTestsProcesses2, kGtestValues, kPerfTestName);
 
 }  // namespace
-
 }  // namespace fedoseev_gaussian_method_horizontal_strip_scheme

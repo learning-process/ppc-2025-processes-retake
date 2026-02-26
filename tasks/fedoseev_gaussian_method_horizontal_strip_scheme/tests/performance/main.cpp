@@ -12,9 +12,26 @@
 #include "util/include/perf_test_util.hpp"
 
 namespace fedoseev_gaussian_method_horizontal_strip_scheme {
-
 namespace {
-InType GeneratePerformanceTestSystem(int n);
+
+InType GeneratePerformanceTestSystem(int n) {
+  static std::mt19937 gen(42);
+  std::uniform_real_distribution<> dis(1.0, 100.0);
+
+  std::vector<std::vector<double>> augmented_matrix(static_cast<size_t>(n),
+                                                    std::vector<double>(static_cast<size_t>(n) + 1));
+
+  for (int i = 0; i < n; ++i) {
+    double sum = 0.0;
+    for (int j = 0; j < n; ++j) {
+      augmented_matrix[static_cast<size_t>(i)][static_cast<size_t>(j)] = dis(gen);
+      sum += std::abs(augmented_matrix[static_cast<size_t>(i)][static_cast<size_t>(j)]);
+    }
+    augmented_matrix[static_cast<size_t>(i)][static_cast<size_t>(i)] = sum + 1.0;
+    augmented_matrix[static_cast<size_t>(i)][static_cast<size_t>(n)] = dis(gen);
+  }
+
+  return augmented_matrix;
 }
 
 class FedoseevRunPerfTestProcesses2 : public ppc::util::BaseRunPerfTests<InType, OutType> {
@@ -54,28 +71,6 @@ class FedoseevRunPerfTestProcesses2 : public ppc::util::BaseRunPerfTests<InType,
   }
 };
 
-namespace {
-InType GeneratePerformanceTestSystem(int n) {
-  static std::mt19937 gen(42);
-  std::uniform_real_distribution<> dis(1.0, 100.0);
-
-  std::vector<std::vector<double>> augmented_matrix(static_cast<size_t>(n),
-                                                    std::vector<double>(static_cast<size_t>(n) + 1));
-
-  for (int i = 0; i < n; ++i) {
-    double sum = 0.0;
-    for (int j = 0; j < n; ++j) {
-      augmented_matrix[static_cast<size_t>(i)][static_cast<size_t>(j)] = dis(gen);
-      sum += std::abs(augmented_matrix[static_cast<size_t>(i)][static_cast<size_t>(j)]);
-    }
-    augmented_matrix[static_cast<size_t>(i)][static_cast<size_t>(i)] = sum + 1.0;
-    augmented_matrix[static_cast<size_t>(i)][static_cast<size_t>(n)] = dis(gen);
-  }
-
-  return augmented_matrix;
-}
-}  // namespace
-
 TEST_P(FedoseevRunPerfTestProcesses2, SmallSystem) {
   ExecuteTest(GetParam());
 }
@@ -101,4 +96,5 @@ const auto kPerfTestName = FedoseevRunPerfTestProcesses2::CustomPerfTestName;
 
 INSTANTIATE_TEST_SUITE_P(RunModeTests, FedoseevRunPerfTestProcesses2, kGtestValues, kPerfTestName);
 
+}  // namespace
 }  // namespace fedoseev_gaussian_method_horizontal_strip_scheme
