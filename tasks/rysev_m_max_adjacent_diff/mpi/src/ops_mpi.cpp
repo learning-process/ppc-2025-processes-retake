@@ -16,6 +16,8 @@ RysevMMaxAdjacentDiffMPI::RysevMMaxAdjacentDiffMPI(const InType &in) {
   GetOutput() = std::make_pair(0, 0);
 }
 
+namespace {
+
 struct LocalResult {
   int diff;
   int first;
@@ -60,6 +62,8 @@ void UpdateWithBoundary(int rank, int world_size, const std::vector<int> &local_
   }
 }
 
+}  // namespace
+
 bool RysevMMaxAdjacentDiffMPI::ValidationImpl() {
   return GetInput().size() >= 2;
 }
@@ -99,7 +103,6 @@ bool RysevMMaxAdjacentDiffMPI::RunImpl() {
                local_size, MPI_INT, 0, MPI_COMM_WORLD);
 
   LocalResult local_res = ComputeLocalMaxDiff(local_data);
-
   UpdateWithBoundary(rank, world_size, local_data, local_res);
 
   struct {
