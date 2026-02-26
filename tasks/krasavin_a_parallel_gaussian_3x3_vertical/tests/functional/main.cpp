@@ -91,7 +91,8 @@ Image MakeImage(int w, int h, int ch, const std::vector<std::uint8_t> &data) {
 
 }  // namespace
 
-class KrasavinAParallelGaussian3x3VerticalTestsProcesses : public ppc::util::BaseRunFuncTests<InType, OutType, LocalTestType> {
+class KrasavinAParallelGaussian3x3VerticalTestsProcesses
+    : public ppc::util::BaseRunFuncTests<InType, OutType, LocalTestType> {
  public:
   static std::string PrintTestParam(const LocalTestType &test_param) {
     return "img_" + std::to_string(test_param.width) + "x" + std::to_string(test_param.height) + "_ch" +
@@ -132,14 +133,16 @@ const std::array<LocalTestType, 5> kTestParam = {
     MakeImage(5, 4, 1, {0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120, 130, 140, 150, 160, 170, 180, 190}),
 };
 
-const auto kTestTasksList =
-    std::tuple_cat(ppc::util::AddFuncTask<KrasavinAParallelGaussian3x3VerticalMPI, InType>(kTestParam, PPC_SETTINGS_krasavin_a_parallel_gaussian_3x3_vertical),
-                   ppc::util::AddFuncTask<KrasavinAParallelGaussian3x3VerticalSEQ, InType>(kTestParam, PPC_SETTINGS_krasavin_a_parallel_gaussian_3x3_vertical));
+const auto kTestTasksList = std::tuple_cat(ppc::util::AddFuncTask<KrasavinAParallelGaussian3x3VerticalMPI, InType>(
+                                               kTestParam, PPC_SETTINGS_krasavin_a_parallel_gaussian_3x3_vertical),
+                                           ppc::util::AddFuncTask<KrasavinAParallelGaussian3x3VerticalSEQ, InType>(
+                                               kTestParam, PPC_SETTINGS_krasavin_a_parallel_gaussian_3x3_vertical));
 
 const auto kGtestValues = ppc::util::ExpandToValues(kTestTasksList);
-const auto kFuncTestName =
-    KrasavinAParallelGaussian3x3VerticalTestsProcesses::PrintFuncTestName<KrasavinAParallelGaussian3x3VerticalTestsProcesses>;
+const auto kFuncTestName = KrasavinAParallelGaussian3x3VerticalTestsProcesses::PrintFuncTestName<
+    KrasavinAParallelGaussian3x3VerticalTestsProcesses>;
 
-INSTANTIATE_TEST_SUITE_P(GaussFilterTests, KrasavinAParallelGaussian3x3VerticalTestsProcesses, kGtestValues, kFuncTestName);
+INSTANTIATE_TEST_SUITE_P(GaussFilterTests, KrasavinAParallelGaussian3x3VerticalTestsProcesses, kGtestValues,
+                         kFuncTestName);
 
 }  // namespace krasavin_a_parallel_gaussian_3x3_vertical

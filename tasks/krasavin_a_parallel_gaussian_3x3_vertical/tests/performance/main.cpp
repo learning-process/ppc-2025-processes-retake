@@ -119,12 +119,14 @@ TEST_P(KrasavinAParallelGaussian3x3VerticalRunPerfTestProcesses, RunPerfModes) {
   ExecuteTest(GetParam());
 }
 
-const auto kAllPerfTasks =
-    ppc::util::MakeAllPerfTasks<InType, KrasavinAParallelGaussian3x3VerticalMPI, KrasavinAParallelGaussian3x3VerticalSEQ>(PPC_SETTINGS_krasavin_a_parallel_gaussian_3x3_vertical);
+const auto kAllPerfTasks = ppc::util::MakeAllPerfTasks<InType, KrasavinAParallelGaussian3x3VerticalMPI,
+                                                       KrasavinAParallelGaussian3x3VerticalSEQ>(
+    PPC_SETTINGS_krasavin_a_parallel_gaussian_3x3_vertical);
 
 const auto kGtestValues = ppc::util::TupleToGTestValues(kAllPerfTasks);
 const auto kPerfTestName = KrasavinAParallelGaussian3x3VerticalRunPerfTestProcesses::CustomPerfTestName;
 
-INSTANTIATE_TEST_SUITE_P(RunModeTests, KrasavinAParallelGaussian3x3VerticalRunPerfTestProcesses, kGtestValues, kPerfTestName);
+INSTANTIATE_TEST_SUITE_P(RunModeTests, KrasavinAParallelGaussian3x3VerticalRunPerfTestProcesses, kGtestValues,
+                         kPerfTestName);
 
 }  // namespace krasavin_a_parallel_gaussian_3x3_vertical
