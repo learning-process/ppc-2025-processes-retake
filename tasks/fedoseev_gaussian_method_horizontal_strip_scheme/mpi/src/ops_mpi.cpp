@@ -80,7 +80,7 @@ bool FedoseevTestTaskMPI::RunImpl() {
     for (int proc = 0; proc < size; ++proc) {
       int p_start = (proc * rows_per_process) + std::min(proc, remainder);
       int p_end = p_start + rows_per_process + (proc < remainder ? 1 : 0);
-      if (k >= p_start && k < p_end) {
+      if (static_cast<int>(k) >= p_start && static_cast<int>(k) < p_end) {
         owner_of_k = proc;
         break;
       }
@@ -95,7 +95,7 @@ bool FedoseevTestTaskMPI::RunImpl() {
     MPI_Bcast(pivot_row.data(), n + 1, MPI_DOUBLE, owner_of_k, MPI_COMM_WORLD);
     for (int i = 0; i < local_rows; ++i) {
       int global_i = start_row + i;
-      if (global_i > k) {
+      if (global_i > static_cast<int>(k)) {
         double factor = local_matrix[i][k] / pivot_row[k];
         for (size_t j = k; j < n + 1; ++j) {
           local_matrix[i][j] -= factor * pivot_row[j];

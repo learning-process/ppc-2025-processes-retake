@@ -56,7 +56,7 @@ bool FedoseevTestTaskSEQ::RunImpl() {
   std::vector<double> x(n, 0.0);
 
   for (size_t i = 0; i < n; ++i) {
-    int pivot = i;
+    size_t pivot = i;
     for (size_t k = i + 1; k < n; ++k) {
       if (std::abs(augmented_matrix[k][i]) > std::abs(augmented_matrix[pivot][i])) {
         pivot = k;
