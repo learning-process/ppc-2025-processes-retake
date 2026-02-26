@@ -5,7 +5,7 @@
 #include <algorithm>
 #include <cmath>
 #include <cstddef>
-#include <iostream>  // для std::cerr
+#include <iostream>  // для std::cerr,
 #include <random>
 #include <vector>
 
