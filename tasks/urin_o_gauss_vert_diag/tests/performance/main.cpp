@@ -50,6 +50,8 @@ class UrinRunPerfTestGaussVertical : public ppc::util::BaseRunPerfTests<InType, 
   InType input_data_{0};
 };
 
+namespace {
+
 TEST_P(UrinRunPerfTestGaussVertical, RunPerfModes) {
   ExecuteTest(GetParam());
 }
@@ -60,6 +62,7 @@ const auto kAllPerfTasks = ppc::util::MakeAllPerfTasks<InType, UrinOGaussVertDia
 const auto kGtestValues = ppc::util::TupleToGTestValues(kAllPerfTasks);
 
 INSTANTIATE_TEST_SUITE_P(RunModeTests, UrinRunPerfTestGaussVertical, kGtestValues,
-                         UrinRunPerfTestGaussVertical::CustomPerfTestName); // NOLINT(misc-use-anonymous-namespace)
+                         UrinRunPerfTestGaussVertical::CustomPerfTestName);
 
+}  // namespace
 }  // namespace urin_o_gauss_vert_diag
