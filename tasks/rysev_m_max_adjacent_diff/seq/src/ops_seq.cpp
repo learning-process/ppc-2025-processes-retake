@@ -1,7 +1,7 @@
 #include "rysev_m_max_adjacent_diff/seq/include/ops_seq.hpp"
 
-#include <algorithm>
 #include <cmath>
+#include <cstddef>
 #include <utility>
 #include <vector>
 

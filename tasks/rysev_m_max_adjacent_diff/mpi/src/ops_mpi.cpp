@@ -3,6 +3,7 @@
 #include <mpi.h>
 
 #include <cmath>
+#include <cstddef>
 #include <utility>
 #include <vector>
 
@@ -26,14 +27,14 @@ struct LocalResult {
 
 LocalResult ComputeLocalMaxDiff(const std::vector<int> &data) {
   if (data.size() < 2) {
-    return {-1, 0, 0};
+    return {.diff = -1, .first = 0, .second = 0};
   }
   int max_diff = std::abs(data[1] - data[0]);
-  LocalResult res = {max_diff, data[0], data[1]};
+  LocalResult res = {.diff = max_diff, .first = data[0], .second = data[1]};
   for (size_t i = 1; i < data.size() - 1; ++i) {
     int diff = std::abs(data[i + 1] - data[i]);
     if (diff > res.diff) {
-      res = {diff, data[i], data[i + 1]};
+      res = {.diff = diff, .first = data[i], .second = data[i + 1]};
     }
   }
   return res;
@@ -47,7 +48,7 @@ void UpdateWithBoundary(int rank, int world_size, const std::vector<int> &local_
     if (!local_data.empty()) {
       int diff = std::abs(local_data[0] - prev_last);
       if (diff > local_res.diff) {
-        local_res = {diff, prev_last, local_data[0]};
+        local_res = {.diff = diff, .first = prev_last, .second = local_data[0]};
       }
     }
   }
@@ -74,7 +75,8 @@ bool RysevMMaxAdjacentDiffMPI::PreProcessingImpl() {
 }
 
 bool RysevMMaxAdjacentDiffMPI::RunImpl() {
-  int rank, world_size;
+  int rank = 0;
+  int world_size = 0;
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
   MPI_Comm_size(MPI_COMM_WORLD, &world_size);
 
@@ -99,8 +101,10 @@ bool RysevMMaxAdjacentDiffMPI::RunImpl() {
 
   int local_size = send_counts[rank];
   std::vector<int> local_data(local_size);
-  MPI_Scatterv(const_cast<int *>(input.data()), send_counts.data(), displs.data(), MPI_INT, local_data.data(),
-               local_size, MPI_INT, 0, MPI_COMM_WORLD);
+
+  std::vector<int> input_copy(input);
+  MPI_Scatterv(input_copy.data(), send_counts.data(), displs.data(), MPI_INT, local_data.data(), local_size, MPI_INT, 0,
+               MPI_COMM_WORLD);
 
   LocalResult local_res = ComputeLocalMaxDiff(local_data);
   UpdateWithBoundary(rank, world_size, local_data, local_res);
@@ -109,7 +113,7 @@ bool RysevMMaxAdjacentDiffMPI::RunImpl() {
     int diff;
     int first;
     int second;
-  } send_buf = {local_res.diff, local_res.first, local_res.second};
+  } send_buf = {.diff = local_res.diff, .first = local_res.first, .second = local_res.second};
 
   std::vector<decltype(send_buf)> recv_buf;
   if (rank == 0) {

@@ -1,7 +1,5 @@
 #include <gtest/gtest.h>
 
-#include <vector>
-
 #include "rysev_m_max_adjacent_diff/common/include/common.hpp"
 #include "rysev_m_max_adjacent_diff/mpi/include/ops_mpi.hpp"
 #include "rysev_m_max_adjacent_diff/seq/include/ops_seq.hpp"
@@ -11,7 +9,7 @@ namespace rysev_m_max_adjacent_diff {
 
 class MaxAdjacentDiffPerfTest : public ppc::util::BaseRunPerfTests<InType, OutType> {
   const int kVectorSize_ = 1000000;
-  InType input_data_{};
+  InType input_data_;
 
   void SetUp() override {
     input_data_.resize(kVectorSize_);
