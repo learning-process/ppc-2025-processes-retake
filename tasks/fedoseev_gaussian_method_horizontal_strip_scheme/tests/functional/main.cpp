@@ -53,7 +53,6 @@ class FedoseevRunFuncTestsProcesses2 : public ppc::util::BaseRunFuncTests<InType
     }
 
     const auto &augmented_matrix = input_data_;
-
     size_t n = augmented_matrix.size();
 
     for (size_t i = 0; i < n; ++i) {
@@ -90,7 +89,7 @@ InType GenerateTestSystem(int n, int seed) {
     double sum = 0.0;
     for (int j = 0; j < n; ++j) {
       if (i == j) {
-        augmented_matrix[static_cast<size_t>(i)][static_cast<size_t>(j)] = (10.0 * n) + (i + 1);  // FIXED: скобки
+        augmented_matrix[static_cast<size_t>(i)][static_cast<size_t>(j)] = (10.0 * n) + (i + 1);
       } else {
         augmented_matrix[static_cast<size_t>(i)][static_cast<size_t>(j)] = dis(gen);
       }

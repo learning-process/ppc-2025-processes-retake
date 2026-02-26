@@ -1,9 +1,9 @@
 #include <gtest/gtest.h>
 
 #include <cmath>
+#include <cstddef>
 #include <random>
 #include <string>
-#include <tuple>
 #include <vector>
 
 #include "fedoseev_gaussian_method_horizontal_strip_scheme/common/include/common.hpp"

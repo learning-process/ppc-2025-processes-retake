@@ -4,6 +4,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <cstddef>
 #include <limits>
 #include <vector>
 
@@ -74,7 +75,7 @@ bool FedoseevTestTaskMPI::RunImpl() {
   std::vector<std::vector<double>> local_matrix(local_rows, std::vector<double>(n_int + 1));
 
   for (int i = 0; i < local_rows; ++i) {
-    local_matrix[i] = full_matrix[static_cast<size_t>(start_row + i)];
+    local_matrix[i] = full_matrix[start_row + i];
   }
 
   std::vector<double> pivot_row(n_int + 1);
@@ -144,18 +145,17 @@ bool FedoseevTestTaskMPI::RunImpl() {
 
       for (int i = 0; i < p_rows; ++i) {
         for (int j = 0; j < n_int + 1; ++j) {
-          full_triangular_matrix[static_cast<size_t>(p_start + i)][static_cast<size_t>(j)] = gathered_data[idx++];
+          full_triangular_matrix[p_start + i][j] = gathered_data[idx++];
         }
       }
     }
 
     for (int i = n_int - 1; i >= 0; --i) {
-      x[static_cast<size_t>(i)] = full_triangular_matrix[static_cast<size_t>(i)][static_cast<size_t>(n_int)];
+      x[static_cast<size_t>(i)] = full_triangular_matrix[i][n_int];
       for (int j = i + 1; j < n_int; ++j) {
-        x[static_cast<size_t>(i)] -=
-            full_triangular_matrix[static_cast<size_t>(i)][static_cast<size_t>(j)] * x[static_cast<size_t>(j)];
+        x[static_cast<size_t>(i)] -= full_triangular_matrix[i][j] * x[static_cast<size_t>(j)];
       }
-      x[static_cast<size_t>(i)] /= full_triangular_matrix[static_cast<size_t>(i)][static_cast<size_t>(i)];
+      x[static_cast<size_t>(i)] /= full_triangular_matrix[i][i];
     }
   }
 

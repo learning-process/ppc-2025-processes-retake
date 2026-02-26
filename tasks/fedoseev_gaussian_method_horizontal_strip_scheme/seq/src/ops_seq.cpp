@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <cstddef>
 #include <vector>
 
 #include "fedoseev_gaussian_method_horizontal_strip_scheme/common/include/common.hpp"
