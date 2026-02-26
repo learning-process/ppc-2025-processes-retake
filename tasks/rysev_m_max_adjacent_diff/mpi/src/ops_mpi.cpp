@@ -10,6 +10,12 @@
 
 namespace rysev_m_max_adjacent_diff {
 
+RysevMMaxAdjacentDiffMPI::RysevMMaxAdjacentDiffMPI(const InType &in) {
+  SetTypeOfTask(GetStaticTypeOfTask());
+  GetInput() = in;
+  GetOutput() = std::make_pair(0, 0);
+}
+
 struct LocalResult {
   int diff;
   int first;
@@ -33,6 +39,7 @@ LocalResult ComputeLocalMaxDiff(const std::vector<int> &data) {
 
 void UpdateWithBoundary(int rank, int world_size, const std::vector<int> &local_data, LocalResult &local_res) {
   int prev_last = 0;
+
   if (rank > 0) {
     MPI_Recv(&prev_last, 1, MPI_INT, rank - 1, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
     if (!local_data.empty()) {
@@ -42,6 +49,7 @@ void UpdateWithBoundary(int rank, int world_size, const std::vector<int> &local_
       }
     }
   }
+
   if (rank < world_size - 1) {
     if (!local_data.empty()) {
       MPI_Send(&local_data.back(), 1, MPI_INT, rank + 1, 0, MPI_COMM_WORLD);
@@ -50,6 +58,15 @@ void UpdateWithBoundary(int rank, int world_size, const std::vector<int> &local_
       MPI_Send(&dummy, 1, MPI_INT, rank + 1, 0, MPI_COMM_WORLD);
     }
   }
+}
+
+bool RysevMMaxAdjacentDiffMPI::ValidationImpl() {
+  return GetInput().size() >= 2;
+}
+
+bool RysevMMaxAdjacentDiffMPI::PreProcessingImpl() {
+  GetOutput() = std::make_pair(0, 0);
+  return true;
 }
 
 bool RysevMMaxAdjacentDiffMPI::RunImpl() {
@@ -90,6 +107,7 @@ bool RysevMMaxAdjacentDiffMPI::RunImpl() {
     int first;
     int second;
   } send_buf = {local_res.diff, local_res.first, local_res.second};
+
   std::vector<decltype(send_buf)> recv_buf;
   if (rank == 0) {
     recv_buf.resize(world_size);
