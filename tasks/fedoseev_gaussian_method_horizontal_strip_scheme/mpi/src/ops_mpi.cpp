@@ -145,14 +145,14 @@ bool FedoseevTestTaskMPI::RunImpl() {
       }
     }
 
-  int nn = static_cast<int>(n);
-  for (int i = nn - 1; i >= 0; --i) {
-    x[i] = full_triangular_matrix[i][nn];
-    for (int j = i + 1; j < nn; ++j) {
-      x[i] -= full_triangular_matrix[i][j] * x[j];
+    int nn = static_cast<int>(n);
+    for (int i = nn - 1; i >= 0; --i) {
+      x[i] = full_triangular_matrix[i][nn];
+      for (int j = i + 1; j < nn; ++j) {
+        x[i] -= full_triangular_matrix[i][j] * x[j];
+      }
+      x[i] /= full_triangular_matrix[i][i];
     }
-    x[i] /= full_triangular_matrix[i][i];
-  }
   }
 
   MPI_Bcast(x.data(), n, MPI_DOUBLE, 0, MPI_COMM_WORLD);
