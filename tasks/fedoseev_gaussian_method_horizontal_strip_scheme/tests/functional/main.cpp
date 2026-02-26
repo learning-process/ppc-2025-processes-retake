@@ -1,10 +1,9 @@
 #include <gtest/gtest.h>
 
-#include <array>
+#include <algorithm>
 #include <cmath>
 #include <cstddef>
 #include <random>
-#include <string>
 #include <tuple>
 #include <vector>
 
@@ -16,7 +15,7 @@
 
 namespace fedoseev_gaussian_method_horizontal_strip_scheme {
 
-InType GenerateTestSystem(int n, int seed);
+InType generateTestSystem(int n, int seed);
 
 class FedoseevRunFuncTestsProcesses2 : public ppc::util::BaseRunFuncTests<InType, OutType, TestType> {
  public:
@@ -30,7 +29,7 @@ class FedoseevRunFuncTestsProcesses2 : public ppc::util::BaseRunFuncTests<InType
     int matrix_size = std::get<0>(params);
     int seed = std::get<1>(params);
 
-    input_data_ = GenerateTestSystem(matrix_size, seed);
+    input_data_ = generateTestSystem(matrix_size, seed);
 
     reference_solution_.resize(matrix_size);
     for (int i = 0; i < matrix_size; ++i) {
@@ -50,17 +49,19 @@ class FedoseevRunFuncTestsProcesses2 : public ppc::util::BaseRunFuncTests<InType
       }
     }
 
-    const auto &a = input_data_;
-    int n = static_cast<int>(a.size());
+    const auto &augmented_matrix = input_data_;
+    int n = augmented_matrix.size();
+
     for (int i = 0; i < n; ++i) {
       double sum = 0.0;
       for (int j = 0; j < n; ++j) {
-        sum += a[i][j] * output_data[j];
+        sum += augmented_matrix[i][j] * output_data[j];
       }
-      if (std::abs(sum - a[i][n]) > tolerance * n) {
+      if (std::abs(sum - augmented_matrix[i][n]) > tolerance * n) {
         return false;
       }
     }
+
     return true;
   }
 
@@ -70,38 +71,39 @@ class FedoseevRunFuncTestsProcesses2 : public ppc::util::BaseRunFuncTests<InType
 
  private:
   InType input_data_;
-  OutType reference_solution_;
+  std::vector<double> reference_solution_;
 };
 
-InType GenerateTestSystem(int n, int seed) {
+InType generateTestSystem(int n, int seed) {
+  std::vector<std::vector<double>> augmented_matrix(n, std::vector<double>(n + 1));
+
   std::mt19937 gen(seed);
   std::uniform_real_distribution<> dis(0.1, 1.0);
-
-  InType a(n, std::vector<double>(n + 1));
 
   for (int i = 0; i < n; ++i) {
     double sum = 0.0;
     for (int j = 0; j < n; ++j) {
       if (i == j) {
-        a[i][j] = 10.0 * n + (i + 1);
+        augmented_matrix[i][j] = 10.0 * n + (i + 1);
       } else {
-        a[i][j] = dis(gen);
+        augmented_matrix[i][j] = dis(gen);
       }
       if (i != j) {
-        sum += std::abs(a[i][j]);
+        sum += std::abs(augmented_matrix[i][j]);
       }
     }
-    if (std::abs(a[i][i]) <= sum) {
-      a[i][i] = sum + 1.0;
+    if (std::abs(augmented_matrix[i][i]) <= sum) {
+      augmented_matrix[i][i] = sum + 1.0;
     }
 
     double b = 0.0;
     for (int j = 0; j < n; ++j) {
-      b += a[i][j] * (j + 1);
+      b += augmented_matrix[i][j] * (j + 1);
     }
-    a[i][n] = b;
+    augmented_matrix[i][n] = b;
   }
-  return a;
+
+  return augmented_matrix;
 }
 
 namespace {
@@ -113,14 +115,12 @@ TEST_P(FedoseevRunFuncTestsProcesses2, GaussianEliminationTest) {
 const std::array<TestType, 4> kTestParam = {std::make_tuple(10, 1), std::make_tuple(20, 2), std::make_tuple(30, 3),
                                             std::make_tuple(40, 4)};
 
-using MPITask = FedoseevGaussianMethodHorizontalStripSchemeMPI;
-using SEQTask = FedoseevGaussianMethodHorizontalStripSchemeSEQ;
-
 const auto kTestTasksList =
-    std::tuple_cat(ppc::util::AddFuncTask<MPITask, InType>(kTestParam, PPC_SETTINGS_example_processes_2),
-                   ppc::util::AddFuncTask<SEQTask, InType>(kTestParam, PPC_SETTINGS_example_processes_2));
+    std::tuple_cat(ppc::util::AddFuncTask<FedoseevTestTaskMPI, InType>(kTestParam, PPC_SETTINGS_example_processes_2),
+                   ppc::util::AddFuncTask<FedoseevTestTaskSEQ, InType>(kTestParam, PPC_SETTINGS_example_processes_2));
 
 const auto kGtestValues = ppc::util::ExpandToValues(kTestTasksList);
+
 const auto kPerfTestName = FedoseevRunFuncTestsProcesses2::PrintFuncTestName<FedoseevRunFuncTestsProcesses2>;
 
 INSTANTIATE_TEST_SUITE_P(GaussianTests, FedoseevRunFuncTestsProcesses2, kGtestValues, kPerfTestName);

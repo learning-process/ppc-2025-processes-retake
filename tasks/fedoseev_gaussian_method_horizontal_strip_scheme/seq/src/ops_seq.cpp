@@ -2,43 +2,30 @@
 
 #include <algorithm>
 #include <cmath>
-#include <cstddef>
+#include <stdexcept>
 #include <vector>
 
 #include "fedoseev_gaussian_method_horizontal_strip_scheme/common/include/common.hpp"
+#include "util/include/util.hpp"
 
 namespace fedoseev_gaussian_method_horizontal_strip_scheme {
 
-FedoseevGaussianMethodHorizontalStripSchemeSEQ::FedoseevGaussianMethodHorizontalStripSchemeSEQ(
-    const InType &input_data) {
+FedoseevTestTaskSEQ::FedoseevTestTaskSEQ(const InType &in) {
   SetTypeOfTask(GetStaticTypeOfTask());
-
-  InType &input_ref = GetInput();
-  input_ref.clear();
-  input_ref.reserve(input_data.size());
-
-  for (const auto &row : input_data) {
-    input_ref.push_back(row);
-  }
-
-  GetOutput().clear();
+  GetInput() = in;
+  GetOutput() = std::vector<double>();
 }
 
-bool FedoseevGaussianMethodHorizontalStripSchemeSEQ::ValidationImpl() {
-  const InType &matrix = GetInput();
-  if (matrix.empty()) {
+bool FedoseevTestTaskSEQ::ValidationImpl() {
+  const InType &augmented_matrix = GetInput();
+  int n = augmented_matrix.size();
+
+  if (n == 0) {
     return false;
   }
 
-  const size_t n = matrix.size();
-  const size_t cols = matrix[0].size();
-
-  if (cols < n + 1) {
-    return false;
-  }
-
-  for (size_t i = 1; i < n; ++i) {
-    if (matrix[i].size() != cols) {
+  for (const auto &row : augmented_matrix) {
+    if (static_cast<int>(row.size()) != n + 1) {
       return false;
     }
   }
@@ -46,85 +33,84 @@ bool FedoseevGaussianMethodHorizontalStripSchemeSEQ::ValidationImpl() {
   return true;
 }
 
-bool FedoseevGaussianMethodHorizontalStripSchemeSEQ::PreProcessingImpl() {
-  GetOutput().clear();
-  return true;
-}
+bool FedoseevTestTaskSEQ::PreProcessingImpl() {
+  const InType &augmented_matrix = GetInput();
+  int n = augmented_matrix.size();
 
-bool FedoseevGaussianMethodHorizontalStripSchemeSEQ::RunImpl() {
-  InType augmented_matrix = GetInput();
-  const size_t n = augmented_matrix.size();
-  const size_t cols = augmented_matrix[0].size();
-
-  if (!ForwardElimination(augmented_matrix, n, cols)) {
-    return false;
-  }
-
-  GetOutput() = BackwardSubstitution(augmented_matrix, n, cols);
-  return true;
-}
-
-bool FedoseevGaussianMethodHorizontalStripSchemeSEQ::ForwardElimination(InType &matrix, size_t n, size_t cols) {
-  for (size_t k = 0; k < n; ++k) {
-    const size_t pivot_row_idx = SelectPivotRow(matrix, k, n);
-    if (pivot_row_idx != k) {
-      std::swap(matrix[k], matrix[pivot_row_idx]);
-    }
-
-    if (std::abs(matrix[k][k]) < 1e-10) {
-      return false;
-    }
-
-    EliminateRows(matrix, k, n, cols);
-  }
-  return true;
-}
-
-size_t FedoseevGaussianMethodHorizontalStripSchemeSEQ::SelectPivotRow(const InType &matrix, size_t k, size_t n) {
-  size_t best_row = k;
-  double max_value = std::abs(matrix[k][k]);
-
-  for (size_t i = k + 1; i < n; ++i) {
-    const double current_value = std::abs(matrix[i][k]);
-    if (current_value > max_value) {
-      max_value = current_value;
-      best_row = i;
-    }
-  }
-
-  return best_row;
-}
-
-void FedoseevGaussianMethodHorizontalStripSchemeSEQ::EliminateRows(InType &matrix, size_t k, size_t n, size_t cols) {
-  for (size_t i = k + 1; i < n; ++i) {
-    if (std::abs(matrix[i][k]) > 1e-10) {
-      const double factor = matrix[i][k] / matrix[k][k];
-      for (size_t j = k; j < cols; ++j) {
-        matrix[i][j] -= factor * matrix[k][j];
+  for (int i = 0; i < n; ++i) {
+    if (std::abs(augmented_matrix[i][i]) < 1e-10) {
+      bool found = false;
+      for (int j = i + 1; j < n; ++j) {
+        if (std::abs(augmented_matrix[j][i]) > 1e-10) {
+          found = true;
+          break;
+        }
+      }
+      if (!found) {
+        return false;
       }
     }
   }
+
+  return true;
 }
 
-std::vector<double> FedoseevGaussianMethodHorizontalStripSchemeSEQ::BackwardSubstitution(const InType &matrix, size_t n,
-                                                                                         size_t cols) {
-  std::vector<double> solution(n, 0.0);
+bool FedoseevTestTaskSEQ::RunImpl() {
+  InType augmented_matrix = GetInput();
+  int n = augmented_matrix.size();
+  std::vector<double> x(n, 0.0);
 
-  for (int i = static_cast<int>(n) - 1; i >= 0; --i) {
-    double sum = 0.0;
-    for (size_t j = static_cast<size_t>(i) + 1; j < n; ++j) {
-      sum += matrix[static_cast<size_t>(i)][j] * solution[j];
+  for (int i = 0; i < n; ++i) {
+    int pivot = i;
+    for (int k = i + 1; k < n; ++k) {
+      if (std::abs(augmented_matrix[k][i]) > std::abs(augmented_matrix[pivot][i])) {
+        pivot = k;
+      }
     }
 
-    solution[static_cast<size_t>(i)] =
-        (matrix[static_cast<size_t>(i)][cols - 1] - sum) / matrix[static_cast<size_t>(i)][static_cast<size_t>(i)];
+    if (std::abs(augmented_matrix[pivot][i]) < 1e-12) {
+      return false;
+    }
+
+    if (pivot != i) {
+      std::swap(augmented_matrix[i], augmented_matrix[pivot]);
+    }
+
+    for (int k = i + 1; k < n; ++k) {
+      double factor = augmented_matrix[k][i] / augmented_matrix[i][i];
+      for (int j = i; j < n + 1; ++j) {
+        augmented_matrix[k][j] -= factor * augmented_matrix[i][j];
+      }
+    }
   }
 
-  return solution;
+  for (int i = n - 1; i >= 0; --i) {
+    x[i] = augmented_matrix[i][n];
+    for (int j = i + 1; j < n; ++j) {
+      x[i] -= augmented_matrix[i][j] * x[j];
+    }
+    x[i] /= augmented_matrix[i][i];
+  }
+
+  GetOutput() = x;
+  return !GetOutput().empty();
 }
 
-bool FedoseevGaussianMethodHorizontalStripSchemeSEQ::PostProcessingImpl() {
-  return !GetOutput().empty();
+bool FedoseevTestTaskSEQ::PostProcessingImpl() {
+  const InType &augmented_matrix = GetInput();
+  const auto &x = GetOutput();
+  int n = augmented_matrix.size();
+
+  double residual = 0.0;
+  for (int i = 0; i < n; ++i) {
+    double sum = 0.0;
+    for (int j = 0; j < n; ++j) {
+      sum += augmented_matrix[i][j] * x[j];
+    }
+    residual += std::abs(sum - augmented_matrix[i][n]);
+  }
+
+  return residual < 1e-6 * n;
 }
 
 }  // namespace fedoseev_gaussian_method_horizontal_strip_scheme

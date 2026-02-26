@@ -2,230 +2,189 @@
 
 #include <mpi.h>
 
+#include <algorithm>
 #include <cmath>
-#include <cstddef>
+#include <stdexcept>
 #include <vector>
 
 #include "fedoseev_gaussian_method_horizontal_strip_scheme/common/include/common.hpp"
+#include "util/include/util.hpp"
 
 namespace fedoseev_gaussian_method_horizontal_strip_scheme {
 
-FedoseevGaussianMethodHorizontalStripSchemeMPI::FedoseevGaussianMethodHorizontalStripSchemeMPI(
-    const InType &input_data) {
+FedoseevTestTaskMPI::FedoseevTestTaskMPI(const InType &in) {
   SetTypeOfTask(GetStaticTypeOfTask());
-
-  int rank = 0;
-  MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-
-  if (rank == 0) {
-    GetInput() = input_data;
-  }
-
-  GetOutput().clear();
+  GetInput() = in;
+  GetOutput() = std::vector<double>();
 }
 
-bool FedoseevGaussianMethodHorizontalStripSchemeMPI::ValidationImpl() {
-  int rank = 0;
-  MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+bool FedoseevTestTaskMPI::ValidationImpl() {
+  const InType &augmented_matrix = GetInput();
+  int n = augmented_matrix.size();
 
-  int validation_result = 1;
-  if (rank == 0) {
-    validation_result = ValidateInputData(GetInput());
+  if (n == 0) {
+    return false;
   }
 
-  MPI_Bcast(&validation_result, 1, MPI_INT, 0, MPI_COMM_WORLD);
-  return validation_result != 0;
-}
-
-int FedoseevGaussianMethodHorizontalStripSchemeMPI::ValidateInputData(const InType &input_data) {
-  if (input_data.empty()) {
-    return 0;
-  }
-
-  const size_t n = input_data.size();
-  const size_t cols = input_data[0].size();
-  if (cols < n + 1) {
-    return 0;
-  }
-
-  for (size_t i = 1; i < n; ++i) {
-    if (input_data[i].size() != cols) {
-      return 0;
+  for (const auto &row : augmented_matrix) {
+    if (static_cast<int>(row.size()) != n + 1) {
+      return false;
     }
   }
 
-  return 1;
-}
-
-bool FedoseevGaussianMethodHorizontalStripSchemeMPI::PreProcessingImpl() {
-  GetOutput().clear();
   return true;
 }
 
-bool FedoseevGaussianMethodHorizontalStripSchemeMPI::RunImpl() {
-  int rank = 0;
-  int size = 0;
+bool FedoseevTestTaskMPI::PreProcessingImpl() {
+  const InType &augmented_matrix = GetInput();
+  int n = augmented_matrix.size();
+
+  for (int i = 0; i < n; ++i) {
+    if (std::abs(augmented_matrix[i][i]) < 1e-10) {
+      bool found = false;
+      for (int j = i + 1; j < n; ++j) {
+        if (std::abs(augmented_matrix[j][i]) > 1e-10) {
+          found = true;
+          break;
+        }
+      }
+      if (!found) {
+        return false;
+      }
+    }
+  }
+
+  return true;
+}
+
+bool FedoseevTestTaskMPI::RunImpl() {
+  const InType &full_matrix = GetInput();
+  int n = full_matrix.size();
+
+  int rank, size;
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
   MPI_Comm_size(MPI_COMM_WORLD, &size);
 
-  InType augmented_matrix;
-  size_t n = 0;
-  size_t cols = 0;
+  int rows_per_process = n / size;
+  int remainder = n % size;
+  int start_row = rank * rows_per_process + std::min(rank, remainder);
+  int end_row = start_row + rows_per_process + (rank < remainder ? 1 : 0);
+  int local_rows = end_row - start_row;
+
+  std::vector<std::vector<double>> local_matrix(local_rows, std::vector<double>(n + 1));
+
+  for (int i = 0; i < local_rows; ++i) {
+    local_matrix[i] = full_matrix[start_row + i];
+  }
+
+  std::vector<double> pivot_row(n + 1);
+
+  for (int k = 0; k < n; ++k) {
+    int owner_of_k = 0;
+    for (int p = 0; p < size; ++p) {
+      int p_start = p * rows_per_process + std::min(p, remainder);
+      int p_end = p_start + rows_per_process + (p < remainder ? 1 : 0);
+      if (k >= p_start && k < p_end) {
+        owner_of_k = p;
+        break;
+      }
+    }
+
+    if (owner_of_k == rank) {
+      int local_k = k - start_row;
+
+      pivot_row = local_matrix[local_k];
+    }
+
+    MPI_Bcast(pivot_row.data(), n + 1, MPI_DOUBLE, owner_of_k, MPI_COMM_WORLD);
+    for (int i = 0; i < local_rows; ++i) {
+      int global_i = start_row + i;
+      if (global_i > k) {
+        double factor = local_matrix[i][k] / pivot_row[k];
+        for (int j = k; j < n + 1; ++j) {
+          local_matrix[i][j] -= factor * pivot_row[j];
+        }
+      }
+    }
+  }
+
+  std::vector<int> recvcounts(size);
+  std::vector<int> displs(size);
+
+  for (int p = 0; p < size; ++p) {
+    int p_start = p * rows_per_process + std::min(p, remainder);
+    int p_end = p_start + rows_per_process + (p < remainder ? 1 : 0);
+    recvcounts[p] = (p_end - p_start) * (n + 1);
+    displs[p] = (p == 0) ? 0 : displs[p - 1] + recvcounts[p - 1];
+  }
+
+  std::vector<double> gathered_data;
+  std::vector<double> send_buffer;
+
+  for (const auto &row : local_matrix) {
+    send_buffer.insert(send_buffer.end(), row.begin(), row.end());
+  }
 
   if (rank == 0) {
-    augmented_matrix = GetInput();
-    if (!augmented_matrix.empty()) {
-      n = augmented_matrix.size();
-      cols = augmented_matrix[0].size();
-    }
+    gathered_data.resize(n * (n + 1));
   }
 
-  int n_int = static_cast<int>(n);
-  int cols_int = static_cast<int>(cols);
-  MPI_Bcast(&n_int, 1, MPI_INT, 0, MPI_COMM_WORLD);
-  MPI_Bcast(&cols_int, 1, MPI_INT, 0, MPI_COMM_WORLD);
+  MPI_Gatherv(send_buffer.data(), local_rows * (n + 1), MPI_DOUBLE, gathered_data.data(), recvcounts.data(),
+              displs.data(), MPI_DOUBLE, 0, MPI_COMM_WORLD);
 
-  n = static_cast<size_t>(n_int);
-  cols = static_cast<size_t>(cols_int);
+  std::vector<double> x(n, 0.0);
+  if (rank == 0) {
+    std::vector<std::vector<double>> full_triangular_matrix(n, std::vector<double>(n + 1));
 
-  if (n == 0 || cols < n + 1) {
-    GetOutput() = std::vector<double>();
-    return false;
-  }
+    int idx = 0;
+    for (int p = 0; p < size; ++p) {
+      int p_start = p * rows_per_process + std::min(p, remainder);
+      int p_end = p_start + rows_per_process + (p < remainder ? 1 : 0);
+      int p_rows = p_end - p_start;
 
-  InType local_matrix;
-  std::vector<int> global_to_local_map(n, -1);
-
-  DistributeRows(augmented_matrix, n, cols, rank, size, local_matrix, global_to_local_map);
-
-  if (!ForwardEliminationMPI(local_matrix, global_to_local_map, n, cols, rank, size)) {
-    return false;
-  }
-
-  GetOutput() = BackwardSubstitutionMPI(local_matrix, global_to_local_map, n, cols, rank, size);
-  return true;
-}
-
-void FedoseevGaussianMethodHorizontalStripSchemeMPI::DistributeRows(const InType &matrix, size_t n, size_t cols,
-                                                                    int rank, int size, InType &local_matrix,
-                                                                    std::vector<int> &global_to_local_map) {
-  int local_row_count = 0;
-  for (size_t i = 0; i < n; ++i) {
-    if (static_cast<int>(i) % size == rank) {
-      ++local_row_count;
-    }
-  }
-
-  if (local_row_count <= 0) {
-    local_matrix.clear();
-    return;
-  }
-
-  local_matrix.resize(static_cast<size_t>(local_row_count));
-  for (auto &row : local_matrix) {
-    row.resize(cols);
-  }
-
-  int local_idx = 0;
-
-  for (size_t i = 0; i < n; ++i) {
-    if (static_cast<int>(i) % size == rank) {
-      global_to_local_map[i] = local_idx;
-      if (rank == 0) {
-        local_matrix[static_cast<size_t>(local_idx)] = matrix[i];
-      } else {
-        MPI_Recv(local_matrix[static_cast<size_t>(local_idx)].data(), static_cast<int>(cols), MPI_DOUBLE, 0,
-                 static_cast<int>(i), MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-      }
-      ++local_idx;
-    } else if (rank == 0) {
-      MPI_Send(matrix[i].data(), static_cast<int>(cols), MPI_DOUBLE, static_cast<int>(i) % size, static_cast<int>(i),
-               MPI_COMM_WORLD);
-    }
-  }
-}
-
-bool FedoseevGaussianMethodHorizontalStripSchemeMPI::ForwardEliminationMPI(InType &local_matrix,
-                                                                           const std::vector<int> &global_to_local_map,
-                                                                           size_t n, size_t cols, int rank, int size) {
-  for (size_t k = 0; k < n; ++k) {
-    const int pivot_owner = static_cast<int>(k) % size;
-
-    std::vector<double> pivot_row(cols);
-    if (rank == pivot_owner) {
-      int local_k = global_to_local_map[k];
-      if (local_k >= 0 && static_cast<size_t>(local_k) < local_matrix.size()) {
-        pivot_row = local_matrix[static_cast<size_t>(local_k)];
-      }
-    }
-
-    MPI_Bcast(pivot_row.data(), static_cast<int>(cols), MPI_DOUBLE, pivot_owner, MPI_COMM_WORLD);
-
-    if (std::abs(pivot_row[k]) < 1e-10) {
-      return false;
-    }
-
-    EliminateRowsMPI(local_matrix, global_to_local_map, k, n, cols, pivot_row);
-  }
-  return true;
-}
-
-void FedoseevGaussianMethodHorizontalStripSchemeMPI::EliminateRowsMPI(InType &local_matrix,
-                                                                      const std::vector<int> &global_to_local_map,
-                                                                      size_t pivot_idx, size_t n, size_t cols,
-                                                                      const std::vector<double> &pivot_row) {
-  for (size_t i = 0; i < local_matrix.size(); ++i) {
-    const size_t global_index = GetGlobalIndex(global_to_local_map, i, n);
-    if (global_index > pivot_idx && global_index < n && std::abs(local_matrix[i][pivot_idx]) > 1e-10) {
-      const double factor = local_matrix[i][pivot_idx] / pivot_row[pivot_idx];
-      for (size_t j = pivot_idx; j < cols; ++j) {
-        local_matrix[i][j] -= factor * pivot_row[j];
-      }
-    }
-  }
-}
-
-size_t FedoseevGaussianMethodHorizontalStripSchemeMPI::GetGlobalIndex(const std::vector<int> &global_to_local_map,
-                                                                      size_t local_idx, size_t n) {
-  const int local_idx_int = static_cast<int>(local_idx);
-  for (size_t i = 0; i < n; ++i) {
-    if (global_to_local_map[i] >= 0 && global_to_local_map[i] == local_idx_int) {
-      return i;
-    }
-  }
-  return n;
-}
-
-std::vector<double> FedoseevGaussianMethodHorizontalStripSchemeMPI::BackwardSubstitutionMPI(
-    const InType &local_matrix, const std::vector<int> &global_to_local_map, size_t n, size_t cols, int rank,
-    int size) {
-  std::vector<double> solution(n, 0.0);
-
-  for (int i = static_cast<int>(n) - 1; i >= 0; --i) {
-    double sum = 0.0;
-    const int row_owner = i % size;
-
-    if (rank == row_owner) {
-      const int local_index = global_to_local_map[static_cast<size_t>(i)];
-      if (local_index >= 0 && static_cast<size_t>(local_index) < local_matrix.size()) {
-        for (size_t j = static_cast<size_t>(i) + 1; j < n; ++j) {
-          sum += local_matrix[static_cast<size_t>(local_index)][j] * solution[j];
+      for (int i = 0; i < p_rows; ++i) {
+        for (int j = 0; j < n + 1; ++j) {
+          full_triangular_matrix[p_start + i][j] = gathered_data[idx++];
         }
-        solution[static_cast<size_t>(i)] = (local_matrix[static_cast<size_t>(local_index)][cols - 1] - sum) /
-                                           local_matrix[static_cast<size_t>(local_index)][static_cast<size_t>(i)];
       }
     }
 
-    MPI_Bcast(&solution[static_cast<size_t>(i)], 1, MPI_DOUBLE, row_owner, MPI_COMM_WORLD);
+    for (int i = n - 1; i >= 0; --i) {
+      x[i] = full_triangular_matrix[i][n];
+      for (int j = i + 1; j < n; ++j) {
+        x[i] -= full_triangular_matrix[i][j] * x[j];
+      }
+      x[i] /= full_triangular_matrix[i][i];
+    }
   }
 
-  return solution;
+  MPI_Bcast(x.data(), n, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+
+  GetOutput() = x;
+  return !GetOutput().empty();
 }
 
-bool FedoseevGaussianMethodHorizontalStripSchemeMPI::PostProcessingImpl() {
-  int rank = 0;
+bool FedoseevTestTaskMPI::PostProcessingImpl() {
+  const InType &augmented_matrix = GetInput();
+  const auto &x = GetOutput();
+  int n = augmented_matrix.size();
+
+  int rank;
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-  return rank == 0 ? !GetOutput().empty() : true;
+
+  if (rank == 0) {
+    double residual = 0.0;
+    for (int i = 0; i < n; ++i) {
+      double sum = 0.0;
+      for (int j = 0; j < n; ++j) {
+        sum += augmented_matrix[i][j] * x[j];
+      }
+      residual += std::abs(sum - augmented_matrix[i][n]);
+    }
+    return residual < 1e-6 * n;
+  }
+
+  return true;
 }
 
 }  // namespace fedoseev_gaussian_method_horizontal_strip_scheme
