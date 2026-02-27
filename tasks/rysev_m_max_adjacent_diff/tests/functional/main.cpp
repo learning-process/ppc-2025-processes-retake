@@ -21,7 +21,7 @@ class MaxAdjacentDiffFuncTest : public ppc::util::BaseRunFuncTests<InType, OutTy
 
  protected:
   void SetUp() override {
-    TestType params = std::get<0>(GetParam());
+    TestType params = std::get<2>(GetParam());
     int test_id = std::get<0>(params);
 
     switch (test_id) {
