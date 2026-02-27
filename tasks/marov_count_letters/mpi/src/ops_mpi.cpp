@@ -10,7 +10,7 @@
 
 namespace marov_count_letters {
 
-MarovCountLettersMPI::MarovCountLettersMPI(const InType &in) {
+MarovCountLettersMPI::MarovCountLettersMPI(const InType& in) {
   MPI_Comm_rank(MPI_COMM_WORLD, &proc_rank_);
   MPI_Comm_size(MPI_COMM_WORLD, &proc_size_);
 
@@ -61,7 +61,7 @@ bool MarovCountLettersMPI::RunImpl() {
   const int local_size = base + (proc_rank_ < rem ? 1 : 0);
   std::vector<char> local_data(local_size);
 
-  MPI_Scatterv(proc_rank_ == 0 ? const_cast<char *>(input_str.data()) : nullptr,
+  MPI_Scatterv(proc_rank_ == 0 ? const_cast<char*>(input_str.data()) : nullptr,
                send_counts.data(), displs.data(), MPI_CHAR,
                local_data.data(), local_size, MPI_CHAR, 0, MPI_COMM_WORLD);
 

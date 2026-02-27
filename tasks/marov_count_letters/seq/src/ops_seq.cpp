@@ -7,7 +7,7 @@
 
 namespace marov_count_letters {
 
-MarovCountLettersSEQ::MarovCountLettersSEQ(const InType &in) {
+MarovCountLettersSEQ::MarovCountLettersSEQ(const InType& in) {
   SetTypeOfTask(GetStaticTypeOfTask());
   GetInput() = in;
   GetOutput() = 0;
@@ -22,7 +22,7 @@ bool MarovCountLettersSEQ::PreProcessingImpl() {
 }
 
 bool MarovCountLettersSEQ::RunImpl() {
-  const std::string &input_str = GetInput();
+  const std::string& input_str = GetInput();
   int count = 0;
 
   for (char c : input_str) {

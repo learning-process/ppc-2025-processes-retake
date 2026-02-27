@@ -13,9 +13,11 @@
 
 namespace marov_count_letters {
 
-class MarovCountLettersFuncTests : public ppc::util::BaseRunFuncTests<InType, OutType, TestType> {
+class MarovCountLettersFuncTests
+    : public ppc::util::BaseRunFuncTests<InType, OutType, TestType> {
  public:
-  static std::string PrintTestParam(const testing::TestParamInfo<ParamType>& info) {
+  static std::string PrintTestParam(
+      const testing::TestParamInfo<ParamType>& info) {
     return "test_" + std::to_string(info.index);
   }
 
@@ -56,13 +58,16 @@ const std::array kTestCases = {
     std::make_tuple(std::string("aBcDeFgHiJkLmNoPqRsTuVwXyZ"), 26),
 };
 
-const auto kAllTestTasks = std::tuple_cat(
-    ppc::util::AddFuncTask<MarovCountLettersMPI, InType>(kTestCases, PPC_SETTINGS_marov_count_letters),
-    ppc::util::AddFuncTask<MarovCountLettersSEQ, InType>(kTestCases, PPC_SETTINGS_marov_count_letters));
+const auto kAllTestTasks =
+    std::tuple_cat(ppc::util::AddFuncTask<MarovCountLettersMPI, InType>(
+                       kTestCases, PPC_SETTINGS_marov_count_letters),
+                   ppc::util::AddFuncTask<MarovCountLettersSEQ, InType>(
+                       kTestCases, PPC_SETTINGS_marov_count_letters));
 
-INSTANTIATE_TEST_SUITE_P(LetterCountFuncTests, MarovCountLettersFuncTests,
-                         ppc::util::ExpandToValues(kAllTestTasks),
-                         MarovCountLettersFuncTests::PrintTestParam);
+INSTANTIATE_TEST_SUITE_P(
+    LetterCountFuncTests, MarovCountLettersFuncTests,
+    ppc::util::ExpandToValues(kAllTestTasks),
+    MarovCountLettersFuncTests::PrintTestParam);
 
 }  // namespace
 }  // namespace marov_count_letters
