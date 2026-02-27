@@ -5,7 +5,6 @@
 #include <string>
 #include <tuple>
 #include <utility>
-#include <vector>
 
 #include "rysev_m_max_adjacent_diff/common/include/common.hpp"
 #include "rysev_m_max_adjacent_diff/mpi/include/ops_mpi.hpp"
@@ -22,7 +21,7 @@ class MaxAdjacentDiffFuncTest : public ppc::util::BaseRunFuncTests<InType, OutTy
 
  protected:
   void SetUp() override {
-    TestType params = std::get<static_cast<std::size_t>(ppc::util::GTestParamIndex::kTestParams)>(GetParam());
+    TestType params = std::get<0>(GetParam());
     int test_id = std::get<0>(params);
 
     switch (test_id) {
