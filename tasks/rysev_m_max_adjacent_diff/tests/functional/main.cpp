@@ -1,6 +1,7 @@
 #include <gtest/gtest.h>
 
 #include <array>
+#include <cstddef>
 #include <string>
 #include <tuple>
 #include <utility>
@@ -96,8 +97,8 @@ const std::array<TestType, 10> kTestParams = {std::make_tuple(1, ""), std::make_
                                               std::make_tuple(10, "")};
 
 const auto kTestTasksList = std::tuple_cat(
-    ppc::util::AddFuncTask<RysevMMaxAdjacentDiffMPI, InType>(kTestParams, PPC_SETTINGS_example_processes),
-    ppc::util::AddFuncTask<RysevMMaxAdjacentDiffSEQ, InType>(kTestParams, PPC_SETTINGS_example_processes));
+    ppc::util::AddFuncTask<RysevMMaxAdjacentDiffMPI, InType>(kTestParams, PPC_SETTINGS_rysev_m_max_adjacent_diff),
+    ppc::util::AddFuncTask<RysevMMaxAdjacentDiffSEQ, InType>(kTestParams, PPC_SETTINGS_rysev_m_max_adjacent_diff));
 
 const auto kGtestValues = ppc::util::ExpandToValues(kTestTasksList);
 
