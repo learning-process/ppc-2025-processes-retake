@@ -2,7 +2,7 @@
 
 - Student: Лучников Евгений, group 3823Б1ПР5
 - Technology: SEQ | MPI
-- Variant: 21
+- Variant: 16
 
 ## 1. Introduction
 
