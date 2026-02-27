@@ -1,6 +1,9 @@
 #include <gtest/gtest.h>
 
+#include <cstddef>
 #include <random>
+#include <tuple>
+#include <vector>
 
 #include "rysev_m_matrix_multiple/common/include/common.hpp"
 #include "rysev_m_matrix_multiple/mpi/include/ops_mpi.hpp"
@@ -11,22 +14,22 @@ namespace rysev_m_matrix_multiple {
 
 class RysevMRunPerfTestProcesses : public ppc::util::BaseRunPerfTests<InType, OutType> {
   const int kSize_ = 100;
-  InType input_data_{};
+  InType input_data_;
 
   void SetUp() override {
     std::random_device rd;
     std::mt19937 gen(rd());
     std::uniform_int_distribution<> dis(1, 5);
 
-    std::vector<int> A(kSize_ * kSize_);
-    std::vector<int> B(kSize_ * kSize_);
+    std::vector<int> a(static_cast<size_t>(kSize_) * kSize_);
+    std::vector<int> b(static_cast<size_t>(kSize_) * kSize_);
 
     for (int i = 0; i < kSize_ * kSize_; ++i) {
-      A[i] = dis(gen);
-      B[i] = dis(gen);
+      a[i] = dis(gen);
+      b[i] = dis(gen);
     }
 
-    input_data_ = std::make_tuple(A, B, kSize_);
+    input_data_ = std::make_tuple(a, b, kSize_);
   }
 
   bool CheckTestOutputData(OutType &output_data) final {

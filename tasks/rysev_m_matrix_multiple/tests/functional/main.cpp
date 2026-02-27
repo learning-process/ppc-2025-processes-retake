@@ -1,6 +1,7 @@
 #include <gtest/gtest.h>
 
-#include <algorithm>
+#include <array>
+#include <cstddef>
 #include <random>
 #include <string>
 #include <tuple>
@@ -15,34 +16,36 @@
 namespace rysev_m_matrix_multiple {
 
 namespace {
-std::vector<int> ReferenceMultiply(const std::vector<int> &A, const std::vector<int> &B, int size) {
-  std::vector<int> C(size * size, 0);
+
+std::vector<int> ReferenceMultiply(const std::vector<int> &a, const std::vector<int> &b, int size) {
+  std::vector<int> c(static_cast<size_t>(size) * size, 0);
   for (int i = 0; i < size; ++i) {
     for (int j = 0; j < size; ++j) {
       int sum = 0;
       for (int k = 0; k < size; ++k) {
-        sum += A[i * size + k] * B[k * size + j];
+        sum += a[(i * size) + k] * b[(k * size) + j];
       }
-      C[i * size + j] = sum;
+      c[(i * size) + j] = sum;
     }
   }
-  return C;
+  return c;
 }
 
 auto GenerateTestData(int size, int seed = 42) {
   std::mt19937 gen(seed + size);
   std::uniform_int_distribution<> dis(1, 10);
 
-  std::vector<int> A(size * size);
-  std::vector<int> B(size * size);
+  std::vector<int> a(static_cast<size_t>(size) * size);
+  std::vector<int> b(static_cast<size_t>(size) * size);
 
   for (int i = 0; i < size * size; ++i) {
-    A[i] = dis(gen);
-    B[i] = dis(gen);
+    a[i] = dis(gen);
+    b[i] = dis(gen);
   }
 
-  return std::make_tuple(A, B, size);
+  return std::make_tuple(a, b, size);
 }
+
 }  // namespace
 
 class RysevMRunFuncTestsProcesses : public ppc::util::BaseRunFuncTests<InType, OutType, TestType> {
@@ -59,9 +62,9 @@ class RysevMRunFuncTestsProcesses : public ppc::util::BaseRunFuncTests<InType, O
     auto data = GenerateTestData(size);
     input_data_ = data;
 
-    const auto &A = std::get<0>(data);
-    const auto &B = std::get<1>(data);
-    expected_output_ = ReferenceMultiply(A, B, size);
+    const auto &a = std::get<0>(data);
+    const auto &b = std::get<1>(data);
+    expected_output_ = ReferenceMultiply(a, b, size);
   }
 
   bool CheckTestOutputData(OutType &output_data) final {

@@ -21,6 +21,11 @@ class RysevMMatrMulMPI : public BaseTask {
   bool RunImpl() override;
   bool PostProcessingImpl() override;
 
+  void ComputeDistribution(std::vector<int> &send_counts, std::vector<int> &displs);
+  void PrepareLocalBuffers(const std::vector<int> &send_counts);
+  void LocalMultiply();
+  void ComputeGatherParams(std::vector<int> &recv_counts, std::vector<int> &recv_displs);
+
   std::vector<int> A_;
   std::vector<int> B_;
   std::vector<int> C_;
