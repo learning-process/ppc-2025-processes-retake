@@ -1,11 +1,10 @@
 #include "luchnikov_e_max_val_in_col_of_mat/seq/include/ops_seq.hpp"
 
 #include <algorithm>
-#include <limits>
+#include <climits>
 #include <vector>
 
 #include "luchnikov_e_max_val_in_col_of_mat/common/include/common.hpp"
-#include "util/include/util.hpp"
 
 namespace luchnikov_e_max_val_in_col_of_mat {
 
@@ -38,7 +37,7 @@ bool LuchnikovEMaxValInColOfMatSEQ::PreProcessingImpl() {
 
   if (!matrix.empty()) {
     size_t cols = matrix[0].size();
-    result_.assign(cols, std::numeric_limits<int>::min());
+    result_.assign(cols, INT_MIN);
   }
 
   return true;
@@ -55,7 +54,7 @@ bool LuchnikovEMaxValInColOfMatSEQ::RunImpl() {
   size_t cols = matrix[0].size();
 
   for (size_t j = 0; j < cols; ++j) {
-    int max_val = std::numeric_limits<int>::min();
+    int max_val = INT_MIN;
     for (size_t i = 0; i < rows; ++i) {
       if (matrix[i][j] > max_val) {
         max_val = matrix[i][j];

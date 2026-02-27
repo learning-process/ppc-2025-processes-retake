@@ -3,11 +3,8 @@
 #include <mpi.h>
 
 #include <algorithm>
-#include <limits>
+#include <climits>
 #include <vector>
-
-#include "luchnikov_e_max_val_in_col_of_mat/common/include/common.hpp"
-#include "util/include/util.hpp"
 
 namespace luchnikov_e_max_val_in_col_of_mat {
 
@@ -29,9 +26,9 @@ bool LuchnikovEMaxValInColOfMatMPI::ValidationImpl() {
       return false;
     }
 
-    size_t cols = matrix[0].size();
+    cols_ = static_cast<int>(matrix[0].size());
     for (const auto &row : matrix) {
-      if (row.size() != cols) {
+      if (static_cast<int>(row.size()) != cols_) {
         return false;
       }
     }
@@ -41,74 +38,64 @@ bool LuchnikovEMaxValInColOfMatMPI::ValidationImpl() {
 }
 
 bool LuchnikovEMaxValInColOfMatMPI::PreProcessingImpl() {
-  const auto &matrix = GetInput();
+  MPI_Comm_rank(MPI_COMM_WORLD, &rank_);
+  MPI_Comm_size(MPI_COMM_WORLD, &size_);
 
   if (rank_ == 0) {
-    if (!matrix.empty()) {
-      rows_ = static_cast<int>(matrix.size());
-      cols_ = static_cast<int>(matrix[0].size());
-    }
+    const auto &matrix = GetInput();
+    rows_ = static_cast<int>(matrix.size());
+    cols_ = static_cast<int>(matrix[0].size());
   }
 
   MPI_Bcast(&rows_, 1, MPI_INT, 0, MPI_COMM_WORLD);
   MPI_Bcast(&cols_, 1, MPI_INT, 0, MPI_COMM_WORLD);
 
-  if (rank_ != 0) {
-    matrix_.resize(rows_, std::vector<int>(cols_));
-  }
-
-  for (int i = 0; i < rows_; ++i) {
-    MPI_Bcast(matrix_[i].data(), cols_, MPI_INT, 0, MPI_COMM_WORLD);
-  }
-
-  if (rank_ == 0) {
-    matrix_ = matrix;
-  }
-
-  result_.assign(cols_, std::numeric_limits<int>::min());
-
+  result_.assign(cols_, INT_MIN);
   return true;
 }
 
 bool LuchnikovEMaxValInColOfMatMPI::RunImpl() {
-  if (matrix_.empty()) {
-    return false;
+  MPI_Comm_rank(MPI_COMM_WORLD, &rank_);
+  MPI_Comm_size(MPI_COMM_WORLD, &size_);
+
+  std::vector<int> flat_matrix;
+  if (rank_ == 0) {
+    const auto &matrix = GetInput();
+    flat_matrix.reserve(rows_ * cols_);
+    for (int i = 0; i < rows_; ++i) {
+      for (int j = 0; j < cols_; ++j) {
+        flat_matrix.push_back(matrix[i][j]);
+      }
+    }
   }
 
-  std::vector<int> sendcounts(size_);
-  std::vector<int> displs(size_);
+  std::vector<int> sendcounts(size_, 0);
+  std::vector<int> displs(size_, 0);
 
-  int rows_per_process = rows_ / size_;
-  int remainder = rows_ % size_;
+  int base_rows = rows_ / size_;
+  int extra_rows = rows_ % size_;
 
   int offset = 0;
   for (int i = 0; i < size_; ++i) {
-    int current_rows = rows_per_process + (i < remainder ? 1 : 0);
+    int current_rows = base_rows + (i < extra_rows ? 1 : 0);
     sendcounts[i] = current_rows * cols_;
     displs[i] = offset;
     offset += sendcounts[i];
   }
 
-  std::vector<int> flat_matrix;
-  if (rank_ == 0) {
-    flat_matrix.reserve(rows_ * cols_);
-    for (const auto &row : matrix_) {
-      flat_matrix.insert(flat_matrix.end(), row.begin(), row.end());
-    }
-  }
-
   std::vector<int> local_flat(sendcounts[rank_]);
+
   MPI_Scatterv(flat_matrix.data(), sendcounts.data(), displs.data(), MPI_INT, local_flat.data(), sendcounts[rank_],
                MPI_INT, 0, MPI_COMM_WORLD);
 
   int local_rows = sendcounts[rank_] / cols_;
-  std::vector<int> local_max(cols_, std::numeric_limits<int>::min());
+  std::vector<int> local_max(cols_, INT_MIN);
 
   for (int i = 0; i < local_rows; ++i) {
     for (int j = 0; j < cols_; ++j) {
-      int val = local_flat[i * cols_ + j];
-      if (val > local_max[j]) {
-        local_max[j] = val;
+      int idx = i * cols_ + j;
+      if (local_flat[idx] > local_max[j]) {
+        local_max[j] = local_flat[idx];
       }
     }
   }
