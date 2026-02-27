@@ -10,11 +10,14 @@
 
 namespace luchnikov_e_max_val_in_col_of_mat {
 
-class LuchnikovEMaxValInColOfMatPerfTest : public ppc::util::BaseRunPerfTests<InType, OutType> {
+using PerfParamType = std::tuple<std::function<std::shared_ptr<BaseTask>(InType)>, std::string>;
+
+class LuchnikovEMaxValInColOfMatPerfTest : public ppc::util::BaseRunPerfTests<InType, OutType, PerfParamType> {
   const int kDim_ = 150;
   InType input_data_{};
   OutType expected_output_{};
 
+ protected:
   void SetUp() override {
     input_data_.resize(kDim_, std::vector<int>(kDim_));
 
@@ -63,9 +66,8 @@ const auto kAllPerfTasks =
 
 const auto kGtestValues = ppc::util::TupleToGTestValues(kAllPerfTasks);
 
-const auto kPerfTestName = LuchnikovEMaxValInColOfMatPerfTest::CustomPerfTestName;
-
-INSTANTIATE_TEST_SUITE_P(PerformanceTests, LuchnikovEMaxValInColOfMatPerfTest, kGtestValues, kPerfTestName);
+INSTANTIATE_TEST_SUITE_P(PerformanceTests, LuchnikovEMaxValInColOfMatPerfTest, kGtestValues,
+                         ppc::util::BaseRunPerfTests<InType, OutType, PerfParamType>::CustomPerfTestName);
 
 }  // namespace
 
