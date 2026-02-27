@@ -2,11 +2,9 @@
 
 #include <mpi.h>
 
-#include <algorithm>
 #include <cmath>
 #include <cstddef>
 #include <limits>
-#include <ranges>
 #include <utility>
 #include <vector>
 
