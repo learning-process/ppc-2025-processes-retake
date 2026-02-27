@@ -11,7 +11,7 @@ namespace luchnikov_e_max_val_in_col_of_mat {
 
 class LuchnikovEMaxValInColOfMatFuncTests : public ppc::util::BaseRunFuncTests<InType, OutType, TestType> {
  public:
-  static std::string PrintTestParam(const TestType& test_param) {
+  static std::string PrintTestParam(const TestType &test_param) {
     return std::to_string(std::get<0>(test_param)) + "x" + std::to_string(std::get<1>(test_param)) + "_" +
            std::get<2>(test_param);
   }
@@ -71,7 +71,7 @@ class LuchnikovEMaxValInColOfMatFuncTests : public ppc::util::BaseRunFuncTests<I
     }
   }
 
-  bool CheckTestOutputData(OutType& output_data) final {
+  bool CheckTestOutputData(OutType &output_data) final {
     if (output_data.size() != expected_output_.size()) {
       return false;
     }
@@ -98,15 +98,16 @@ TEST_P(LuchnikovEMaxValInColOfMatFuncTests, TestMaxInColumns) {
 
 namespace {
 
-const std::array<TestType, 10> kTestParams = {
-    std::make_tuple(1, 1, "increasing"),  std::make_tuple(2, 2, "increasing"), std::make_tuple(3, 3, "decreasing"),
-    std::make_tuple(4, 5, "random"),       std::make_tuple(5, 3, "random"),    std::make_tuple(3, 5, "same"),
-    std::make_tuple(6, 4, "negative"),     std::make_tuple(7, 7, "increasing"), std::make_tuple(8, 3, "decreasing"),
-    std::make_tuple(4, 8, "random")};
+const std::array<TestType, 10> kTestParams = {std::make_tuple(1, 1, "increasing"), std::make_tuple(2, 2, "increasing"),
+                                              std::make_tuple(3, 3, "decreasing"), std::make_tuple(4, 5, "random"),
+                                              std::make_tuple(5, 3, "random"),     std::make_tuple(3, 5, "same"),
+                                              std::make_tuple(6, 4, "negative"),   std::make_tuple(7, 7, "increasing"),
+                                              std::make_tuple(8, 3, "decreasing"), std::make_tuple(4, 8, "random")};
 
-const auto kTestTasksList =
-    std::tuple_cat(ppc::util::AddFuncTask<LuchnikovEMaxValInColOfMatMPI, InType>(kTestParams, PPC_SETTINGS_luchnikov_e_max_val_in_col_of_mat),
-                   ppc::util::AddFuncTask<LuchnikovEMaxValInColOfMatSEQ, InType>(kTestParams, PPC_SETTINGS_luchnikov_e_max_val_in_col_of_mat));
+const auto kTestTasksList = std::tuple_cat(ppc::util::AddFuncTask<LuchnikovEMaxValInColOfMatMPI, InType>(
+                                               kTestParams, PPC_SETTINGS_luchnikov_e_max_val_in_col_of_mat),
+                                           ppc::util::AddFuncTask<LuchnikovEMaxValInColOfMatSEQ, InType>(
+                                               kTestParams, PPC_SETTINGS_luchnikov_e_max_val_in_col_of_mat));
 
 const auto kGtestValues = ppc::util::ExpandToValues(kTestTasksList);
 

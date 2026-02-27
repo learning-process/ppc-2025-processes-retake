@@ -10,7 +10,7 @@ class LuchnikovEMaxValInColOfMatMPI : public BaseTask {
   static constexpr ppc::task::TypeOfTask GetStaticTypeOfTask() {
     return ppc::task::TypeOfTask::kMPI;
   }
-  explicit LuchnikovEMaxValInColOfMatMPI(const InType& in);
+  explicit LuchnikovEMaxValInColOfMatMPI(const InType &in);
 
  private:
   bool ValidationImpl() override;

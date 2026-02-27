@@ -10,7 +10,7 @@ class LuchnikovEMaxValInColOfMatSEQ : public BaseTask {
   static constexpr ppc::task::TypeOfTask GetStaticTypeOfTask() {
     return ppc::task::TypeOfTask::kSEQ;
   }
-  explicit LuchnikovEMaxValInColOfMatSEQ(const InType& in);
+  explicit LuchnikovEMaxValInColOfMatSEQ(const InType &in);
 
  private:
   bool ValidationImpl() override;
