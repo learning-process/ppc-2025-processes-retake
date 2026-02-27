@@ -129,10 +129,13 @@ bool PerformLocalRelaxation(const std::vector<double> &current_dist, const Local
 }
 
 void SynchronizeDistances(std::vector<double> &global_dist, std::vector<double> &local_buffer, MPI_Comm comm) {
+  if (global_dist.empty()) {
+    return;
+  }
+
   MPI_Allreduce(local_buffer.data(), global_dist.data(), static_cast<int>(global_dist.size()), MPI_DOUBLE, MPI_MIN,
                 comm);
-
-  std::ranges::copy(global_dist, local_buffer.begin());
+  local_buffer = global_dist;
 }
 
 }  // namespace
