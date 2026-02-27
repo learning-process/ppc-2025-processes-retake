@@ -12,21 +12,23 @@
 
 namespace luchnikov_e_max_val_in_col_of_mat {
 
-class LuchnikovEMaxValInColOfMatFuncTests : public ppc::util::BaseRunFuncTests<InType, OutType, TestType> {
+using ParamType = std::tuple<std::function<std::shared_ptr<BaseTask>(InType)>, std::string, TestType>;
+
+class LuchnikovEMaxValInColOfMatFuncTests : public ppc::util::BaseRunFuncTests<InType, OutType, ParamType> {
  public:
-  static std::string PrintTestParam(const testing::TestParamInfo<TestType> &info) {
-    TestType params = std::get<static_cast<size_t>(ppc::util::GTestParamIndex::kTestParams)>(info.param);
+  static std::string PrintTestParam(const testing::TestParamInfo<ParamType> &info) {
+    const auto &params = std::get<2>(info.param);
     return std::to_string(std::get<0>(params)) + "x" + std::to_string(std::get<1>(params)) + "_" + std::get<2>(params);
   }
 
  protected:
   void SetUp() override {
-    TestType params = std::get<static_cast<size_t>(ppc::util::GTestParamIndex::kTestParams)>(GetParam());
+    const auto &params = std::get<2>(GetParam());
     int rows = std::get<0>(params);
     int cols = std::get<1>(params);
     std::string matrix_type = std::get<2>(params);
 
-    input_data_ = std::vector<std::vector<int>>(rows, std::vector<int>(cols));
+    input_data_ = InType(rows, std::vector<int>(cols));
 
     if (matrix_type == "increasing") {
       int val = 1;
@@ -115,7 +117,7 @@ const auto kTestTasksList = std::tuple_cat(ppc::util::AddFuncTask<LuchnikovEMaxV
 const auto kGtestValues = ppc::util::ExpandToValues(kTestTasksList);
 
 INSTANTIATE_TEST_SUITE_P(MaxInColumnTests, LuchnikovEMaxValInColOfMatFuncTests, kGtestValues,
-                         &LuchnikovEMaxValInColOfMatFuncTests::PrintTestParam);
+                         LuchnikovEMaxValInColOfMatFuncTests::PrintTestParam);
 
 }  // namespace
 
