@@ -2,6 +2,7 @@
 #include <mpi.h>
 
 #include <cstdint>
+#include <vector>
 
 #include "util/include/util.hpp"
 #include "yushkova_p_hypercube/common/include/common.hpp"
@@ -26,21 +27,21 @@ bool RunTask(Task &task) {
 
 }  // namespace
 
-class YushkovaPHypercubeFunctional : public ::testing::TestWithParam<InType> {};
+class YushkovaPHypercubeFunctional : public ::testing::Test {};
 
-TEST_P(YushkovaPHypercubeFunctional, SeqReturnsCorrectEdgeCount) {
-  const InType n = GetParam();
-  YushkovaPHypercubeSEQ task(n);
-  ASSERT_TRUE(RunTask(task));
-  EXPECT_EQ(task.GetOutput(), ReferenceEdges(n));
+TEST_F(YushkovaPHypercubeFunctional, SeqReturnsCorrectEdgeCount) {
+  const std::vector<InType> dims = {1, 2, 3, 4, 5, 8, 12};
+  for (const InType n : dims) {
+    YushkovaPHypercubeSEQ task(n);
+    ASSERT_TRUE(RunTask(task));
+    EXPECT_EQ(task.GetOutput(), ReferenceEdges(n));
+  }
 }
 
-TEST_P(YushkovaPHypercubeFunctional, MpiMatchesSeqAndReference) {
+TEST_F(YushkovaPHypercubeFunctional, MpiMatchesSeqAndReference) {
   if (!ppc::util::IsUnderMpirun()) {
     GTEST_SKIP();
   }
-
-  const InType n = GetParam();
 
   int world_size = 0;
   int rank = 0;
@@ -50,18 +51,19 @@ TEST_P(YushkovaPHypercubeFunctional, MpiMatchesSeqAndReference) {
     GTEST_SKIP();
   }
 
-  YushkovaPHypercubeMPI mpi_task(n);
-  ASSERT_TRUE(RunTask(mpi_task));
+  const std::vector<InType> dims = {1, 2, 3, 4, 5, 8, 12};
+  for (const InType n : dims) {
+    YushkovaPHypercubeMPI mpi_task(n);
+    ASSERT_TRUE(RunTask(mpi_task));
 
-  if (rank == 0) {
-    YushkovaPHypercubeSEQ seq_task(n);
-    ASSERT_TRUE(RunTask(seq_task));
-    EXPECT_EQ(mpi_task.GetOutput(), seq_task.GetOutput());
-    EXPECT_EQ(mpi_task.GetOutput(), ReferenceEdges(n));
+    if (rank == 0) {
+      YushkovaPHypercubeSEQ seq_task(n);
+      ASSERT_TRUE(RunTask(seq_task));
+      EXPECT_EQ(mpi_task.GetOutput(), seq_task.GetOutput());
+      EXPECT_EQ(mpi_task.GetOutput(), ReferenceEdges(n));
+    }
   }
 }
-
-INSTANTIATE_TEST_SUITE_P(BasicCases, YushkovaPHypercubeFunctional, ::testing::Values(1, 2, 3, 4, 5, 8, 12));
 
 TEST(YushkovaPHypercubeValidation, SeqRejectsInvalidInput) {
   YushkovaPHypercubeSEQ bad_zero(0);

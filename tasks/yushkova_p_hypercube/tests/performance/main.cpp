@@ -1,6 +1,7 @@
 #include <gtest/gtest.h>
 
 #include <cstdint>
+#include <tuple>
 
 #include "util/include/perf_test_util.hpp"
 #include "yushkova_p_hypercube/common/include/common.hpp"
@@ -35,21 +36,28 @@ class YushkovaPHypercubePerfTests : public ppc::util::BaseRunPerfTests<InType, O
   InType input_n_{};
 };
 
-TEST_P(YushkovaPHypercubePerfTests, RunPerfModes) {
-  ExecuteTest(GetParam());
+TEST_F(YushkovaPHypercubePerfTests, SeqPipelineRun) {
+  const auto seq_tasks =
+      ppc::util::MakePerfTaskTuples<YushkovaPHypercubeSEQ, InType>(PPC_SETTINGS_yushkova_p_hypercube);
+  ExecuteTest(std::get<0>(seq_tasks));
 }
 
-namespace {
+TEST_F(YushkovaPHypercubePerfTests, SeqTaskRun) {
+  const auto seq_tasks =
+      ppc::util::MakePerfTaskTuples<YushkovaPHypercubeSEQ, InType>(PPC_SETTINGS_yushkova_p_hypercube);
+  ExecuteTest(std::get<1>(seq_tasks));
+}
 
-const auto kAllPerfTasks = ppc::util::MakeAllPerfTasks<InType, YushkovaPHypercubeMPI, YushkovaPHypercubeSEQ>(
-    PPC_SETTINGS_yushkova_p_hypercube);
+TEST_F(YushkovaPHypercubePerfTests, MpiPipelineRun) {
+  const auto mpi_tasks =
+      ppc::util::MakePerfTaskTuples<YushkovaPHypercubeMPI, InType>(PPC_SETTINGS_yushkova_p_hypercube);
+  ExecuteTest(std::get<0>(mpi_tasks));
+}
 
-const auto kGtestValues = ppc::util::TupleToGTestValues(kAllPerfTasks);
-
-const auto kPerfTestName = YushkovaPHypercubePerfTests::CustomPerfTestName;
-
-INSTANTIATE_TEST_SUITE_P(YushkovaPHypercubePerf, YushkovaPHypercubePerfTests, kGtestValues, kPerfTestName);
-
-}  // namespace
+TEST_F(YushkovaPHypercubePerfTests, MpiTaskRun) {
+  const auto mpi_tasks =
+      ppc::util::MakePerfTaskTuples<YushkovaPHypercubeMPI, InType>(PPC_SETTINGS_yushkova_p_hypercube);
+  ExecuteTest(std::get<1>(mpi_tasks));
+}
 
 }  // namespace yushkova_p_hypercube
