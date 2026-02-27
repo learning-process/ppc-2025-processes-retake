@@ -68,7 +68,7 @@ bool MarovCountLettersMPI::RunImpl() {
   // Подсчет буквенных символов локально
   int local_count = 0;
   for (int i = 0; i < local_size; ++i) {
-    if (std::isalpha(static_cast<unsigned char>(local_data[i]))) {
+    if (std::isalpha(static_cast<unsigned char>(local_data[i])) != 0) {
       local_count++;
     }
   }

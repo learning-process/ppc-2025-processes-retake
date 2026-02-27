@@ -1,6 +1,5 @@
 #include <gtest/gtest.h>
 
-#include <algorithm>
 #include <tuple>
 #include <vector>
 
@@ -8,7 +7,6 @@
 #include "marov_radix_sort_double/mpi/include/ops_mpi.hpp"
 #include "marov_radix_sort_double/seq/include/ops_seq.hpp"
 #include "util/include/func_test_util.hpp"
-#include "util/include/util.hpp"
 
 namespace marov_radix_sort_double {
 

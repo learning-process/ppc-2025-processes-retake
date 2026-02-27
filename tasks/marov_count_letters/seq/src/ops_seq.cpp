@@ -26,7 +26,7 @@ bool MarovCountLettersSEQ::RunImpl() {
   int count = 0;
 
   for (char c : input_str) {
-    if (std::isalpha(static_cast<unsigned char>(c))) {
+    if (std::isalpha(static_cast<unsigned char>(c)) != 0) {
       count++;
     }
   }
