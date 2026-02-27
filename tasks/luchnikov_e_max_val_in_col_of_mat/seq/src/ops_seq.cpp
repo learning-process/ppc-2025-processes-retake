@@ -6,7 +6,7 @@
 
 namespace luchnikov_e_max_val_in_col_of_mat {
 
-LuchnikovEMaxValInColOfMatSEQ::LuchnikovEMaxValInColOfMatSEQ(const InType &in) {
+LuchnikovEMaxValInColOfMatSEQ::LuchnikovEMaxValInColOfMatSEQ(const InType& in) {
   SetTypeOfTask(GetStaticTypeOfTask());
   GetInput() = in;
   GetOutput() = std::vector<int>();
@@ -18,7 +18,7 @@ bool LuchnikovEMaxValInColOfMatSEQ::ValidationImpl() {
   }
   rows_ = GetInput().size();
   cols_ = GetInput()[0].size();
-  for (const auto &row : GetInput()) {
+  for (const auto& row : GetInput()) {
     if (row.size() != static_cast<size_t>(cols_)) {
       return false;
     }
@@ -29,12 +29,11 @@ bool LuchnikovEMaxValInColOfMatSEQ::ValidationImpl() {
 bool LuchnikovEMaxValInColOfMatSEQ::PreProcessingImpl() {
   rows_ = GetInput().size();
   cols_ = GetInput()[0].size();
+  GetOutput().resize(cols_, INT_MIN);
   return true;
 }
 
 bool LuchnikovEMaxValInColOfMatSEQ::RunImpl() {
-  GetOutput().resize(cols_, INT_MIN);
-
   for (int j = 0; j < cols_; j++) {
     for (int i = 0; i < rows_; i++) {
       if (GetInput()[i][j] > GetOutput()[j]) {

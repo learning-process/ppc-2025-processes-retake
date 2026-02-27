@@ -8,7 +8,7 @@
 
 namespace luchnikov_e_max_val_in_col_of_mat {
 
-LuchnikovEMaxValInColOfMatMPI::LuchnikovEMaxValInColOfMatMPI(const InType &in) {
+LuchnikovEMaxValInColOfMatMPI::LuchnikovEMaxValInColOfMatMPI(const InType& in) {
   SetTypeOfTask(GetStaticTypeOfTask());
   GetInput() = in;
   GetOutput() = std::vector<int>();
@@ -24,7 +24,7 @@ bool LuchnikovEMaxValInColOfMatMPI::ValidationImpl() {
     }
     rows_ = GetInput().size();
     cols_ = GetInput()[0].size();
-    for (const auto &row : GetInput()) {
+    for (const auto& row : GetInput()) {
       if (row.size() != static_cast<size_t>(cols_)) {
         return false;
       }
@@ -45,7 +45,7 @@ bool LuchnikovEMaxValInColOfMatMPI::PreProcessingImpl() {
   std::vector<int> matrix_data;
   if (rank_ == 0) {
     matrix_data.reserve(rows_ * cols_);
-    for (const auto &row : GetInput()) {
+    for (const auto& row : GetInput()) {
       matrix_data.insert(matrix_data.end(), row.begin(), row.end());
     }
   }
@@ -89,10 +89,8 @@ bool LuchnikovEMaxValInColOfMatMPI::RunImpl() {
 }
 
 bool LuchnikovEMaxValInColOfMatMPI::PostProcessingImpl() {
-  if (rank_ == 0) {
-    GetOutput().resize(cols_);
-  }
-
+  GetOutput().resize(cols_);
+  
   MPI_Allreduce(local_result_.data(), GetOutput().data(), cols_, MPI_INT, MPI_MAX, MPI_COMM_WORLD);
 
   return true;
