@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cstdint>
 #include <string>
 #include <tuple>
 
@@ -7,8 +8,8 @@
 
 namespace yushkova_p_hypercube {
 
-using InType = std::tuple<int, int, int>;
-using OutType = int;
+using InType = int;
+using OutType = std::uint64_t;
 using TestType = std::tuple<InType, std::string>;
 using BaseTask = ppc::task::Task<InType, OutType>;
 

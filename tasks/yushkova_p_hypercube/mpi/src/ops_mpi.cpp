@@ -2,8 +2,8 @@
 
 #include <mpi.h>
 
-#include <cstddef>
-#include <vector>
+#include <algorithm>
+#include <cstdint>
 
 #include "yushkova_p_hypercube/common/include/common.hpp"
 
@@ -15,12 +15,17 @@ bool IsPowerOfTwo(int value) {
   return value > 0 && (value & (value - 1)) == 0;
 }
 
-int HypercubeDimension(int size) {
-  int result = 0;
-  while ((1 << result) < size) {
-    ++result;
+std::uint64_t CountLocalEdges(std::uint64_t start_vertex, std::uint64_t end_vertex, int dimension) {
+  std::uint64_t local_edges = 0;
+  for (std::uint64_t vertex = start_vertex; vertex < end_vertex; ++vertex) {
+    for (int bit = 0; bit < dimension; ++bit) {
+      const std::uint64_t neighbor = vertex ^ (static_cast<std::uint64_t>(1) << bit);
+      if (vertex < neighbor) {
+        ++local_edges;
+      }
+    }
   }
-  return result;
+  return local_edges;
 }
 
 }  // namespace
@@ -34,13 +39,8 @@ YushkovaPHypercubeMPI::YushkovaPHypercubeMPI(const InType &in) {
 bool YushkovaPHypercubeMPI::ValidationImpl() {
   int world_size = 0;
   MPI_Comm_size(MPI_COMM_WORLD, &world_size);
-
-  const int source = std::get<0>(GetInput());
-  const int destination = std::get<1>(GetInput());
-
-  const bool correct_source = source >= 0 && source < world_size;
-  const bool correct_destination = destination >= 0 && destination < world_size;
-  return IsPowerOfTwo(world_size) && correct_source && correct_destination;
+  const InType n = GetInput();
+  return IsPowerOfTwo(world_size) && n > 0 && n < 63;
 }
 
 bool YushkovaPHypercubeMPI::PreProcessingImpl() {
@@ -54,52 +54,36 @@ bool YushkovaPHypercubeMPI::RunImpl() {
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
   MPI_Comm_size(MPI_COMM_WORLD, &world_size);
 
-  const int source = std::get<0>(GetInput());
-  const int destination = std::get<1>(GetInput());
-  const int payload = std::get<2>(GetInput());
+  const InType n = GetInput();
 
   if (!IsPowerOfTwo(world_size)) {
     return false;
   }
+  const std::uint64_t vertices = static_cast<std::uint64_t>(1) << n;
+  const auto u_rank = static_cast<std::uint64_t>(rank);
+  const auto u_world = static_cast<std::uint64_t>(world_size);
+  const std::uint64_t base = vertices / u_world;
+  const std::uint64_t tail = vertices % u_world;
+  const std::uint64_t local_count = base + (u_rank < tail ? 1ULL : 0ULL);
+  const std::uint64_t local_start = (u_rank * base) + std::min(u_rank, tail);
+  const std::uint64_t local_end = local_start + local_count;
 
-  const int dimension = HypercubeDimension(world_size);
-  std::vector<MPI_Comm> dimension_comms(static_cast<size_t>(dimension), MPI_COMM_NULL);
+  std::uint64_t sum_edges = CountLocalEdges(local_start, local_end, n);
+  for (int mask = 1; mask < world_size; mask <<= 1) {
+    const int partner = rank ^ mask;
+    std::uint64_t from_partner = 0;
+    MPI_Sendrecv(&sum_edges, 1, MPI_UINT64_T, partner, 700 + mask, &from_partner, 1, MPI_UINT64_T, partner, 700 + mask,
+                 MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 
-  for (int bit = 0; bit < dimension; ++bit) {
-    const int color = rank & ~(1 << bit);
-    MPI_Comm_split(MPI_COMM_WORLD, color, rank, &dimension_comms[static_cast<size_t>(bit)]);
-  }
-
-  int current_owner = source;
-  int value = (rank == source) ? payload : 0;
-  const int route_mask = source ^ destination;
-
-  for (int bit = 0; bit < dimension; ++bit) {
-    const bool bit_differs = (route_mask & (1 << bit)) != 0;
-    if (!bit_differs) {
-      continue;
-    }
-
-    const int next_owner = current_owner ^ (1 << bit);
-    const int tag = 1000 + bit;
-
-    if (rank == current_owner) {
-      MPI_Send(&value, 1, MPI_INT, next_owner, tag, MPI_COMM_WORLD);
-    } else if (rank == next_owner) {
-      MPI_Recv(&value, 1, MPI_INT, current_owner, tag, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-    }
-
-    current_owner = next_owner;
-  }
-
-  for (MPI_Comm &comm : dimension_comms) {
-    if (comm != MPI_COMM_NULL) {
-      MPI_Comm_free(&comm);
+    if ((rank & mask) == 0) {
+      sum_edges += from_partner;
+    } else {
+      break;
     }
   }
 
-  MPI_Bcast(&value, 1, MPI_INT, destination, MPI_COMM_WORLD);
-  GetOutput() = value;
+  MPI_Bcast(&sum_edges, 1, MPI_UINT64_T, 0, MPI_COMM_WORLD);
+  GetOutput() = static_cast<OutType>(sum_edges);
   return true;
 }
 

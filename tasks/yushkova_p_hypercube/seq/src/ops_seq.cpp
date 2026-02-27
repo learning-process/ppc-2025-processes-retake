@@ -1,18 +1,10 @@
 #include "yushkova_p_hypercube/seq/include/ops_seq.hpp"
 
-#include <mpi.h>
+#include <cstdint>
 
 #include "yushkova_p_hypercube/common/include/common.hpp"
 
 namespace yushkova_p_hypercube {
-
-namespace {
-
-bool IsPowerOfTwo(int value) {
-  return value > 0 && (value & (value - 1)) == 0;
-}
-
-}  // namespace
 
 YushkovaPHypercubeSEQ::YushkovaPHypercubeSEQ(const InType &in) {
   SetTypeOfTask(GetStaticTypeOfTask());
@@ -21,14 +13,8 @@ YushkovaPHypercubeSEQ::YushkovaPHypercubeSEQ(const InType &in) {
 }
 
 bool YushkovaPHypercubeSEQ::ValidationImpl() {
-  int world_size = 0;
-  MPI_Comm_size(MPI_COMM_WORLD, &world_size);
-
-  const int source = std::get<0>(GetInput());
-  const int destination = std::get<1>(GetInput());
-  const bool correct_source = source >= 0 && source < world_size;
-  const bool correct_destination = destination >= 0 && destination < world_size;
-  return IsPowerOfTwo(world_size) && correct_source && correct_destination;
+  const InType n = GetInput();
+  return n > 0 && n < 63;
 }
 
 bool YushkovaPHypercubeSEQ::PreProcessingImpl() {
@@ -37,22 +23,20 @@ bool YushkovaPHypercubeSEQ::PreProcessingImpl() {
 }
 
 bool YushkovaPHypercubeSEQ::RunImpl() {
-  const int source = std::get<0>(GetInput());
-  const int destination = std::get<1>(GetInput());
-  const int payload = std::get<2>(GetInput());
+  const InType n = GetInput();
+  const std::uint64_t vertices = static_cast<std::uint64_t>(1) << n;
+  std::uint64_t edges = 0;
 
-  int current_owner = source;
-  const int value = payload;
-  const int route_mask = source ^ destination;
-
-  for (int bit = 0; (1 << bit) <= route_mask; ++bit) {
-    const bool bit_differs = (route_mask & (1 << bit)) != 0;
-    if (bit_differs) {
-      current_owner ^= (1 << bit);
+  for (std::uint64_t vertex = 0; vertex < vertices; ++vertex) {
+    for (int bit = 0; bit < n; ++bit) {
+      const std::uint64_t neighbor = vertex ^ (static_cast<std::uint64_t>(1) << bit);
+      if (vertex < neighbor) {
+        ++edges;
+      }
     }
   }
 
-  GetOutput() = (current_owner == destination) ? value : 0;
+  GetOutput() = static_cast<OutType>(edges);
   return true;
 }
 
