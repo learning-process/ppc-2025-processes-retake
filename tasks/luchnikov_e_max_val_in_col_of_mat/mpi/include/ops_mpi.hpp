@@ -18,12 +18,12 @@ class LuchnikovEMaxValInColOfMatMPI : public BaseTask {
   bool RunImpl() override;
   bool PostProcessingImpl() override;
 
-  std::vector<int> local_matrix_data_;
   std::vector<int> local_result_;
-  int rows_;
-  int cols_;
-  int rank_;
-  int size_;
+  std::vector<std::vector<int>> input_copy_;
+  int rows_ = 0;
+  int cols_ = 0;
+  int rank_ = 0;
+  int size_ = 0;
 };
 
 }  // namespace luchnikov_e_max_val_in_col_of_mat

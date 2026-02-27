@@ -18,8 +18,10 @@ class LuchnikovEMaxValInColOfMatSEQ : public BaseTask {
   bool RunImpl() override;
   bool PostProcessingImpl() override;
 
-  int rows_;
-  int cols_;
+  std::vector<int> local_result_;
+  std::vector<std::vector<int>> input_copy_;
+  int rows_ = 0;
+  int cols_ = 0;
 };
 
 }  // namespace luchnikov_e_max_val_in_col_of_mat

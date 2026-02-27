@@ -1,5 +1,6 @@
 #include <gtest/gtest.h>
 
+#include <climits>
 #include <vector>
 
 #include "luchnikov_e_max_val_in_col_of_mat/common/include/common.hpp"
@@ -10,29 +11,26 @@
 namespace luchnikov_e_max_val_in_col_of_mat {
 
 class LuchnikovEMaxValInColOfMatPerfTest : public ppc::util::BaseRunPerfTests<InType, OutType> {
-  const int kRows_ = 500;
-  const int kCols_ = 500;
+  const int kDim_ = 150;
   InType input_data_{};
   OutType expected_output_{};
 
- protected:
   void SetUp() override {
-    input_data_.resize(kRows_, std::vector<int>(kCols_));
-    for (int i = 0; i < kRows_; ++i) {
-      for (int j = 0; j < kCols_; ++j) {
-        input_data_[i][j] = (i * kCols_ + j) % 1000;
+    input_data_.resize(kDim_, std::vector<int>(kDim_));
+
+    for (int i = 0; i < kDim_; ++i) {
+      for (int j = 0; j < kDim_; ++j) {
+        input_data_[i][j] = ((i + 1) * 31 + (j + 1) * 37) % 5000;
       }
     }
 
-    expected_output_.resize(kCols_);
-    for (int j = 0; j < kCols_; ++j) {
-      int max_val = input_data_[0][j];
-      for (int i = 1; i < kRows_; ++i) {
-        if (input_data_[i][j] > max_val) {
-          max_val = input_data_[i][j];
+    expected_output_.resize(kDim_, INT_MIN);
+    for (int j = 0; j < kDim_; ++j) {
+      for (int i = 0; i < kDim_; ++i) {
+        if (input_data_[i][j] > expected_output_[j]) {
+          expected_output_[j] = input_data_[i][j];
         }
       }
-      expected_output_[j] = max_val;
     }
   }
 
@@ -53,7 +51,7 @@ class LuchnikovEMaxValInColOfMatPerfTest : public ppc::util::BaseRunPerfTests<In
   }
 };
 
-TEST_P(LuchnikovEMaxValInColOfMatPerfTest, RunPerfModes) {
+TEST_P(LuchnikovEMaxValInColOfMatPerfTest, PerformanceRun) {
   ExecuteTest(GetParam());
 }
 
@@ -65,9 +63,9 @@ const auto kAllPerfTasks =
 
 const auto kGtestValues = ppc::util::TupleToGTestValues(kAllPerfTasks);
 
-const auto kPerfTestName = ppc::util::BaseRunPerfTests<InType, OutType>::CustomPerfTestName;
+const auto kPerfTestName = LuchnikovEMaxValInColOfMatPerfTest::CustomPerfTestName;
 
-INSTANTIATE_TEST_SUITE_P(RunModeTests, LuchnikovEMaxValInColOfMatPerfTest, kGtestValues, kPerfTestName);
+INSTANTIATE_TEST_SUITE_P(PerformanceTests, LuchnikovEMaxValInColOfMatPerfTest, kGtestValues, kPerfTestName);
 
 }  // namespace
 
