@@ -10,7 +10,7 @@ class MarovCountLettersMPI : public BaseTask {
   static constexpr ppc::task::TypeOfTask GetStaticTypeOfTask() {
     return ppc::task::TypeOfTask::kMPI;
   }
-  explicit MarovCountLettersMPI(const InType &in);
+  explicit MarovCountLettersMPI(const InType& in);
 
  private:
   int proc_rank_{0};

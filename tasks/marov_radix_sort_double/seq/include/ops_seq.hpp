@@ -10,7 +10,7 @@ class MarovRadixSortDoubleSEQ : public BaseTask {
   static constexpr ppc::task::TypeOfTask GetStaticTypeOfTask() {
     return ppc::task::TypeOfTask::kSEQ;
   }
-  explicit MarovRadixSortDoubleSEQ(const InType &in);
+  explicit MarovRadixSortDoubleSEQ(const InType& in);
 
  private:
   bool ValidationImpl() override;

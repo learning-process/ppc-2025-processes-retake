@@ -10,7 +10,7 @@ class MarovRadixSortDoubleMPI : public BaseTask {
   static constexpr ppc::task::TypeOfTask GetStaticTypeOfTask() {
     return ppc::task::TypeOfTask::kMPI;
   }
-  explicit MarovRadixSortDoubleMPI(const InType &in);
+  explicit MarovRadixSortDoubleMPI(const InType& in);
 
  private:
   int proc_rank_{0};

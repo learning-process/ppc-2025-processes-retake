@@ -10,7 +10,7 @@ class MarovCountLettersSEQ : public BaseTask {
   static constexpr ppc::task::TypeOfTask GetStaticTypeOfTask() {
     return ppc::task::TypeOfTask::kSEQ;
   }
-  explicit MarovCountLettersSEQ(const InType &in);
+  explicit MarovCountLettersSEQ(const InType& in);
 
  private:
   bool ValidationImpl() override;
