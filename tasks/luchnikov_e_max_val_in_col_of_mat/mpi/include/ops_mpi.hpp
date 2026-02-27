@@ -18,8 +18,8 @@ class LuchnikovEMaxValInColOfMatMPI : public BaseTask {
   bool RunImpl() override;
   bool PostProcessingImpl() override;
 
-  std::vector<int> local_result_;
-  std::vector<std::vector<int>> input_copy_;
+  std::vector<std::vector<int>> matrix_;
+  std::vector<int> result_;
   int rows_ = 0;
   int cols_ = 0;
   int rank_ = 0;

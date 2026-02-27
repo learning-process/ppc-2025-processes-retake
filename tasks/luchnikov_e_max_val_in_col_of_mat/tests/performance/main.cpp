@@ -1,6 +1,5 @@
 #include <gtest/gtest.h>
 
-#include <climits>
 #include <vector>
 
 #include "luchnikov_e_max_val_in_col_of_mat/common/include/common.hpp"
@@ -10,47 +9,55 @@
 
 namespace luchnikov_e_max_val_in_col_of_mat {
 
-using PerfParamType = std::tuple<std::function<std::shared_ptr<BaseTask>(InType)>, std::string>;
-
-class LuchnikovEMaxValInColOfMatPerfTest : public ppc::util::BaseRunPerfTests<InType, OutType, PerfParamType> {
-  const int kDim_ = 150;
+class LuchnikovEMaxValInColOfMatPerfTest : public ppc::util::BaseRunPerfTests<InType, OutType> {
+  const int kMatrixSize_ = 100;
   InType input_data_{};
   OutType expected_output_{};
 
- protected:
   void SetUp() override {
-    input_data_.resize(kDim_, std::vector<int>(kDim_));
-
-    for (int i = 0; i < kDim_; ++i) {
-      for (int j = 0; j < kDim_; ++j) {
-        input_data_[i][j] = ((i + 1) * 31 + (j + 1) * 37) % 5000;
-      }
-    }
-
-    expected_output_.resize(kDim_, INT_MIN);
-    for (int j = 0; j < kDim_; ++j) {
-      for (int i = 0; i < kDim_; ++i) {
-        if (input_data_[i][j] > expected_output_[j]) {
-          expected_output_[j] = input_data_[i][j];
-        }
-      }
-    }
+    input_data_ = GenerateLargeMatrix(kMatrixSize_);
+    expected_output_ = CalculateExpectedResult(input_data_);
   }
 
   bool CheckTestOutputData(OutType &output_data) final {
-    if (output_data.size() != expected_output_.size()) {
-      return false;
-    }
-    for (size_t i = 0; i < output_data.size(); ++i) {
-      if (output_data[i] != expected_output_[i]) {
-        return false;
-      }
-    }
-    return true;
+    return expected_output_ == output_data;
   }
 
   InType GetTestInputData() final {
     return input_data_;
+  }
+
+ private:
+  InType GenerateLargeMatrix(int size) {
+    InType matrix(size, std::vector<int>(size));
+
+    for (int i = 0; i < size; ++i) {
+      for (int j = 0; j < size; ++j) {
+        matrix[i][j] = (i * 19 + j * 23) % 10000 + 1;
+      }
+    }
+
+    return matrix;
+  }
+
+  OutType CalculateExpectedResult(const InType &matrix) {
+    if (matrix.empty()) {
+      return {};
+    }
+
+    size_t rows = matrix.size();
+    size_t cols = matrix[0].size();
+    OutType result(cols, std::numeric_limits<int>::min());
+
+    for (size_t j = 0; j < cols; ++j) {
+      for (size_t i = 0; i < rows; ++i) {
+        if (matrix[i][j] > result[j]) {
+          result[j] = matrix[i][j];
+        }
+      }
+    }
+
+    return result;
   }
 };
 
@@ -66,8 +73,9 @@ const auto kAllPerfTasks =
 
 const auto kGtestValues = ppc::util::TupleToGTestValues(kAllPerfTasks);
 
-INSTANTIATE_TEST_SUITE_P(PerformanceTests, LuchnikovEMaxValInColOfMatPerfTest, kGtestValues,
-                         ppc::util::BaseRunPerfTests<InType, OutType, PerfParamType>::CustomPerfTestName);
+const auto kPerfTestName = LuchnikovEMaxValInColOfMatPerfTest::CustomPerfTestName;
+
+INSTANTIATE_TEST_SUITE_P(PerformanceTests, LuchnikovEMaxValInColOfMatPerfTest, kGtestValues, kPerfTestName);
 
 }  // namespace
 
