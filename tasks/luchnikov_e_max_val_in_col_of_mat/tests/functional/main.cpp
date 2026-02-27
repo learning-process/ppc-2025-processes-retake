@@ -23,6 +23,7 @@ class LuchnikovEMaxValInColOfMatFuncTests : public ppc::util::BaseRunFuncTests<I
     int cols = std::get<1>(params);
     std::string matrix_type = std::get<2>(params);
 
+    input_data_.clear();
     input_data_.resize(rows, std::vector<int>(cols));
 
     if (matrix_type == "increasing") {

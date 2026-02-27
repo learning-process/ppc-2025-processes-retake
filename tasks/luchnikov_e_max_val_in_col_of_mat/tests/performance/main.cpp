@@ -14,6 +14,7 @@ class LuchnikovEMaxValInColOfMatPerfTest : public ppc::util::BaseRunPerfTests<In
   const int kCols_ = 500;
   InType input_data_{};
 
+ protected:
   void SetUp() override {
     input_data_.resize(kRows_, std::vector<int>(kCols_));
     for (int i = 0; i < kRows_; i++) {
