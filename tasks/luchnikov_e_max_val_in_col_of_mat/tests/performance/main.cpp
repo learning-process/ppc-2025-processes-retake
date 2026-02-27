@@ -13,29 +13,35 @@ class LuchnikovEMaxValInColOfMatPerfTest : public ppc::util::BaseRunPerfTests<In
   const int kRows_ = 500;
   const int kCols_ = 500;
   InType input_data_{};
+  OutType expected_output_{};
 
  protected:
   void SetUp() override {
     input_data_.resize(kRows_, std::vector<int>(kCols_));
-    for (int i = 0; i < kRows_; i++) {
-      for (int j = 0; j < kCols_; j++) {
+    for (int i = 0; i < kRows_; ++i) {
+      for (int j = 0; j < kCols_; ++j) {
         input_data_[i][j] = (i * kCols_ + j) % 1000;
       }
+    }
+
+    expected_output_.resize(kCols_);
+    for (int j = 0; j < kCols_; ++j) {
+      int max_val = input_data_[0][j];
+      for (int i = 1; i < kRows_; ++i) {
+        if (input_data_[i][j] > max_val) {
+          max_val = input_data_[i][j];
+        }
+      }
+      expected_output_[j] = max_val;
     }
   }
 
   bool CheckTestOutputData(OutType &output_data) final {
-    if (output_data.size() != static_cast<size_t>(kCols_)) {
+    if (output_data.size() != expected_output_.size()) {
       return false;
     }
-    for (int j = 0; j < kCols_; j++) {
-      int expected = input_data_[0][j];
-      for (int i = 1; i < kRows_; i++) {
-        if (input_data_[i][j] > expected) {
-          expected = input_data_[i][j];
-        }
-      }
-      if (output_data[j] != expected) {
+    for (size_t i = 0; i < output_data.size(); ++i) {
+      if (output_data[i] != expected_output_[i]) {
         return false;
       }
     }
@@ -59,7 +65,7 @@ const auto kAllPerfTasks =
 
 const auto kGtestValues = ppc::util::TupleToGTestValues(kAllPerfTasks);
 
-const auto kPerfTestName = LuchnikovEMaxValInColOfMatPerfTest::CustomPerfTestName;
+const auto kPerfTestName = ppc::util::BaseRunPerfTests<InType, OutType>::CustomPerfTestName;
 
 INSTANTIATE_TEST_SUITE_P(RunModeTests, LuchnikovEMaxValInColOfMatPerfTest, kGtestValues, kPerfTestName);
 

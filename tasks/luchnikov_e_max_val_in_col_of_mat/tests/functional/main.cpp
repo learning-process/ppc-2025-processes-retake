@@ -12,18 +12,16 @@
 
 namespace luchnikov_e_max_val_in_col_of_mat {
 
-using ParamType = std::tuple<std::function<std::shared_ptr<BaseTask>(InType)>, std::string, TestType>;
-
-class LuchnikovEMaxValInColOfMatFuncTests : public ppc::util::BaseRunFuncTests<InType, OutType, ParamType> {
+class LuchnikovEMaxValInColOfMatFuncTests : public ppc::util::BaseRunFuncTests<InType, OutType, TestType> {
  public:
-  static std::string PrintTestParam(const testing::TestParamInfo<ParamType> &info) {
-    const auto &params = std::get<2>(info.param);
-    return std::to_string(std::get<0>(params)) + "x" + std::to_string(std::get<1>(params)) + "_" + std::get<2>(params);
+  static std::string PrintTestParam(const testing::TestParamInfo<TestType> &info) {
+    return std::to_string(std::get<0>(info.param)) + "x" + std::to_string(std::get<1>(info.param)) + "_" +
+           std::get<2>(info.param);
   }
 
  protected:
   void SetUp() override {
-    const auto &params = std::get<2>(GetParam());
+    TestType params = std::get<static_cast<size_t>(ppc::util::GTestParamIndex::kTestParams)>(GetParam());
     int rows = std::get<0>(params);
     int cols = std::get<1>(params);
     std::string matrix_type = std::get<2>(params);
@@ -103,11 +101,11 @@ TEST_P(LuchnikovEMaxValInColOfMatFuncTests, TestMaxInColumns) {
 
 namespace {
 
-const std::array<TestType, 10> kTestParams = {std::make_tuple(1, 1, "increasing"), std::make_tuple(2, 2, "increasing"),
-                                              std::make_tuple(3, 3, "decreasing"), std::make_tuple(4, 5, "random"),
-                                              std::make_tuple(5, 3, "random"),     std::make_tuple(3, 5, "same"),
-                                              std::make_tuple(6, 4, "negative"),   std::make_tuple(7, 7, "increasing"),
-                                              std::make_tuple(8, 3, "decreasing"), std::make_tuple(4, 8, "random")};
+const std::array<TestType, 12> kTestParams = {
+    std::make_tuple(1, 1, "increasing"), std::make_tuple(2, 2, "increasing"), std::make_tuple(3, 3, "decreasing"),
+    std::make_tuple(4, 5, "random"),     std::make_tuple(5, 3, "random"),     std::make_tuple(3, 5, "same"),
+    std::make_tuple(6, 4, "negative"),   std::make_tuple(7, 7, "increasing"), std::make_tuple(8, 3, "decreasing"),
+    std::make_tuple(4, 8, "random"),     std::make_tuple(10, 10, "random"),   std::make_tuple(2, 10, "negative")};
 
 const auto kTestTasksList = std::tuple_cat(ppc::util::AddFuncTask<LuchnikovEMaxValInColOfMatMPI, InType>(
                                                kTestParams, PPC_SETTINGS_luchnikov_e_max_val_in_col_of_mat),
