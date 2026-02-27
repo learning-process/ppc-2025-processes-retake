@@ -13,7 +13,7 @@ TEST(marovAllreduceMpi, sumInts) {
   }
 
   for (int rank = 0; rank < kNumProcs; rank++) {
-    MPI_comm comm(rank, kNumProcs);
+    MPI_Comm comm(rank, kNumProcs);
     int send_data = send_values[rank];
     int recv_data = 0;
 
@@ -40,7 +40,7 @@ TEST(marovAllreduceMpi, maxFloats) {
   }
 
   for (int rank = 0; rank < kNumProcs; rank++) {
-    MPI_comm comm(rank, kNumProcs);
+    MPI_Comm comm(rank, kNumProcs);
     float send_data = send_values[rank];
     float recv_data = 0;
 
@@ -74,7 +74,7 @@ TEST(marovAllreduceMpi, minDoubles) {
   }
 
   for (int rank = 0; rank < kNumProcs; rank++) {
-    MPI_comm comm(rank, kNumProcs);
+    MPI_Comm comm(rank, kNumProcs);
     double send_data[kArraySize];
     double recv_data[kArraySize];
 
