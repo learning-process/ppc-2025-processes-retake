@@ -23,12 +23,8 @@ bool FedoseevTestTaskSEQ::ValidationImpl() {
     return false;
   }
 
-  for (const auto &row : augmented_matrix) {
-    if (row.size() != n + 1) {
-      return false;
-    }
-  }
-  return true;
+  return std::all_of(augmented_matrix.begin(), augmented_matrix.end(),
+                     [n](const auto &row) { return row.size() == n + 1; });  // NOLINT(modernize-use-ranges)
 }
 
 bool FedoseevTestTaskSEQ::PreProcessingImpl() {

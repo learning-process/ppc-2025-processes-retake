@@ -27,7 +27,7 @@ bool FedoseevTestTaskMPI::ValidationImpl() {
   }
 
   return std::all_of(augmented_matrix.begin(), augmented_matrix.end(),
-                     [n](const auto &row) { return row.size() == n + 1; });
+                     [n](const auto &row) { return row.size() == n + 1; });  // NOLINT(modernize-use-ranges)
 }
 
 bool FedoseevTestTaskMPI::PreProcessingImpl() {
