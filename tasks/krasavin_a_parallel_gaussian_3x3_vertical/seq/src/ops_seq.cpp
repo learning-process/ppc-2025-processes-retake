@@ -50,7 +50,7 @@ std::uint8_t ConvolveGaussian3x3Clamp(const Image &image, int row, int col, int 
   return ClampToByte(rounded);
 }
 
-}
+}  // namespace
 
 KrasavinAParallelGaussian3x3VerticalSEQ::KrasavinAParallelGaussian3x3VerticalSEQ(const InType &in) {
   SetTypeOfTask(GetStaticTypeOfTask());
