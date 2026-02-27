@@ -2,13 +2,14 @@
 
 #include <mpi.h>
 
+#include <cstddef>
 #include <vector>
 
 #include "rysev_m_matrix_multiple/common/include/common.hpp"
 
 namespace rysev_m_matrix_multiple {
 
-RysevMMatrMulMPI::RysevMMatrMulMPI(const InType &in) : size_(0), rank_(0), num_procs_(0), local_rows_(0) {
+RysevMMatrMulMPI::RysevMMatrMulMPI(const InType &in) {
   SetTypeOfTask(GetStaticTypeOfTask());
   GetInput() = in;
   GetOutput() = std::vector<int>();
@@ -53,7 +54,7 @@ bool RysevMMatrMulMPI::PreProcessingImpl() {
   return true;
 }
 
-void RysevMMatrMulMPI::ComputeDistribution(std::vector<int> &send_counts, std::vector<int> &displs) {
+void RysevMMatrMulMPI::ComputeDistribution(std::vector<int> &send_counts, std::vector<int> &displs) const {
   int base_rows = size_ / num_procs_;
   int remainder = size_ % num_procs_;
   int offset = 0;
@@ -87,7 +88,7 @@ void RysevMMatrMulMPI::LocalMultiply() {
   }
 }
 
-void RysevMMatrMulMPI::ComputeGatherParams(std::vector<int> &recv_counts, std::vector<int> &recv_displs) {
+void RysevMMatrMulMPI::ComputeGatherParams(std::vector<int> &recv_counts, std::vector<int> &recv_displs) const {
   int base_rows = size_ / num_procs_;
   int remainder = size_ % num_procs_;
   int offset = 0;

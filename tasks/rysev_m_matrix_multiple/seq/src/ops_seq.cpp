@@ -1,12 +1,13 @@
 #include "rysev_m_matrix_multiple/seq/include/ops_seq.hpp"
 
+#include <cstddef>
 #include <vector>
 
 #include "rysev_m_matrix_multiple/common/include/common.hpp"
 
 namespace rysev_m_matrix_multiple {
 
-RysevMMatrMulSEQ::RysevMMatrMulSEQ(const InType &in) : size_(0) {
+RysevMMatrMulSEQ::RysevMMatrMulSEQ(const InType &in) {
   SetTypeOfTask(GetStaticTypeOfTask());
   GetInput() = in;
   GetOutput() = std::vector<int>();

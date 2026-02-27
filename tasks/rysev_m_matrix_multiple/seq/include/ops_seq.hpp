@@ -24,7 +24,7 @@ class RysevMMatrMulSEQ : public BaseTask {
   std::vector<int> A_;
   std::vector<int> B_;
   std::vector<int> C_;
-  int size_;
+  int size_ = 0;
 };
 
 }  // namespace rysev_m_matrix_multiple
