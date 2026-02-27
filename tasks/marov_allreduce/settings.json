@@ -1,1 +1,6 @@
-{}
+{
+  "tasks": {
+    "mpi": "enabled"
+  },
+  "tasks_type": "processes"
+}

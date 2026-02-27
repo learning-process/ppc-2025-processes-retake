@@ -1,6 +1,6 @@
 #include <gtest/gtest.h>
 #include <vector>
-#include "ops_mpi.h"
+#include "marov_allreduce/mpi/include/ops_mpi.h"
 
 TEST(marov_allreduce_mpi, sum_ints) {
     const int NUM_PROCS = 7;

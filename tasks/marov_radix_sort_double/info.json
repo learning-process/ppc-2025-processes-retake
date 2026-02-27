@@ -1,7 +1,8 @@
 {
   "student": "marov",
-  "task_id": 20,
+  "task_id": 3,
   "technologies": [
-    "seq"
+    "seq",
+    "mpi"
   ]
 }

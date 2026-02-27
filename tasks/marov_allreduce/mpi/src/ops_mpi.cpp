@@ -1,4 +1,4 @@
-#include "ops_mpi.h"
+#include "marov_allreduce/mpi/include/ops_mpi.h"
 #include <cstring>
 #include <vector>
 #include <iostream>
@@ -31,6 +31,8 @@ void MPI_Comm::buildTree() {
 
 void Send(const void* buf, int count, MPI_Datatype datatype, int dest,
           int tag, MPI_Comm* comm) {
+    (void)buf;
+    (void)datatype;
     std::cout << "  [LOG] Process " << comm->rank << " -> " << dest
               << " (tag=" << tag << "): " << count << " elements" << std::endl;
 
@@ -39,6 +41,10 @@ void Send(const void* buf, int count, MPI_Datatype datatype, int dest,
 
 void Recv(void* buf, int count, MPI_Datatype datatype, int source,
           int tag, MPI_Comm* comm, void* status) {
+    (void)buf;
+    (void)datatype;
+    (void)source;
+    (void)status;
     std::cout << "  [LOG] Process " << comm->rank << " <- " << source
               << " (tag=" << tag << "): " << count << " elements" << std::endl;
 
