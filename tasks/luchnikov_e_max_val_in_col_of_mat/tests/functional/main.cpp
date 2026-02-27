@@ -1,5 +1,8 @@
 #include <gtest/gtest.h>
 
+#include <cstddef>
+#include <string>
+#include <tuple>
 #include <vector>
 
 #include "luchnikov_e_max_val_in_col_of_mat/common/include/common.hpp"
@@ -11,9 +14,9 @@ namespace luchnikov_e_max_val_in_col_of_mat {
 
 class LuchnikovEMaxValInColOfMatFuncTests : public ppc::util::BaseRunFuncTests<InType, OutType, TestType> {
  public:
-  static std::string PrintTestParam(const TestType &test_param) {
-    return std::to_string(std::get<0>(test_param)) + "x" + std::to_string(std::get<1>(test_param)) + "_" +
-           std::get<2>(test_param);
+  static std::string PrintTestParam(const testing::TestParamInfo<TestType> &info) {
+    TestType params = std::get<static_cast<size_t>(ppc::util::GTestParamIndex::kTestParams)>(info.param);
+    return std::to_string(std::get<0>(params)) + "x" + std::to_string(std::get<1>(params)) + "_" + std::get<2>(params);
   }
 
  protected:
@@ -23,47 +26,46 @@ class LuchnikovEMaxValInColOfMatFuncTests : public ppc::util::BaseRunFuncTests<I
     int cols = std::get<1>(params);
     std::string matrix_type = std::get<2>(params);
 
-    input_data_.clear();
-    input_data_.resize(rows, std::vector<int>(cols));
+    input_data_ = std::vector<std::vector<int>>(rows, std::vector<int>(cols));
 
     if (matrix_type == "increasing") {
       int val = 1;
-      for (int i = 0; i < rows; i++) {
-        for (int j = 0; j < cols; j++) {
+      for (int i = 0; i < rows; ++i) {
+        for (int j = 0; j < cols; ++j) {
           input_data_[i][j] = val++;
         }
       }
     } else if (matrix_type == "decreasing") {
       int val = rows * cols;
-      for (int i = 0; i < rows; i++) {
-        for (int j = 0; j < cols; j++) {
+      for (int i = 0; i < rows; ++i) {
+        for (int j = 0; j < cols; ++j) {
           input_data_[i][j] = val--;
         }
       }
     } else if (matrix_type == "random") {
-      for (int i = 0; i < rows; i++) {
-        for (int j = 0; j < cols; j++) {
+      for (int i = 0; i < rows; ++i) {
+        for (int j = 0; j < cols; ++j) {
           input_data_[i][j] = (i * cols + j) % 100;
         }
       }
     } else if (matrix_type == "same") {
-      for (int i = 0; i < rows; i++) {
-        for (int j = 0; j < cols; j++) {
+      for (int i = 0; i < rows; ++i) {
+        for (int j = 0; j < cols; ++j) {
           input_data_[i][j] = 42;
         }
       }
     } else if (matrix_type == "negative") {
-      for (int i = 0; i < rows; i++) {
-        for (int j = 0; j < cols; j++) {
+      for (int i = 0; i < rows; ++i) {
+        for (int j = 0; j < cols; ++j) {
           input_data_[i][j] = -(i * cols + j + 1);
         }
       }
     }
 
     expected_output_.resize(cols);
-    for (int j = 0; j < cols; j++) {
+    for (int j = 0; j < cols; ++j) {
       int max_val = input_data_[0][j];
-      for (int i = 1; i < rows; i++) {
+      for (int i = 1; i < rows; ++i) {
         if (input_data_[i][j] > max_val) {
           max_val = input_data_[i][j];
         }
@@ -76,7 +78,7 @@ class LuchnikovEMaxValInColOfMatFuncTests : public ppc::util::BaseRunFuncTests<I
     if (output_data.size() != expected_output_.size()) {
       return false;
     }
-    for (size_t i = 0; i < output_data.size(); i++) {
+    for (size_t i = 0; i < output_data.size(); ++i) {
       if (output_data[i] != expected_output_[i]) {
         return false;
       }
@@ -112,9 +114,8 @@ const auto kTestTasksList = std::tuple_cat(ppc::util::AddFuncTask<LuchnikovEMaxV
 
 const auto kGtestValues = ppc::util::ExpandToValues(kTestTasksList);
 
-const auto kPerfTestName = LuchnikovEMaxValInColOfMatFuncTests::PrintFuncTestName<LuchnikovEMaxValInColOfMatFuncTests>;
-
-INSTANTIATE_TEST_SUITE_P(MaxInColumnTests, LuchnikovEMaxValInColOfMatFuncTests, kGtestValues, kPerfTestName);
+INSTANTIATE_TEST_SUITE_P(MaxInColumnTests, LuchnikovEMaxValInColOfMatFuncTests, kGtestValues,
+                         &LuchnikovEMaxValInColOfMatFuncTests::PrintTestParam);
 
 }  // namespace
 

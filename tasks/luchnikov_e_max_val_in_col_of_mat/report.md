@@ -1,8 +1,8 @@
 # Максимальное значение в столбцах матрицы
 
-- Student: Лучников Евгений, group 3823Б1ФИ2
+- Student: Лучников Евгений, group 3823Б1ПР5
 - Technology: SEQ | MPI
-- Variant: 13
+- Variant: 21
 
 ## 1. Introduction
 
