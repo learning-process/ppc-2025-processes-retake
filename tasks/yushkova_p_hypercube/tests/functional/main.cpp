@@ -25,6 +25,30 @@ bool RunTask(Task &task) {
   return task.Validation() && task.PreProcessing() && task.Run() && task.PostProcessing();
 }
 
+bool CheckMpiMatchesSeqForDims(int rank, const std::vector<InType> &dims) {
+  for (const InType n : dims) {
+    YushkovaPHypercubeMPI mpi_task(n);
+    if (!RunTask(mpi_task)) {
+      return false;
+    }
+
+    if (rank == 0) {
+      YushkovaPHypercubeSEQ seq_task(n);
+      if (!RunTask(seq_task)) {
+        return false;
+      }
+      if (mpi_task.GetOutput() != seq_task.GetOutput()) {
+        return false;
+      }
+      if (mpi_task.GetOutput() != ReferenceEdges(n)) {
+        return false;
+      }
+    }
+  }
+
+  return true;
+}
+
 }  // namespace
 
 class YushkovaPHypercubeFunctional : public ::testing::Test {};
@@ -52,17 +76,7 @@ TEST_F(YushkovaPHypercubeFunctional, MpiMatchesSeqAndReference) {
   }
 
   const std::vector<InType> dims = {1, 2, 3, 4, 5, 8, 12};
-  for (const InType n : dims) {
-    YushkovaPHypercubeMPI mpi_task(n);
-    ASSERT_TRUE(RunTask(mpi_task));
-
-    if (rank == 0) {
-      YushkovaPHypercubeSEQ seq_task(n);
-      ASSERT_TRUE(RunTask(seq_task));
-      EXPECT_EQ(mpi_task.GetOutput(), seq_task.GetOutput());
-      EXPECT_EQ(mpi_task.GetOutput(), ReferenceEdges(n));
-    }
-  }
+  EXPECT_TRUE(CheckMpiMatchesSeqForDims(rank, dims));
 }
 
 TEST(YushkovaPHypercubeValidation, SeqRejectsInvalidInput) {

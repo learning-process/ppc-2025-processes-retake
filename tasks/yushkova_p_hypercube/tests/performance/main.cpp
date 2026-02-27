@@ -1,7 +1,6 @@
 #include <gtest/gtest.h>
 
 #include <cstdint>
-#include <tuple>
 
 #include "util/include/perf_test_util.hpp"
 #include "yushkova_p_hypercube/common/include/common.hpp"
