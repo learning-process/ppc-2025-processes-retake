@@ -1,6 +1,6 @@
 #include <gtest/gtest.h>
+#include <algorithm>
 #include <array>
-#include <string>
 #include <vector>
 
 #include "marov_allreduce/mpi/include/ops_mpi.h"
