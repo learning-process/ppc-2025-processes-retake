@@ -9,6 +9,11 @@
 
 #include "kulikov_d_dejkstra_crs/common/include/common.hpp"
 
+#ifdef __GNUC__
+#  pragma GCC diagnostic push
+#  pragma GCC diagnostic ignored "-Wnull-dereference"
+#endif
+
 namespace kulikov_d_dejkstra_crs {
 
 using Distance = double;
@@ -26,9 +31,9 @@ struct QueueEntry {
   }
 };
 namespace {
-static void RelaxOutgoingEdges(VertexId current_vertex, Distance current_distance, const GraphData &graph,
-                               std::vector<Distance> &distances,
-                               std::priority_queue<QueueEntry, std::vector<QueueEntry>, std::greater<>> &queue) {
+void RelaxOutgoingEdges(VertexId current_vertex, Distance current_distance, const GraphData &graph,
+                        std::vector<Distance> &distances,
+                        std::priority_queue<QueueEntry, std::vector<QueueEntry>, std::greater<>> &queue) {
   const EdgeIndex edge_start = graph.offsets[current_vertex];
   const EdgeIndex edge_end = graph.offsets[current_vertex + 1];
 
@@ -111,3 +116,7 @@ bool KulikovDDijkstraCRSSEQ::PostProcessingImpl() {
 }
 
 }  // namespace kulikov_d_dejkstra_crs
+
+#ifdef __GNUC__
+#  pragma GCC diagnostic pop
+#endif
