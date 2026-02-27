@@ -18,6 +18,78 @@ inline double &At(std::vector<double> &a, int n, int r, int c) {
   return a[(static_cast<std::size_t>(r) * static_cast<std::size_t>(n)) + static_cast<std::size_t>(c)];
 }
 
+int FindPivotRow(const std::vector<double> &a, int n, int k, double &best_abs) {
+  int pivot_row = k;
+  best_abs = std::abs(a[(static_cast<std::size_t>(k) * static_cast<std::size_t>(n)) + static_cast<std::size_t>(k)]);
+  for (int row = k + 1; row < n; ++row) {
+    const double v =
+        std::abs(a[(static_cast<std::size_t>(row) * static_cast<std::size_t>(n)) + static_cast<std::size_t>(k)]);
+    if (v > best_abs) {
+      best_abs = v;
+      pivot_row = row;
+    }
+  }
+  return pivot_row;
+}
+
+void SwapRows(std::vector<double> &a, std::vector<double> &b, int n, int r1, int r2) {
+  if (r1 == r2) {
+    return;
+  }
+  for (int col = 0; col < n; ++col) {
+    std::swap(At(a, n, r1, col), At(a, n, r2, col));
+  }
+  std::swap(b[static_cast<std::size_t>(r1)], b[static_cast<std::size_t>(r2)]);
+}
+
+bool ApplyPivoting(std::vector<double> &a, std::vector<double> &b, int n, int k) {
+  double best_abs = 0.0;
+  const int pivot_row = FindPivotRow(a, n, k, best_abs);
+  if (best_abs < kEps) {
+    return false;
+  }
+  SwapRows(a, b, n, k, pivot_row);
+  return true;
+}
+
+void EliminateBelowPivot(std::vector<double> &a, std::vector<double> &b, int n, int k) {
+  const double pivot = At(a, n, k, k);
+  for (int row = k + 1; row < n; ++row) {
+    const double m = At(a, n, row, k) / pivot;
+    At(a, n, row, k) = 0.0;
+    for (int col = k + 1; col < n; ++col) {
+      At(a, n, row, col) -= m * At(a, n, k, col);
+    }
+    b[static_cast<std::size_t>(row)] -= m * b[static_cast<std::size_t>(k)];
+  }
+}
+
+bool ForwardElimination(std::vector<double> &a, std::vector<double> &b, int n) {
+  for (int k = 0; k < n; ++k) {
+    if (!ApplyPivoting(a, b, n, k)) {
+      return false;
+    }
+    EliminateBelowPivot(a, b, n, k);
+  }
+  return true;
+}
+
+bool BackSubstitution(const std::vector<double> &a, const std::vector<double> &b, int n, std::vector<double> &x) {
+  for (int i = n - 1; i >= 0; --i) {
+    double sum = b[static_cast<std::size_t>(i)];
+    for (int j = i + 1; j < n; ++j) {
+      sum -= a[(static_cast<std::size_t>(i) * static_cast<std::size_t>(n)) + static_cast<std::size_t>(j)] *
+             x[static_cast<std::size_t>(j)];
+    }
+    const double diag = a[(static_cast<std::size_t>(i) * static_cast<std::size_t>(n)) + static_cast<std::size_t>(i)];
+    if (std::abs(diag) < kEps) {
+      return false;
+    }
+    x[static_cast<std::size_t>(i)] = sum / diag;
+  }
+  return true;
+}
+
 }  // namespace
 
 CheremkhinAGausVertSEQ::CheremkhinAGausVertSEQ(const InType &in) {
@@ -47,49 +119,12 @@ bool CheremkhinAGausVertSEQ::RunImpl() {
   std::vector<double> b = in.b;
   std::vector<double> x(static_cast<std::size_t>(n), 0.0);
 
-  for (int k = 0; k < n; ++k) {
-    int pivot_row = k;
-    double best = std::abs(At(a, n, k, k));
-    for (int row = k + 1; row < n; ++row) {
-      const double v = std::abs(At(a, n, row, k));
-      if (v > best) {
-        best = v;
-        pivot_row = row;
-      }
-    }
-
-    if (best < kEps) {
-      return false;
-    }
-
-    if (pivot_row != k) {
-      for (int col = 0; col < n; ++col) {
-        std::swap(At(a, n, k, col), At(a, n, pivot_row, col));
-      }
-      std::swap(b[static_cast<std::size_t>(k)], b[static_cast<std::size_t>(pivot_row)]);
-    }
-
-    const double pivot = At(a, n, k, k);
-    for (int row = k + 1; row < n; ++row) {
-      const double m = At(a, n, row, k) / pivot;
-      At(a, n, row, k) = 0.0;
-      for (int col = k + 1; col < n; ++col) {
-        At(a, n, row, col) -= m * At(a, n, k, col);
-      }
-      b[static_cast<std::size_t>(row)] -= m * b[static_cast<std::size_t>(k)];
-    }
+  if (!ForwardElimination(a, b, n)) {
+    return false;
   }
 
-  for (int i = n - 1; i >= 0; --i) {
-    double sum = b[static_cast<std::size_t>(i)];
-    for (int j = i + 1; j < n; ++j) {
-      sum -= At(a, n, i, j) * x[static_cast<std::size_t>(j)];
-    }
-    const double diag = At(a, n, i, i);
-    if (std::abs(diag) < kEps) {
-      return false;
-    }
-    x[static_cast<std::size_t>(i)] = sum / diag;
+  if (!BackSubstitution(a, b, n, x)) {
+    return false;
   }
 
   GetOutput() = x;
