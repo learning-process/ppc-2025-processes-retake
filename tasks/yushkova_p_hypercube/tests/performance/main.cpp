@@ -48,9 +48,7 @@ const auto kGtestValues = ppc::util::TupleToGTestValues(kAllPerfTasks);
 
 const auto kPerfTestName = YushkovaPHypercubePerfTests::CustomPerfTestName;
 
-// NOLINTBEGIN(cppcoreguidelines-avoid-non-const-global-variables,misc-use-anonymous-namespace)
 INSTANTIATE_TEST_SUITE_P(YushkovaPHypercubePerf, YushkovaPHypercubePerfTests, kGtestValues, kPerfTestName);
-// NOLINTEND(cppcoreguidelines-avoid-non-const-global-variables,misc-use-anonymous-namespace)
 
 }  // namespace
 

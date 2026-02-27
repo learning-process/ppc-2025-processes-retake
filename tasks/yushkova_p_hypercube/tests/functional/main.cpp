@@ -35,7 +35,7 @@ TEST_P(YushkovaPHypercubeFunctional, SeqReturnsCorrectEdgeCount) {
   EXPECT_EQ(task.GetOutput(), ReferenceEdges(n));
 }
 
-TEST_P(YushkovaPHypercubeFunctional, MpiMatchesSeqAndReference) {  // NOLINT(readability-function-cognitive-complexity)
+TEST_P(YushkovaPHypercubeFunctional, MpiMatchesSeqAndReference) {
   if (!ppc::util::IsUnderMpirun()) {
     GTEST_SKIP();
   }
@@ -61,9 +61,7 @@ TEST_P(YushkovaPHypercubeFunctional, MpiMatchesSeqAndReference) {  // NOLINT(rea
   }
 }
 
-// NOLINTBEGIN(cppcoreguidelines-avoid-non-const-global-variables,misc-use-anonymous-namespace)
 INSTANTIATE_TEST_SUITE_P(BasicCases, YushkovaPHypercubeFunctional, ::testing::Values(1, 2, 3, 4, 5, 8, 12));
-// NOLINTEND(cppcoreguidelines-avoid-non-const-global-variables,misc-use-anonymous-namespace)
 
 TEST(YushkovaPHypercubeValidation, SeqRejectsInvalidInput) {
   YushkovaPHypercubeSEQ bad_zero(0);
