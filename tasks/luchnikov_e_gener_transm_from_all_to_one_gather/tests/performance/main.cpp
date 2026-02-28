@@ -1,6 +1,9 @@
 #include <gtest/gtest.h>
+#include <mpi.h>
 
+#include <cstddef>
 #include <random>
+#include <string>
 #include <vector>
 
 #include "luchnikov_e_gener_transm_from_all_to_one_gather/common/include/common.hpp"
@@ -11,28 +14,32 @@
 namespace luchnikov_e_gener_transm_from_all_to_one_gather {
 
 class LuchnikovEGenerTransmFromAllToOneGatherPerfTestProcesses : public ppc::util::BaseRunPerfTests<InType, OutType> {
-  const size_t kCount_ = 1000;
+  static constexpr size_t kCount = 1000;  // Изменено на static constexpr
   InType input_data_{};
 
   void SetUp() override {
-    input_data_.resize(kCount_);
+    input_data_.resize(kCount);
     std::random_device rd;
     std::mt19937 gen(rd());
     std::uniform_int_distribution<int> dist(1, 1000);
 
-    for (size_t i = 0; i < kCount_; ++i) {
+    for (size_t i = 0; i < kCount; ++i) {
       input_data_[i] = dist(gen);
     }
   }
 
   bool CheckTestOutputData(OutType &output_data) final {
-    if (std::holds_alternative<ppc::task::TypeOfTask::kMPI>(this->task_->GetTypeOfTask())) {
+    // Получаем тип задачи через GetTask()
+    auto task_type = this->GetTask().lock()->GetTypeOfTask();
+
+    if (task_type == ppc::task::TypeOfTask::kMPI) {
       int rank = 0;
       MPI_Comm_rank(MPI_COMM_WORLD, &rank);
       if (rank != 0) {
         return true;
       }
     }
+
     OutType expected = input_data_;
     std::sort(expected.begin(), expected.end());
     return expected == output_data;

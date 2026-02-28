@@ -1,7 +1,10 @@
 #include <gtest/gtest.h>
+#include <mpi.h>
 
 #include <algorithm>
+#include <cstddef>
 #include <random>
+#include <string>
 #include <vector>
 
 #include "luchnikov_e_gener_transm_from_all_to_one_gather/common/include/common.hpp"
@@ -34,13 +37,17 @@ class LuchnikovEGenerTransmFromAllToOneGatherFuncTestsProcesses
   }
 
   bool CheckTestOutputData(OutType &output_data) final {
-    if (std::holds_alternative<ppc::task::TypeOfTask::kMPI>(this->task_->GetTypeOfTask())) {
+    // Получаем тип задачи через GetTask()
+    auto task_type = this->GetTask().lock()->GetTypeOfTask();
+
+    if (task_type == ppc::task::TypeOfTask::kMPI) {
       int rank = 0;
       MPI_Comm_rank(MPI_COMM_WORLD, &rank);
       if (rank != 0) {
         return true;
       }
     }
+
     OutType expected = input_data_;
     std::sort(expected.begin(), expected.end());
     return expected == output_data;
