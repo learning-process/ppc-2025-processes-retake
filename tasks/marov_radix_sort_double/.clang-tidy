@@ -1,6 +1,0 @@
----
-Checks: '-*,bugprone-*,cert-*,clang-*,concurrency-*,cppcoreguidelines-*,misc-*,modernize-*,mpi-*,openmp-*,performance-*,portability-*,readability-*,-readability-identifier-naming,-misc-include-cleaner,-readability-function-cognitive-complexity,-cppcoreguidelines-avoid-c-arrays,-cppcoreguidelines-pro-bounds-constant-array-index'
-HeaderFilterRegex: '.*'
-CheckOptions:
-  - key: readability-identifier-naming.CheckMacros
-    value: 0

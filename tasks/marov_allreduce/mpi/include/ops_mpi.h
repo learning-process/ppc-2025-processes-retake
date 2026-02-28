@@ -3,7 +3,8 @@
 #include <cstddef>
 #include <vector>
 
-// Типы данных MPI
+// NOLINTBEGIN(readability-identifier-naming, cppcoreguidelines-macro-to-enum)
+// MPI-style names are required for compatibility with MPI API
 typedef int MPI_Datatype;
 typedef int MPI_Op;
 
@@ -13,6 +14,7 @@ typedef int MPI_Op;
 #define MPI_SUM 1
 #define MPI_MAX 2
 #define MPI_MIN 3
+// NOLINTEND(readability-identifier-naming, cppcoreguidelines-macro-to-enum)
 
 struct MPI_Comm {
   int rank;

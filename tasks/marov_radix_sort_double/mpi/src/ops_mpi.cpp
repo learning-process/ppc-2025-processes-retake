@@ -1,3 +1,4 @@
+// NOLINTBEGIN(readability-identifier-naming)
 #include "marov_radix_sort_double/mpi/include/ops_mpi.hpp"
 
 #include <mpi.h>
@@ -9,6 +10,7 @@
 #include <vector>
 
 #include "marov_radix_sort_double/common/include/common.hpp"
+// NOLINTEND(readability-identifier-naming)
 
 namespace marov_radix_sort_double {
 

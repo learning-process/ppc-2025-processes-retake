@@ -1,3 +1,4 @@
+// NOLINTBEGIN(readability-identifier-naming, cppcoreguidelines-avoid-c-arrays, cppcoreguidelines-pro-bounds-constant-array-index)
 #include <gtest/gtest.h>
 #include <algorithm>
 #include <array>
@@ -104,3 +105,4 @@ TEST(marovAllreduceMpi, minDoubles) {
     }
   }
 }
+// NOLINTEND(readability-identifier-naming, cppcoreguidelines-avoid-c-arrays, cppcoreguidelines-pro-bounds-constant-array-index)
