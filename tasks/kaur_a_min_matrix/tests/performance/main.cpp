@@ -8,6 +8,7 @@
 #include "kaur_a_min_matrix/mpi/include/ops_mpi.hpp"
 #include "kaur_a_min_matrix/seq/include/ops_seq.hpp"
 #include "util/include/perf_test_util.hpp"
+
 namespace kaur_a_min_matrix {
 
 class KaurAMinMatrixPerfTests : public ppc::util::BaseRunPerfTests<InType, OutType> {
@@ -42,6 +43,7 @@ TEST_P(KaurAMinMatrixPerfTests, RunPerfModes) {
   ExecuteTest(GetParam());
 }
 
+namespace {
 const auto kAllPerfTasks =
     ppc::util::MakeAllPerfTasks<InType, KaurAMinMatrixMPI, KaurAMinMatrixSEQ>(PPC_SETTINGS_kaur_a_min_matrix);
 
@@ -50,5 +52,6 @@ const auto kGtestValues = ppc::util::TupleToGTestValues(kAllPerfTasks);
 const auto kPerfTestName = KaurAMinMatrixPerfTests::CustomPerfTestName;
 
 INSTANTIATE_TEST_SUITE_P(RunModeTests, KaurAMinMatrixPerfTests, kGtestValues, kPerfTestName);
+}  // namespace
 
 }  // namespace kaur_a_min_matrix
