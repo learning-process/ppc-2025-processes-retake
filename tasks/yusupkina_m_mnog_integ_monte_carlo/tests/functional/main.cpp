@@ -2,6 +2,7 @@
 
 #include <cmath>
 #include <cstdint>
+#include <numbers>
 #include <string>
 #include <tuple>
 #include <utility>
@@ -44,9 +45,11 @@ class YusupkinaMMnogIntegMonteCarloFuncTests : public ppc::util::BaseRunFuncTest
 
         {"product", 0.0, 1.0, 0.0, 1.0, [](double x, double y) { return x * y; }, 0.25, 100000},
 
-        {"trig", 0.0, M_PI_2, 0.0, M_PI_2, [](double x, double y) { return std::sin(x) * std::cos(y); }, 1.0, 100000},
+        {"trig", 0.0, std::numbers::pi / 2.0, 0.0, std::numbers::pi / 2.0,
+         [](double x, double y) { return std::sin(x) * std::cos(y); }, 1.0, 100000},
 
-        {"sin_sum", 0.0, M_PI_2, 0.0, M_PI_2, [](double x, double y) { return std::sin(x + y); }, 2.0, 100000},
+        {"sin_sum", 0.0, std::numbers::pi / 2.0, 0.0, std::numbers::pi / 2.0,
+         [](double x, double y) { return std::sin(x + y); }, 2.0, 100000},
 
         {"smallN", 0.0, 1.0, 0.0, 1.0, [](double x, double y) { return x + y; }, 1.0, 1000},
 
