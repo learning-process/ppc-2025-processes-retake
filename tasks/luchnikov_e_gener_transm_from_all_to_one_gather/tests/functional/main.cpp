@@ -37,7 +37,8 @@ class LuchnikovEGenerTransmFromAllToOneGatherFuncTestsProcesses
   }
 
   bool CheckTestOutputData(OutType &output_data) final {
-    if (this->GetTask()->GetTypeOfTask() == ppc::task::TypeOfTask::kMPI) {
+    // Проверяем тип задачи через dynamic_cast
+    if (dynamic_cast<LuchnikovEGenerTransmFromAllToOneGatherMPI *>(this->GetTaskPtr()) != nullptr) {
       int rank = 0;
       MPI_Comm_rank(MPI_COMM_WORLD, &rank);
       if (rank != 0) {
