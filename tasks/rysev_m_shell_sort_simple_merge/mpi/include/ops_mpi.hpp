@@ -23,7 +23,8 @@ class RysevMShellSortMPI : public BaseTask {
   static void ShellSort(std::vector<int> &arr);
 
   bool DistributeData(const std::vector<int> &input_data, int data_size, std::vector<int> &send_counts,
-                      std::vector<int> &displs, std::vector<int> &local_block);
+                      std::vector<int> &displs, std::vector<int> &local_block) const;
+
   void MergeResults(int data_size, const std::vector<int> &send_counts, const std::vector<int> &displs,
                     const std::vector<int> &gathered_data);
 

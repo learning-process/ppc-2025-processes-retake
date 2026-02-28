@@ -1,7 +1,6 @@
 #include <gtest/gtest.h>
 
 #include <algorithm>
-#include <vector>
 
 #include "rysev_m_shell_sort_simple_merge/common/include/common.hpp"
 #include "rysev_m_shell_sort_simple_merge/mpi/include/ops_mpi.hpp"

@@ -9,7 +9,7 @@
 
 namespace rysev_m_shell_sort_simple_merge {
 
-RysevMShellSortMPI::RysevMShellSortMPI(const InType &in) : rank_(0), num_procs_(0) {
+RysevMShellSortMPI::RysevMShellSortMPI(const InType &in) {
   SetTypeOfTask(GetStaticTypeOfTask());
   GetInput() = in;
   GetOutput() = std::vector<int>();
@@ -48,7 +48,7 @@ void RysevMShellSortMPI::ShellSort(std::vector<int> &arr) {
 
 bool RysevMShellSortMPI::DistributeData(const std::vector<int> &input_data, int data_size,
                                         std::vector<int> &send_counts, std::vector<int> &displs,
-                                        std::vector<int> &local_block) {
+                                        std::vector<int> &local_block) const {
   if (rank_ == 0) {
     int base = data_size / num_procs_;
     int remainder = data_size % num_procs_;
