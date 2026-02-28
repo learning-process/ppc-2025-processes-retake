@@ -14,6 +14,7 @@ class SparseMatrixMultiplicationCCSMPI : public BaseTask {
   }
 
   explicit SparseMatrixMultiplicationCCSMPI(const InType &in) {
+    SetTypeOfTask(GetStaticTypeOfTask());
     GetInput() = in;
   }
 

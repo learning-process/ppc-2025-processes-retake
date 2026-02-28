@@ -11,6 +11,7 @@ class SparseMatrixMultiplicationCCSSeq : public BaseTask {
     return ppc::task::TypeOfTask::kSEQ;
   }
   explicit SparseMatrixMultiplicationCCSSeq(const InType &in) {
+    SetTypeOfTask(GetStaticTypeOfTask());
     GetInput() = in;
   }
 
