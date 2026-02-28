@@ -24,15 +24,14 @@ namespace luchnikov_e_max_val_in_col_of_mat {
 
 class LuchnilkovEMaxValInColOfMatRunFuncTestsProcesses : public ppc::util::BaseRunFuncTests<InType, OutType, TestType> {
  public:
-  LuchnilkovEMaxValInColOfMatRunFuncTestsProcesses()
-      : ppc::util::BaseRunFuncTests<InType, OutType, TestType>(), input_data_(), expected_output_() = default;
+  LuchnilkovEMaxValInColOfMatRunFuncTestsProcesses() = default;  // ИСПРАВЛЕНО
 
   static std::string PrintTestParam(const TestType &test_param) {
     return std::to_string(std::get<0>(test_param)) + "_" + std::get<1>(test_param);
   }
 
  protected:
-  void static SetUp() override {
+  void SetUp() override {  // ИСПРАВЛЕНО: убрал static
     auto [matrix_size, test_type] = ExtractTestParams();
     input_data_ = GenerateTestMatrix(matrix_size, test_type);
     expected_output_ = CalculateColumnMaxima(input_data_);
@@ -65,8 +64,8 @@ class LuchnilkovEMaxValInColOfMatRunFuncTestsProcesses : public ppc::util::BaseR
   static ElementGenerator SelectMatrixGenerator(const std::string &test_type, int size) {
     static const std::unordered_map<std::string, ElementGenerator> kGenerators = {
         {"random1", [](int i, int j) { return (i * 17 + j * 13) % 100; }},
-        {"ascending", [size](int i, int j) { return (i * size) + j + 1; }},
-        {"descending", [size](int i, int j) { return (size * size) - (i * size + j); }},
+        {"ascending", [size](int i, int j) { return i * size + j + 1; }},
+        {"descending", [size](int i, int j) { return size * size - (i * size + j); }},
         {"constant", [](int, int) { return 42; }},
         {"diagonal", [](int i, int j) { return (i == j) ? 1000 : 1; }},
         {"negative", [](int i, int j) { return -(((i * 17 + j * 13) % 100) + 1); }},
