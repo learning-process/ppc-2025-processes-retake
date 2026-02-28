@@ -20,11 +20,11 @@ bool KaurAVertRibbonSchemeSEQ::ValidationImpl() {
     return false;
   }
   if (input.matrix.size() != static_cast<std::size_t>(input.rows) * input.cols) {
-  return false;
-}
+    return false;
+  }
   if (input.vector.size() != static_cast<std::size_t>(input.cols)) {
-  return false;
-}
+    return false;
+  }
   return true;
 }
 

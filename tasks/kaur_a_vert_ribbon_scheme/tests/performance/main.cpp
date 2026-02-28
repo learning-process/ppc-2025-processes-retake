@@ -58,9 +58,8 @@ TEST_P(KaurAVertRibbonSchemePerfTests, RunPerfModes) {
   ExecuteTest(GetParam());
 }
 
-const auto kAllPerfTasks =
-    ppc::util::MakeAllPerfTasks<InType, KaurAVertRibbonSchemeMPI, KaurAVertRibbonSchemeSEQ>(
-        PPC_SETTINGS_kaur_a_vert_ribbon_scheme);
+const auto kAllPerfTasks = ppc::util::MakeAllPerfTasks<InType, KaurAVertRibbonSchemeMPI, KaurAVertRibbonSchemeSEQ>(
+    PPC_SETTINGS_kaur_a_vert_ribbon_scheme);
 
 const auto kGtestValues = ppc::util::TupleToGTestValues(kAllPerfTasks);
 
