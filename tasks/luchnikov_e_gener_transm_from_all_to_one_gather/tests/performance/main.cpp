@@ -26,6 +26,13 @@ class LuchnikovEGenerTransmFromAllToOneGatherPerfTestProcesses : public ppc::uti
   }
 
   bool CheckTestOutputData(OutType &output_data) final {
+    if (std::holds_alternative<ppc::task::TypeOfTask::kMPI>(this->task_->GetTypeOfTask())) {
+      int rank = 0;
+      MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+      if (rank != 0) {
+        return true;
+      }
+    }
     OutType expected = input_data_;
     std::sort(expected.begin(), expected.end());
     return expected == output_data;
