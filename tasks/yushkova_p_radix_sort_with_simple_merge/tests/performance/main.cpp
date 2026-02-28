@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <cstddef>
 #include <random>
+#include <stdexcept>
 #include <vector>
 
 #include "util/include/util.hpp"
@@ -14,11 +15,17 @@ namespace yushkova_p_radix_sort_with_simple_merge {
 namespace {
 
 template <class TaskType>
-void ExecuteTask(TaskType &task) {
-  ASSERT_TRUE(task.Validation());
-  ASSERT_TRUE(task.PreProcessing());
-  ASSERT_TRUE(task.Run());
-  ASSERT_TRUE(task.PostProcessing());
+bool ExecuteTask(TaskType &task) {
+  if (!task.Validation()) {
+    return false;
+  }
+  if (!task.PreProcessing()) {
+    return false;
+  }
+  if (!task.Run()) {
+    return false;
+  }
+  return task.PostProcessing();
 }
 
 void CheckSortedOutput(const std::vector<double> &output, std::size_t size) {
@@ -51,7 +58,9 @@ class YushkovaRadixSortPerf : public ::testing::Test {
 
 TEST_F(YushkovaRadixSortPerf, SeqPerformanceRun) {
   YushkovaPRadixSortWithSimpleMergeSEQ task(data);
-  ExecuteTask(task);
+  if (!ExecuteTask(task)) {
+    throw std::runtime_error("Task pipeline failed in SeqPerformanceRun");
+  }
 
   const auto &output = std::get<0>(task.GetOutput());
   CheckSortedOutput(output, data.size());
@@ -66,7 +75,9 @@ TEST_F(YushkovaRadixSortPerf, MpiPerformanceRun) {
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 
   YushkovaPRadixSortWithSimpleMergeMPI task(data);
-  ExecuteTask(task);
+  if (!ExecuteTask(task)) {
+    throw std::runtime_error("Task pipeline failed in MpiPerformanceRun");
+  }
 
   if (rank == 0) {
     const auto &output = std::get<0>(task.GetOutput());
