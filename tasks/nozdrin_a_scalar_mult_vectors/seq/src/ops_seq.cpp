@@ -1,5 +1,7 @@
 #include "nozdrin_a_scalar_mult_vectors/seq/include/ops_seq.hpp"
 
+#include <cstddef>
+
 #include "nozdrin_a_scalar_mult_vectors/common/include/common.hpp"
 
 namespace nozdrin_a_scalar_mult_vectors {
