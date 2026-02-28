@@ -3,6 +3,7 @@
 #include <mpi.h>
 
 #include <algorithm>
+#include <limits>
 #include <vector>
 
 #include "luchnikov_e_max_val_in_col_of_mat/common/include/common.hpp"

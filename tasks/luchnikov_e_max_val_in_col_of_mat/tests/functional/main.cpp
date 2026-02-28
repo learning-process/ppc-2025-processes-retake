@@ -1,3 +1,4 @@
+// [file name]: tests/functional/main.cpp
 #include <gtest/gtest.h>
 #include <mpi.h>
 
@@ -40,13 +41,10 @@ class LuchnilkovEMaxValInColOfMatFuncTestsProcesses : public ppc::util::BaseRunF
   }
 
   bool CheckTestOutputData(OutType &output_data) final {
-    // Проверяем по типу задачи через dynamic_cast вместо GetTypeOfTask
-    if (dynamic_cast<LuchnilkovEMaxValInColOfMatMPI *>(this->GetTask())) {
-      int rank = 0;
-      MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-      if (rank != 0) {
-        return true;
-      }
+    int rank = 0;
+    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+    if (this->GetParamType() == ppc::util::TestType::MPI && rank != 0) {
+      return true;
     }
 
     if (input_data_.empty() || input_data_[0].empty()) {

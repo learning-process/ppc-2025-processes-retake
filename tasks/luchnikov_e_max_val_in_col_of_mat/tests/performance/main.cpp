@@ -1,3 +1,4 @@
+// [file name]: tests/performance/main.cpp
 #include <gtest/gtest.h>
 #include <mpi.h>
 
@@ -34,12 +35,13 @@ class LuchnilkovEMaxValInColOfMatPerfTestProcesses : public ppc::util::BaseRunPe
   }
 
   bool CheckTestOutputData(OutType &output_data) final {
-    if (dynamic_cast<LuchnilkovEMaxValInColOfMatMPI *>(this->GetTask())) {
-      int rank = 0;
-      MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-      if (rank != 0) {
-        return true;
-      }
+    // Получаем ранг через MPI напрямую
+    int rank = 0;
+    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+
+    // Для MPI задач проверяем только на нулевом процессе
+    if (this->GetParamType() == ppc::util::TestType::MPI && rank != 0) {
+      return true;
     }
 
     if (input_data_.empty() || input_data_[0].empty()) {
@@ -77,7 +79,8 @@ const auto kGtestValues = ppc::util::TupleToGTestValues(kAllPerfTasks);
 
 const auto kPerfTestName = LuchnilkovEMaxValInColOfMatPerfTestProcesses::CustomPerfTestName;
 
-INSTANTIATE_TEST_SUITE_P(RunModeTests, LuchnilkovEMaxValInColOfMatPerfTestProcesses, kGtestValues, kPerfTestName);
+INSTANTIATE_TEST_SUITE_P(RunModeTests, LuchnilkovEMaxValInColOfMatPerfTestProcesses, kGtestValues,
+                         kPerfTestName);  // NOLINT
 
 }  // namespace
 
