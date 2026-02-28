@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Nazarova_K_char_count/common/include/common.hpp"
+#include "task/include/task.hpp"
 
 namespace nazarova_k_char_count_processes {
 
