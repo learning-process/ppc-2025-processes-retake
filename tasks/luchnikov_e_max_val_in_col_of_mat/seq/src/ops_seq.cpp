@@ -1,5 +1,6 @@
 #include "luchnikov_e_max_val_in_col_of_mat/seq/include/ops_seq.hpp"
 
+#include <algorithm>
 #include <climits>
 #include <cstddef>
 #include <vector>
