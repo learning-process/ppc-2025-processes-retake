@@ -1,4 +1,5 @@
 /build*
+tasks/build/
 docs/build*
 /xml
 docs/xml
@@ -17,5 +18,3 @@ CMakeSettings.json
 .cache
 install
 *.pyc
-build/
-tasks/build/
