@@ -1,6 +1,6 @@
 #pragma once
-#include <vector>
 #include "task/include/task.hpp"
+#include <vector>
 
 namespace salena_s_matrix_vector_mult {
 

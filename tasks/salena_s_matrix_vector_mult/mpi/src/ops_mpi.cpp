@@ -16,9 +16,15 @@ bool TestTaskMPI::ValidationImpl() {
   int rank;
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
   if (rank == 0) {
-    if (GetInput().rows <= 0 || GetInput().cols <= 0) return false;
-    if (GetInput().matrix.size() != static_cast<size_t>(GetInput().rows * GetInput().cols)) return false;
-    if (GetInput().vec.size() != static_cast<size_t>(GetInput().cols)) return false;
+    if (GetInput().rows <= 0 || GetInput().cols <= 0) {
+      return false;
+    }
+    if (GetInput().matrix.size() != static_cast<size_t>(GetInput().rows) * static_cast<size_t>(GetInput().cols)) {
+      return false;
+    }
+    if (GetInput().vec.size() != static_cast<size_t>(GetInput().cols)) {
+      return false;
+    }
   }
   return true;
 }
@@ -48,7 +54,9 @@ bool TestTaskMPI::RunImpl() {
   MPI_Bcast(&rows, 1, MPI_INT, 0, MPI_COMM_WORLD);
   MPI_Bcast(&cols, 1, MPI_INT, 0, MPI_COMM_WORLD);
 
-  if (rows == 0 || cols == 0) return false;
+  if (rows == 0 || cols == 0) {
+    return false;
+  }
 
   int delta_cols = cols / size;
   int rem_cols = cols % size;
@@ -79,11 +87,11 @@ bool TestTaskMPI::RunImpl() {
 
   std::vector<double> matrix_transposed;
   if (rank == 0) {
-    matrix_transposed.resize(rows * cols);
+    matrix_transposed.resize(static_cast<size_t>(rows) * static_cast<size_t>(cols));
     const auto& matrix = GetInput().matrix;
     for (int i = 0; i < rows; ++i) {
       for (int j = 0; j < cols; ++j) {
-        matrix_transposed[j * rows + i] = matrix[i * cols + j];
+        matrix_transposed[(j * rows) + i] = matrix[(i * cols) + j];
       }
     }
   }
@@ -100,7 +108,7 @@ bool TestTaskMPI::RunImpl() {
   for (int j = 0; j < my_cols_count; ++j) {
     double vec_val = local_vec[j];
     for (int i = 0; i < rows; ++i) {
-      local_res[i] += local_matrix[j * rows + i] * vec_val;
+      local_res[i] += local_matrix[(j * rows) + i] * vec_val;
     }
   }
 

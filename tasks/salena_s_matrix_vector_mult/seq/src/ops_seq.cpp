@@ -11,9 +11,15 @@ TestTaskSEQ::TestTaskSEQ(const InType &in) {
 }
 
 bool TestTaskSEQ::ValidationImpl() {
-  if (GetInput().rows <= 0 || GetInput().cols <= 0) return false;
-  if (GetInput().matrix.size() != static_cast<size_t>(GetInput().rows * GetInput().cols)) return false;
-  if (GetInput().vec.size() != static_cast<size_t>(GetInput().cols)) return false;
+  if (GetInput().rows <= 0 || GetInput().cols <= 0) {
+    return false;
+  }
+  if (GetInput().matrix.size() != static_cast<size_t>(GetInput().rows) * static_cast<size_t>(GetInput().cols)) {
+    return false;
+  }
+  if (GetInput().vec.size() != static_cast<size_t>(GetInput().cols)) {
+    return false;
+  }
   return true;
 }
 
@@ -31,7 +37,7 @@ bool TestTaskSEQ::RunImpl() {
 
   for (int i = 0; i < rows; ++i) {
     for (int j = 0; j < cols; ++j) {
-      result[i] += matrix[i * cols + j] * vec[j];
+      result[i] += matrix[(i * cols) + j] * vec[j];
     }
   }
   return true;
