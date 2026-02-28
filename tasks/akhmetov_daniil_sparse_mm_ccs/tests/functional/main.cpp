@@ -1,0 +1,297 @@
+#include <gtest/gtest.h>
+
+#include <array>
+#include <cmath>
+#include <cstddef>
+#include <map>
+#include <stdexcept>
+#include <string>
+#include <tuple>
+#include <utility>
+#include <vector>
+
+#include "akhmetov_daniil_sparse_mm_ccs/common/include/common.hpp"
+#include "akhmetov_daniil_sparse_mm_ccs/mpi/include/ops_mpi.hpp"
+#include "akhmetov_daniil_sparse_mm_ccs/seq/include/ops_seq.hpp"
+#include "util/include/func_test_util.hpp"
+#include "util/include/util.hpp"
+
+namespace akhmetov_daniil_sparse_mm_ccs {
+
+using InType = ::akhmetov_daniil_sparse_mm_ccs::InType;
+using OutType = ::akhmetov_daniil_sparse_mm_ccs::OutType;
+using TestType = ::akhmetov_daniil_sparse_mm_ccs::TestType;
+
+struct TestCaseData {
+  std::vector<std::vector<double>> a;
+  std::vector<std::vector<double>> b;
+  std::vector<std::vector<double>> expected;
+};
+
+const std::map<int, TestCaseData> kTestCases = {
+    {1, {.a = {{1.0, 2.0}, {3.0, 4.0}}, .b = {{5.0, 6.0}, {7.0, 8.0}}, .expected = {{19.0, 22.0}, {43.0, 50.0}}}},
+    {2, {.a = {{1.0, 0.0}, {0.0, 1.0}}, .b = {{1.0, 2.0}, {3.0, 4.0}}, .expected = {{1.0, 2.0}, {3.0, 4.0}}}},
+    {3,
+     {.a = {{1.0, 0.0, 0.0}, {0.0, 2.0, 0.0}, {0.0, 0.0, 3.0}},
+      .b = {{4.0, 0.0, 0.0}, {0.0, 5.0, 0.0}, {0.0, 0.0, 6.0}},
+      .expected = {{4.0, 0.0, 0.0}, {0.0, 10.0, 0.0}, {0.0, 0.0, 18.0}}}},
+    {4, {.a = {{0.0, 0.0}, {0.0, 0.0}}, .b = {{1.0, 2.0}, {3.0, 4.0}}, .expected = {{0.0, 0.0}, {0.0, 0.0}}}},
+    {5,
+     {.a = {{1.0, 2.0, 3.0}, {4.0, 5.0, 6.0}},
+      .b = {{7.0, 8.0}, {9.0, 10.0}, {11.0, 12.0}},
+      .expected = {{58.0, 64.0}, {139.0, 154.0}}}},
+    {6,
+     {.a = {{1.0, 0.0, 2.0}, {0.0, 3.0, 0.0}, {4.0, 0.0, 5.0}},
+      .b = {{6.0, 0.0}, {0.0, 7.0}, {8.0, 0.0}},
+      .expected = {{22.0, 0.0}, {0.0, 21.0}, {64.0, 0.0}}}},
+    {7, {.a = {{2.0}}, .b = {{3.0}}, .expected = {{6.0}}}},
+    {8, {.a = {{1.0, 2.0, 3.0}}, .b = {{4.0}, {5.0}, {6.0}}, .expected = {{32.0}}}},
+    {9,
+     {.a = {{-1.0, -2.0}, {-3.0, -4.0}}, .b = {{1.0, 2.0}, {3.0, 4.0}}, .expected = {{-7.0, -10.0}, {-15.0, -22.0}}}},
+    {10, {.a = {{0.5, 0.5}, {0.5, 0.5}}, .b = {{2.0, 4.0}, {6.0, 8.0}}, .expected = {{4.0, 6.0}, {4.0, 6.0}}}},
+    {11, {.a = {}, .b = {}, .expected = {}}},
+    {12, {.a = {{0.0, 0.0}, {0.0, 1.0}}, .b = {{2.0, 0.0}, {0.0, 0.0}}, .expected = {{0.0, 0.0}, {0.0, 0.0}}}},
+    {13,
+     {.a = {{1.0, 0.0, 0.0, 0.0}, {0.0, 0.0, 0.0, 0.0}, {0.0, 0.0, 2.0, 0.0}, {0.0, 3.0, 0.0, 0.0}},
+      .b = {{0.0, 1.0}, {0.0, 0.0}, {0.0, 0.0}, {4.0, 0.0}},
+      .expected = {{0.0, 1.0}, {0.0, 0.0}, {0.0, 0.0}, {0.0, 0.0}}}},
+    {14, {.a = {{1.0, 2.0}, {3.0, 4.0}}, .b = {{1.0, 0.0}, {0.0, 1.0}}, .expected = {{1.0, 2.0}, {3.0, 4.0}}}},
+    {15,
+     {.a = {{0.001, 0.002}, {0.003, 0.004}},
+      .b = {{1000.0, 2000.0}, {3000.0, 4000.0}},
+      .expected = {{7.0, 10.0}, {15.0, 22.0}}}},
+};
+
+class AkhmetovDaniilSparseMmCcsFuncTests : public ppc::util::BaseRunFuncTests<InType, OutType, TestType> {
+ public:
+  static std::string PrintTestParam(const TestType &test_param) {
+    return std::to_string(std::get<0>(test_param)) + "_" + std::get<1>(test_param);
+  }
+
+ protected:
+  void SetUp() override {
+    const auto params = std::get<static_cast<std::size_t>(ppc::util::GTestParamIndex::kTestParams)>(GetParam());
+    int test_id = std::get<0>(params);
+
+    auto it = kTestCases.find(test_id);
+    if (it == kTestCases.end()) {
+      throw std::runtime_error("Test case not found: " + std::to_string(test_id));
+    }
+
+    dense_a_ = it->second.a;
+    dense_b_ = it->second.b;
+    dense_expected_ = it->second.expected;
+
+    if (dense_a_.empty() || (!dense_a_.empty() && dense_a_.front().empty())) {
+      col_ptr_a_.assign(1, 0);
+      values_a_.clear();
+      row_indices_a_.clear();
+    } else {
+      ConvertDenseToCcs(dense_a_, values_a_, row_indices_a_, col_ptr_a_);
+    }
+
+    if (dense_b_.empty() || (!dense_b_.empty() && dense_b_.front().empty())) {
+      col_ptr_b_.assign(1, 0);
+      values_b_.clear();
+      row_indices_b_.clear();
+    } else {
+      ConvertDenseToCcs(dense_b_, values_b_, row_indices_b_, col_ptr_b_);
+    }
+  }
+
+  bool CheckTestOutputData(OutType &output_data) final {
+    auto &values = output_data.values;
+    auto &row_indices = output_data.row_indices;
+    auto &col_ptr = output_data.col_ptr;
+    const int rows = output_data.rows;
+    const int cols = output_data.cols;
+
+    if (col_ptr.empty()) {
+      return false;
+    }
+    if (col_ptr[0] != 0) {
+      return false;
+    }
+    if (values.size() != row_indices.size()) {
+      return false;
+    }
+    for (std::size_t i = 0; i + 1 < col_ptr.size(); ++i) {
+      if (col_ptr[i] > col_ptr[i + 1]) {
+        return false;
+      }
+    }
+    if (static_cast<std::size_t>(col_ptr.back()) != values.size()) {
+      return false;
+    }
+
+    for (const int r : row_indices) {
+      if (r < 0 || r >= rows) {
+        return false;
+      }
+    }
+
+    std::vector<std::vector<double>> dense_result;
+
+    if (!ConvertCcsToDense(values, row_indices, col_ptr, rows, cols, dense_result)) {
+      return false;
+    }
+
+    if (dense_expected_.empty()) {
+      return dense_result.empty();
+    }
+
+    if (dense_result.size() != dense_expected_.size()) {
+      return false;
+    }
+    if (!dense_result.empty() && dense_result.front().size() != dense_expected_.front().size()) {
+      return false;
+    }
+
+    constexpr double kTolerance = 1e-10;
+    for (std::size_t i = 0; i < dense_expected_.size(); ++i) {
+      for (std::size_t j = 0; j < dense_expected_[i].size(); ++j) {
+        double diff = std::abs(dense_result[i][j] - dense_expected_[i][j]);
+        if (diff > kTolerance) {
+          return false;
+        }
+      }
+    }
+
+    return true;
+  }
+
+  InType GetTestInputData() final {
+    SparseMatrixCCS matrix_a;
+    matrix_a.rows = static_cast<int>(dense_a_.size());
+    matrix_a.cols = dense_a_.empty() ? 0 : static_cast<int>(dense_a_.front().size());
+    matrix_a.values = values_a_;
+    matrix_a.row_indices = row_indices_a_;
+    matrix_a.col_ptr = col_ptr_a_;
+
+    SparseMatrixCCS matrix_b;
+    matrix_b.rows = static_cast<int>(dense_b_.size());
+    matrix_b.cols = dense_b_.empty() ? 0 : static_cast<int>(dense_b_.front().size());
+    matrix_b.values = values_b_;
+    matrix_b.row_indices = row_indices_b_;
+    matrix_b.col_ptr = col_ptr_b_;
+
+    InType input;
+    input.push_back(std::move(matrix_a));
+    input.push_back(std::move(matrix_b));
+    return input;
+  }
+
+ private:
+  static void ConvertDenseToCcs(const std::vector<std::vector<double>> &dense, std::vector<double> &values,
+                                std::vector<int> &row_indices, std::vector<int> &col_ptr) {
+    values.clear();
+    row_indices.clear();
+    col_ptr.clear();
+
+    if (dense.empty() || dense.front().empty()) {
+      col_ptr.push_back(0);
+      return;
+    }
+
+    const int rows = static_cast<int>(dense.size());
+    const int cols = static_cast<int>(dense.front().size());
+
+    col_ptr.reserve(static_cast<std::size_t>(cols) + 1U);
+    col_ptr.push_back(0);
+
+    for (int j = 0; j < cols; ++j) {
+      for (int i = 0; i < rows; ++i) {
+        const double val = dense[static_cast<std::size_t>(i)][static_cast<std::size_t>(j)];
+        if (std::abs(val) > 1e-12) {
+          values.push_back(val);
+          row_indices.push_back(i);
+        }
+      }
+      col_ptr.push_back(static_cast<int>(values.size()));
+    }
+  }
+
+  static bool ConvertCcsToDense(const std::vector<double> &values, const std::vector<int> &row_indices,
+                                const std::vector<int> &col_ptr, int rows, int cols,
+                                std::vector<std::vector<double>> &dense) {
+    if (rows < 0 || cols < 0) {
+      return false;
+    }
+
+    if (cols + 1 != static_cast<int>(col_ptr.size())) {
+      return false;
+    }
+
+    dense.assign(static_cast<std::size_t>(rows), std::vector<double>(static_cast<std::size_t>(cols), 0.0));
+
+    for (int j = 0; j < cols; ++j) {
+      const int start = col_ptr[j];
+      const int end = col_ptr[j + 1];
+      if (start < 0 || end < start || static_cast<std::size_t>(end) > values.size() ||
+          static_cast<std::size_t>(end) > row_indices.size()) {
+        return false;
+      }
+
+      for (int idx = start; idx < end; ++idx) {
+        const int i = row_indices[static_cast<std::size_t>(idx)];
+        if (i < 0 || i >= rows) {
+          return false;
+        }
+        dense[static_cast<std::size_t>(i)][static_cast<std::size_t>(j)] = values[static_cast<std::size_t>(idx)];
+      }
+    }
+
+    return true;
+  }
+
+  std::vector<std::vector<double>> dense_a_;
+  std::vector<std::vector<double>> dense_b_;
+  std::vector<std::vector<double>> dense_expected_;
+
+  std::vector<double> values_a_;
+  std::vector<int> row_indices_a_;
+  std::vector<int> col_ptr_a_;
+
+  std::vector<double> values_b_;
+  std::vector<int> row_indices_b_;
+  std::vector<int> col_ptr_b_;
+};
+
+namespace {
+
+TEST_P(AkhmetovDaniilSparseMmCcsFuncTests, FunctionalTests) {
+  ExecuteTest(GetParam());
+}
+
+const std::array<TestType, 15> kAllTests = {
+    TestType{1, "simple_2x2"},
+    TestType{2, "identity_matrix"},
+    TestType{3, "diagonal_3x3"},
+    TestType{4, "zero_matrix"},
+    TestType{5, "2x3_3x2"},
+    TestType{6, "sparse_3x2"},
+    TestType{7, "1x1"},
+    TestType{8, "row_x_column"},
+    TestType{9, "negative_numbers"},
+    TestType{10, "fractional_numbers"},
+    TestType{11, "empty_matrices"},
+    TestType{12, "single_nonzero"},
+    TestType{13, "large_sparse"},
+    TestType{14, "multiply_by_identity"},
+    TestType{15, "small_fractional"},
+};
+
+const auto kFunctionalTasksList = std::tuple_cat(ppc::util::AddFuncTask<SparseMatrixMultiplicationCCSMPI, InType>(
+                                                     kAllTests, PPC_SETTINGS_akhmetov_daniil_sparse_mm_ccs),
+                                                 ppc::util::AddFuncTask<SparseMatrixMultiplicationCCSSeq, InType>(
+                                                     kAllTests, PPC_SETTINGS_akhmetov_daniil_sparse_mm_ccs));
+
+inline const auto kFunctionalGtestValues = ppc::util::ExpandToValues(kFunctionalTasksList);
+
+inline const auto kPerfTestName =
+    AkhmetovDaniilSparseMmCcsFuncTests::PrintFuncTestName<AkhmetovDaniilSparseMmCcsFuncTests>;
+
+INSTANTIATE_TEST_SUITE_P(Functional, AkhmetovDaniilSparseMmCcsFuncTests, kFunctionalGtestValues, kPerfTestName);
+
+}  // namespace
+}  // namespace akhmetov_daniil_sparse_mm_ccs
