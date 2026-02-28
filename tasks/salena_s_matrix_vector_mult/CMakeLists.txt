@@ -1,0 +1,1 @@
+add_subdirectory(salena_s_mat_vec_vertical)

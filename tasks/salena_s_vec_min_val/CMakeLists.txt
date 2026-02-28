@@ -1,0 +1,1 @@
+ppc_add_task(salena_s_vec_min_val)
