@@ -37,8 +37,7 @@ class LuchnikovEGenerTransmFromAllToOneGatherFuncTestsProcesses
   }
 
   bool CheckTestOutputData(OutType &output_data) final {
-    // Получаем тип задачи через task_ (он защищенный, а не приватный)
-    if (this->task_->GetTypeOfTask() == ppc::task::TypeOfTask::kMPI) {
+    if (this->GetTask()->GetTypeOfTask() == ppc::task::TypeOfTask::kMPI) {
       int rank = 0;
       MPI_Comm_rank(MPI_COMM_WORLD, &rank);
       if (rank != 0) {
