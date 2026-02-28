@@ -11,17 +11,19 @@
 namespace yusupkina_m_mnog_integ_monte_carlo {
 
 class YusupkinaMMnogIntegMonteCarloPerfTests : public ppc::util::BaseRunPerfTests<InType, OutType> {
-  const int64_t kPointsLarge = 10000000;
+  const int64_t kPointsLarge_ = 10000000;
 
-  InType input_data_{};
+  InType input_data_;
   const OutType expected_output_ = 0.25;
 
   void SetUp() override {
-    double x_min = 0.0, x_max = 1.0;
-    double y_min = 0.0, y_max = 1.0;
+    double x_min = 0.0;
+    double x_max = 1.0;
+    double y_min = 0.0;
+    double y_max = 1.0;
 
     auto f = [](double x, double y) { return x * y; };
-    input_data_ = InputData(x_min, x_max, y_min, y_max, f, kPointsLarge);
+    input_data_ = InputData(x_min, x_max, y_min, y_max, f, kPointsLarge_);
   }
 
   bool CheckTestOutputData(OutType &output_data) final {

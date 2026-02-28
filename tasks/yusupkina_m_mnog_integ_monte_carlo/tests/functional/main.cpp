@@ -1,11 +1,13 @@
 #include <gtest/gtest.h>
 
+#include <array>
 #include <cmath>
+#include <cstddef>
 #include <cstdint>
+#include <functional>
 #include <numbers>
 #include <string>
 #include <tuple>
-#include <utility>
 #include <vector>
 
 #include "util/include/func_test_util.hpp"
@@ -38,7 +40,7 @@ class YusupkinaMMnogIntegMonteCarloFuncTests : public ppc::util::BaseRunFuncTest
     TestType params = std::get<static_cast<std::size_t>(ppc::util::GTestParamIndex::kTestParams)>(GetParam());
 
     int case_idx = std::get<0>(params);
-    static const std::vector<TestCase> test_cases = {
+    static const std::vector<TestCase> kTestCases = {
         {"const", 0.0, 1.0, 0.0, 1.0, [](double, double) { return 1.0; }, 1.0, 100000},
 
         {"linear", 0.0, 1.0, 0.0, 1.0, [](double x, double y) { return x + y; }, 1.0, 100000},
@@ -55,7 +57,7 @@ class YusupkinaMMnogIntegMonteCarloFuncTests : public ppc::util::BaseRunFuncTest
 
         {"largeN", 0.0, 1.0, 0.0, 1.0, [](double x, double y) { return x + y; }, 1.0, 1000000},
 
-        {"square", 0.0, 1.0, 0.0, 1.0, [](double x, double y) { return x * x + y * y; }, 2.0 / 3.0, 100000},
+        {"square", 0.0, 1.0, 0.0, 1.0, [](double x, double y) { return (x * x) + (y * y); }, 2.0 / 3.0, 100000},
 
         {"shifted", 2.0, 5.0, -1.0, 3.0, [](double, double) { return 1.0; }, 12.0, 100000},
 
@@ -63,7 +65,7 @@ class YusupkinaMMnogIntegMonteCarloFuncTests : public ppc::util::BaseRunFuncTest
 
         {"zeroArea", 0.0, 0.0, 0.0, 1.0, [](double, double) { return 1.0; }, 0.0, 100000}};
 
-    const auto &tc = test_cases[case_idx];
+    const auto &tc = kTestCases[case_idx];
 
     input_data_ = InputData(tc.x_min, tc.x_max, tc.y_min, tc.y_max, tc.f, tc.num_points);
     exp_output_ = tc.expected;
