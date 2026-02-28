@@ -15,6 +15,11 @@
 #include "luchnikov_e_max_val_in_col_of_mat/seq/include/ops_seq.hpp"
 #include "util/include/func_test_util.hpp"
 
+// Явно включаем заголовок, где определен GTestParamIndex
+// (предполагается, что он находится в func_test_util.hpp, который уже включен)
+// Если нет, нужно добавить:
+// #include "util/include/test_params.hpp"
+
 namespace luchnikov_e_max_val_in_col_of_mat {
 
 using MatrixGenerator = std::function<void(InType &, int)>;
@@ -30,7 +35,8 @@ class LuchnikovEMaxValInColOfMatFuncTests : public ppc::util::BaseRunFuncTests<I
  protected:
   void SetUp() override {
     const auto &full_params = GetParam();
-    const auto &params = std::get<static_cast<size_t>(ppc::util::GTestParamIndex::kTestParams)>(full_params);
+    // Указываем полное пространство имен для GTestParamIndex
+    const auto &params = std::get<static_cast<size_t>(::ppc::util::GTestParamIndex::kTestParams)>(full_params);
     int matrix_size = std::get<0>(params);
     std::string test_type = std::get<1>(params);
 
