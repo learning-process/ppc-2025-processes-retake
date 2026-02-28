@@ -1,6 +1,9 @@
 #pragma once
 
+#include <vector>
+
 #include "Nazarova_K_Gaussian_vert_scheme/common/include/common.hpp"
+#include "task/include/task.hpp"
 
 namespace nazarova_k_gaussian_vert_scheme_processes {
 
