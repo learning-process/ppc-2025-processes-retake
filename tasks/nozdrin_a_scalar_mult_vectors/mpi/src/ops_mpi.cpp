@@ -57,7 +57,7 @@ bool NozdrinAScalarMultVectorsMPI::RunImpl() {
     const std::uint64_t rem = n % static_cast<std::uint64_t>(size);
 
     const std::uint64_t start = (static_cast<std::uint64_t>(rank) * base) + std::min<std::uint64_t>(rank, rem);
-    const std::uint64_t end = start + base + (rank < rem ? 1 : 0);
+    const std::uint64_t end = start + base + (static_cast<std::uint64_t>(rank) < rem ? 1 : 0);
 
     double local_sum = 0.0;
     for (std::uint64_t i = start; i < end; ++i) {
