@@ -8,9 +8,9 @@
 
 namespace yusupkina_m_seidel_method {
 struct InputData {
-  std::vector<double> matrix;      
-  std::vector<double> rhs;         
-  int n;                           
+  std::vector<double> matrix;
+  std::vector<double> rhs;
+  int n;
 };
 
 using InType = InputData;

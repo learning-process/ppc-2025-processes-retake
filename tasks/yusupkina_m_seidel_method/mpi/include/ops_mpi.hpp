@@ -2,8 +2,8 @@
 
 #include <vector>
 
-#include "yusupkina_m_seidel_method/common/include/common.hpp"
 #include "task/include/task.hpp"
+#include "yusupkina_m_seidel_method/common/include/common.hpp"
 
 namespace yusupkina_m_seidel_method {
 
@@ -19,11 +19,8 @@ class YusupkinaMSeidelMethodMPI : public BaseTask {
   bool PreProcessingImpl() override;
   bool RunImpl() override;
   bool PostProcessingImpl() override;
-  static void RunOneIteration(int n, int local_rows, int start_row,
-                              const std::vector<double>& local_A,
-                              const std::vector<double>& local_b,
-                              std::vector<double>& x,
-                              double& local_error);
+  static void RunOneIteration(int n, int local_rows, int start_row, const std::vector<double> &local_A,
+                              const std::vector<double> &local_b, std::vector<double> &x, double &local_error);
 };
 
 }  // namespace yusupkina_m_seidel_method

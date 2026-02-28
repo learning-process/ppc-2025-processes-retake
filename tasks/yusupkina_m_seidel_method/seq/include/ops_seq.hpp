@@ -1,7 +1,7 @@
 #pragma once
 
-#include "yusupkina_m_seidel_method/common/include/common.hpp"
 #include "task/include/task.hpp"
+#include "yusupkina_m_seidel_method/common/include/common.hpp"
 
 namespace yusupkina_m_seidel_method {
 
