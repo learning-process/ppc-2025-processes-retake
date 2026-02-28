@@ -1,5 +1,3 @@
-// NOLINTBEGIN(readability-function-cognitive-complexity)
-
 #include <gtest/gtest.h>
 
 #include <cmath>
@@ -72,5 +70,3 @@ INSTANTIATE_TEST_SUITE_P(RunModeTests, KaurAVertRibbonSchemePerfTests, kGtestVal
 }  // namespace
 
 }  // namespace kaur_a_vert_ribbon_scheme
-
-// NOLINTEND(readability-function-cognitive-complexity)

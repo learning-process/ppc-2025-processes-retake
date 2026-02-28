@@ -1,5 +1,3 @@
-// NOLINTBEGIN(readability-function-cognitive-complexity)
-
 #include <gtest/gtest.h>
 
 #include <array>
@@ -97,22 +95,14 @@ INSTANTIATE_TEST_SUITE_P(PicMatrixTests, KaurAVertRibbonSchemeFuncTests, kGtestV
 
 }  // namespace
 
-class KaurAEdgeCasesTests : public ::testing::Test {
- protected:
-  static bool CompareVectors(const std::vector<double> &a, const std::vector<double> &b) {
-    if (a.size() != b.size()) {
-      return false;
-    }
-    for (std::size_t i = 0; i < a.size(); i++) {
-      if (std::abs(a[i] - b[i]) > 1e-9) {
-        return false;
-      }
-    }
-    return true;
+static void AssertVectorsNear(const std::vector<double> &actual, const std::vector<double> &expected, double eps) {
+  ASSERT_EQ(actual.size(), expected.size());
+  for (std::size_t i = 0; i < expected.size(); i++) {
+    ASSERT_NEAR(actual[i], expected[i], eps);
   }
-};
+}
 
-TEST_F(KaurAEdgeCasesTests, SingleElementMatrix) {
+TEST(KaurAVertRibbonSchemeEdgeTests, SingleElementMatrix) {
   TaskData data;
   data.rows = 1;
   data.cols = 1;
@@ -126,10 +116,10 @@ TEST_F(KaurAEdgeCasesTests, SingleElementMatrix) {
   ASSERT_TRUE(task.PostProcessing());
 
   std::vector<double> expected = {15.0};
-  ASSERT_TRUE(CompareVectors(task.GetOutput(), expected));
+  AssertVectorsNear(task.GetOutput(), expected, 1e-9);
 }
 
-TEST_F(KaurAEdgeCasesTests, IdentityMatrix) {
+TEST(KaurAVertRibbonSchemeEdgeTests, IdentityMatrix) {
   TaskData data;
   data.rows = 3;
   data.cols = 3;
@@ -143,10 +133,10 @@ TEST_F(KaurAEdgeCasesTests, IdentityMatrix) {
   ASSERT_TRUE(task.PostProcessing());
 
   std::vector<double> expected = {2.0, 4.0, 6.0};
-  ASSERT_TRUE(CompareVectors(task.GetOutput(), expected));
+  AssertVectorsNear(task.GetOutput(), expected, 1e-9);
 }
 
-TEST_F(KaurAEdgeCasesTests, ZeroMatrix) {
+TEST(KaurAVertRibbonSchemeEdgeTests, ZeroMatrix) {
   TaskData data;
   data.rows = 2;
   data.cols = 2;
@@ -160,10 +150,10 @@ TEST_F(KaurAEdgeCasesTests, ZeroMatrix) {
   ASSERT_TRUE(task.PostProcessing());
 
   std::vector<double> expected = {0.0, 0.0};
-  ASSERT_TRUE(CompareVectors(task.GetOutput(), expected));
+  AssertVectorsNear(task.GetOutput(), expected, 1e-9);
 }
 
-TEST_F(KaurAEdgeCasesTests, ZeroVector) {
+TEST(KaurAVertRibbonSchemeEdgeTests, ZeroVector) {
   TaskData data;
   data.rows = 2;
   data.cols = 2;
@@ -177,10 +167,10 @@ TEST_F(KaurAEdgeCasesTests, ZeroVector) {
   ASSERT_TRUE(task.PostProcessing());
 
   std::vector<double> expected = {0.0, 0.0};
-  ASSERT_TRUE(CompareVectors(task.GetOutput(), expected));
+  AssertVectorsNear(task.GetOutput(), expected, 1e-9);
 }
 
-TEST_F(KaurAEdgeCasesTests, RectangularMatrixMoreRows) {
+TEST(KaurAVertRibbonSchemeEdgeTests, RectangularMatrixMoreRows) {
   TaskData data;
   data.rows = 4;
   data.cols = 2;
@@ -194,10 +184,10 @@ TEST_F(KaurAEdgeCasesTests, RectangularMatrixMoreRows) {
   ASSERT_TRUE(task.PostProcessing());
 
   std::vector<double> expected = {11.0, 14.0, 17.0, 20.0};
-  ASSERT_TRUE(CompareVectors(task.GetOutput(), expected));
+  AssertVectorsNear(task.GetOutput(), expected, 1e-9);
 }
 
-TEST_F(KaurAEdgeCasesTests, RectangularMatrixMoreCols) {
+TEST(KaurAVertRibbonSchemeEdgeTests, RectangularMatrixMoreCols) {
   TaskData data;
   data.rows = 2;
   data.cols = 4;
@@ -211,10 +201,10 @@ TEST_F(KaurAEdgeCasesTests, RectangularMatrixMoreCols) {
   ASSERT_TRUE(task.PostProcessing());
 
   std::vector<double> expected = {16.0, 20.0};
-  ASSERT_TRUE(CompareVectors(task.GetOutput(), expected));
+  AssertVectorsNear(task.GetOutput(), expected, 1e-9);
 }
 
-TEST_F(KaurAEdgeCasesTests, NegativeValues) {
+TEST(KaurAVertRibbonSchemeEdgeTests, NegativeValues) {
   TaskData data;
   data.rows = 2;
   data.cols = 2;
@@ -228,10 +218,10 @@ TEST_F(KaurAEdgeCasesTests, NegativeValues) {
   ASSERT_TRUE(task.PostProcessing());
 
   std::vector<double> expected = {7.0, 10.0};
-  ASSERT_TRUE(CompareVectors(task.GetOutput(), expected));
+  AssertVectorsNear(task.GetOutput(), expected, 1e-9);
 }
 
-TEST_F(KaurAEdgeCasesTests, LargeMatrix) {
+TEST(KaurAVertRibbonSchemeEdgeTests, LargeMatrix) {
   const int size = 100;
   TaskData data;
   data.rows = size;
@@ -246,10 +236,10 @@ TEST_F(KaurAEdgeCasesTests, LargeMatrix) {
   ASSERT_TRUE(task.PostProcessing());
 
   std::vector<double> expected(size, static_cast<double>(size));
-  ASSERT_TRUE(CompareVectors(task.GetOutput(), expected));
+  AssertVectorsNear(task.GetOutput(), expected, 1e-9);
 }
 
-TEST_F(KaurAEdgeCasesTests, InvalidRowsZero) {
+TEST(KaurAVertRibbonSchemeEdgeTests, InvalidRowsZero) {
   TaskData data;
   data.rows = 0;
   data.cols = 2;
@@ -260,7 +250,7 @@ TEST_F(KaurAEdgeCasesTests, InvalidRowsZero) {
   ASSERT_FALSE(task.Validation());
 }
 
-TEST_F(KaurAEdgeCasesTests, InvalidColsZero) {
+TEST(KaurAVertRibbonSchemeEdgeTests, InvalidColsZero) {
   TaskData data;
   data.rows = 2;
   data.cols = 0;
@@ -271,7 +261,7 @@ TEST_F(KaurAEdgeCasesTests, InvalidColsZero) {
   ASSERT_FALSE(task.Validation());
 }
 
-TEST_F(KaurAEdgeCasesTests, InvalidMatrixSize) {
+TEST(KaurAVertRibbonSchemeEdgeTests, InvalidMatrixSize) {
   TaskData data;
   data.rows = 2;
   data.cols = 2;
@@ -282,7 +272,7 @@ TEST_F(KaurAEdgeCasesTests, InvalidMatrixSize) {
   ASSERT_FALSE(task.Validation());
 }
 
-TEST_F(KaurAEdgeCasesTests, InvalidVectorSize) {
+TEST(KaurAVertRibbonSchemeEdgeTests, InvalidVectorSize) {
   TaskData data;
   data.rows = 2;
   data.cols = 2;
@@ -293,7 +283,7 @@ TEST_F(KaurAEdgeCasesTests, InvalidVectorSize) {
   ASSERT_FALSE(task.Validation());
 }
 
-TEST_F(KaurAEdgeCasesTests, SingleRow) {
+TEST(KaurAVertRibbonSchemeEdgeTests, SingleRow) {
   TaskData data;
   data.rows = 1;
   data.cols = 5;
@@ -307,10 +297,10 @@ TEST_F(KaurAEdgeCasesTests, SingleRow) {
   ASSERT_TRUE(task.PostProcessing());
 
   std::vector<double> expected = {55.0};
-  ASSERT_TRUE(CompareVectors(task.GetOutput(), expected));
+  AssertVectorsNear(task.GetOutput(), expected, 1e-9);
 }
 
-TEST_F(KaurAEdgeCasesTests, SingleColumn) {
+TEST(KaurAVertRibbonSchemeEdgeTests, SingleColumn) {
   TaskData data;
   data.rows = 5;
   data.cols = 1;
@@ -324,10 +314,10 @@ TEST_F(KaurAEdgeCasesTests, SingleColumn) {
   ASSERT_TRUE(task.PostProcessing());
 
   std::vector<double> expected = {2.0, 4.0, 6.0, 8.0, 10.0};
-  ASSERT_TRUE(CompareVectors(task.GetOutput(), expected));
+  AssertVectorsNear(task.GetOutput(), expected, 1e-9);
 }
 
-TEST_F(KaurAEdgeCasesTests, FloatingPointPrecision) {
+TEST(KaurAVertRibbonSchemeEdgeTests, FloatingPointPrecision) {
   TaskData data;
   data.rows = 2;
   data.cols = 2;
@@ -341,9 +331,7 @@ TEST_F(KaurAEdgeCasesTests, FloatingPointPrecision) {
   ASSERT_TRUE(task.PostProcessing());
 
   std::vector<double> expected = {0.2, 0.3};
-  ASSERT_TRUE(CompareVectors(task.GetOutput(), expected));
+  AssertVectorsNear(task.GetOutput(), expected, 1e-9);
 }
 
 }  // namespace kaur_a_vert_ribbon_scheme
-
-// NOLINTEND(readability-function-cognitive-complexity)
