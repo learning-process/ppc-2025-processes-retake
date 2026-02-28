@@ -1,7 +1,7 @@
 #include <gtest/gtest.h>
 #include <mpi.h>
 
-#include <algorithm>  
+#include <algorithm>
 #include <cstddef>
 #include <random>
 #include <string>
@@ -14,8 +14,7 @@
 
 namespace luchnikov_e_max_val_in_col_of_mat {
 
-class LuchnilkovEMaxValInColOfMatFuncTestsProcesses
-    : public ppc::util::BaseRunFuncTests<InType, OutType, TestType> {
+class LuchnilkovEMaxValInColOfMatFuncTestsProcesses : public ppc::util::BaseRunFuncTests<InType, OutType, TestType> {
  public:
   static std::string PrintTestParam(const TestType &test_param) {
     return std::to_string(std::get<0>(test_param)) + "_" + std::get<1>(test_param);
@@ -54,13 +53,13 @@ class LuchnilkovEMaxValInColOfMatFuncTestsProcesses
 
     size_t cols = input_data_[0].size();
     OutType expected(cols, std::numeric_limits<int>::min());
-    
+
     for (const auto &row : input_data_) {
       for (size_t j = 0; j < cols; ++j) {
         expected[j] = std::max(expected[j], row[j]);
       }
     }
-    
+
     return expected == output_data;
   }
 
@@ -83,19 +82,17 @@ const std::array<TestType, 10> kTestParam = {
     std::make_tuple(7, "7"),   std::make_tuple(10, "10"), std::make_tuple(15, "15"), std::make_tuple(20, "20"),
     std::make_tuple(25, "25"), std::make_tuple(30, "30")};
 
-const auto kTestTasksList =
-    std::tuple_cat(ppc::util::AddFuncTask<LuchnilkovEMaxValInColOfMatMPI, InType>(
-                       kTestParam, PPC_SETTINGS_luchnikov_e_max_val_in_col_of_mat),
-                   ppc::util::AddFuncTask<LuchnilkovEMaxValInColOfMatSEQ, InType>(
-                       kTestParam, PPC_SETTINGS_luchnikov_e_max_val_in_col_of_mat));
+const auto kTestTasksList = std::tuple_cat(ppc::util::AddFuncTask<LuchnilkovEMaxValInColOfMatMPI, InType>(
+                                               kTestParam, PPC_SETTINGS_luchnikov_e_max_val_in_col_of_mat),
+                                           ppc::util::AddFuncTask<LuchnilkovEMaxValInColOfMatSEQ, InType>(
+                                               kTestParam, PPC_SETTINGS_luchnikov_e_max_val_in_col_of_mat));
 
 const auto kGtestValues = ppc::util::ExpandToValues(kTestTasksList);
 
-const auto kPerfTestName = LuchnilkovEMaxValInColOfMatFuncTestsProcesses::PrintFuncTestName<
-    LuchnilkovEMaxValInColOfMatFuncTestsProcesses>;
+const auto kPerfTestName =
+    LuchnilkovEMaxValInColOfMatFuncTestsProcesses::PrintFuncTestName<LuchnilkovEMaxValInColOfMatFuncTestsProcesses>;
 
-INSTANTIATE_TEST_SUITE_P(MaxInColTests, LuchnilkovEMaxValInColOfMatFuncTestsProcesses, kGtestValues,
-                         kPerfTestName);
+INSTANTIATE_TEST_SUITE_P(MaxInColTests, LuchnilkovEMaxValInColOfMatFuncTestsProcesses, kGtestValues, kPerfTestName);
 
 }  // namespace
 

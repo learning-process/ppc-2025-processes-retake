@@ -1,9 +1,9 @@
 #include <gtest/gtest.h>
 #include <mpi.h>
 
-#include <algorithm>  
+#include <algorithm>
 #include <cstddef>
-#include <limits> 
+#include <limits>
 #include <random>
 #include <string>
 #include <vector>
@@ -48,13 +48,13 @@ class LuchnilkovEMaxValInColOfMatPerfTestProcesses : public ppc::util::BaseRunPe
 
     size_t cols = input_data_[0].size();
     OutType expected(cols, std::numeric_limits<int>::min());
-    
+
     for (const auto &row : input_data_) {
       for (size_t j = 0; j < cols; ++j) {
-        expected[j] = std::max(expected[j], row[j]); 
+        expected[j] = std::max(expected[j], row[j]);
       }
     }
-    
+
     return expected == output_data;
   }
 
@@ -69,16 +69,15 @@ TEST_P(LuchnilkovEMaxValInColOfMatPerfTestProcesses, RunPerfModes) {
 
 namespace {
 
-const auto kAllPerfTasks = ppc::util::MakeAllPerfTasks<InType, LuchnilkovEMaxValInColOfMatMPI,
-                                                       LuchnilkovEMaxValInColOfMatSEQ>(
-    PPC_SETTINGS_luchnikov_e_max_val_in_col_of_mat);
+const auto kAllPerfTasks =
+    ppc::util::MakeAllPerfTasks<InType, LuchnilkovEMaxValInColOfMatMPI, LuchnilkovEMaxValInColOfMatSEQ>(
+        PPC_SETTINGS_luchnikov_e_max_val_in_col_of_mat);
 
 const auto kGtestValues = ppc::util::TupleToGTestValues(kAllPerfTasks);
 
 const auto kPerfTestName = LuchnilkovEMaxValInColOfMatPerfTestProcesses::CustomPerfTestName;
 
-INSTANTIATE_TEST_SUITE_P(RunModeTests, LuchnilkovEMaxValInColOfMatPerfTestProcesses, kGtestValues,
-                         kPerfTestName);
+INSTANTIATE_TEST_SUITE_P(RunModeTests, LuchnilkovEMaxValInColOfMatPerfTestProcesses, kGtestValues, kPerfTestName);
 
 }  // namespace
 
