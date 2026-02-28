@@ -1,9 +1,10 @@
 #include "klimov_m_lett_count/mpi/include/ops_mpi.hpp"
 
 #include <mpi.h>
+
+#include <algorithm>
 #include <cctype>
 #include <string>
-#include <algorithm>
 
 namespace klimov_m_lett_count {
 
@@ -16,7 +17,9 @@ KlimovMLettCountMPI::KlimovMLettCountMPI(const InputType &in) {
 
 int KlimovMLettCountMPI::CountLettersInSegment(const char *data, int length) {
   int count = 0;
-  if (length <= 0) return 0;
+  if (length <= 0) {
+    return 0;
+  }
   for (int i = 0; i < length; ++i) {
     if (std::isalpha(static_cast<unsigned char>(data[i]))) {
       ++count;
