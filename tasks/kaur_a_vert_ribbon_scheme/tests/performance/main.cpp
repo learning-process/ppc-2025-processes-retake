@@ -1,0 +1,71 @@
+#include <gtest/gtest.h>
+
+#include <cmath>
+#include <cstddef>
+#include <vector>
+
+#include "kaur_a_vert_ribbon_scheme/common/include/common.hpp"
+#include "kaur_a_vert_ribbon_scheme/mpi/include/ops_mpi.hpp"
+#include "kaur_a_vert_ribbon_scheme/seq/include/ops_seq.hpp"
+#include "util/include/perf_test_util.hpp"
+
+namespace kaur_a_vert_ribbon_scheme {
+
+class KaurAVertRibbonSchemePerfTests : public ppc::util::BaseRunPerfTests<InType, OutType> {
+  static constexpr int kSize = 8000;
+  InType input_data_{};
+  std::vector<double> expected_;
+
+  void SetUp() override {
+    input_data_.rows = kSize;
+    input_data_.cols = kSize;
+    input_data_.matrix.resize(static_cast<std::size_t>(kSize) * kSize);
+    input_data_.vector.resize(kSize);
+    expected_.resize(kSize, 0.0);
+
+    for (int j = 0; j < kSize; j++) {
+      input_data_.vector[j] = static_cast<double>((j % 10) + 1);
+      for (int i = 0; i < kSize; i++) {
+        input_data_.matrix[static_cast<std::size_t>(j * kSize) + i] = static_cast<double>(((i + j) % 20) - 10);
+      }
+    }
+
+    for (int j = 0; j < kSize; j++) {
+      for (int i = 0; i < kSize; i++) {
+        expected_[i] += input_data_.matrix[static_cast<std::size_t>(j * kSize) + i] * input_data_.vector[j];
+      }
+    }
+  }
+
+  bool CheckTestOutputData(OutType &output_data) final {
+    if (output_data.size() != expected_.size()) {
+      return false;
+    }
+    for (std::size_t i = 0; i < expected_.size(); i++) {
+      if (std::abs(output_data[i] - expected_[i]) > 1e-6) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  InType GetTestInputData() final {
+    return input_data_;
+  }
+};
+
+TEST_P(KaurAVertRibbonSchemePerfTests, RunPerfModes) {
+  ExecuteTest(GetParam());
+}
+
+const auto kAllPerfTasks =
+    ppc::util::MakeAllPerfTasks<InType, KaurAVertRibbonSchemeMPI, KaurAVertRibbonSchemeSEQ>(
+        PPC_SETTINGS_kaur_a_vert_ribbon_scheme);
+
+const auto kGtestValues = ppc::util::TupleToGTestValues(kAllPerfTasks);
+
+const auto kPerfTestName = KaurAVertRibbonSchemePerfTests::CustomPerfTestName;
+
+INSTANTIATE_TEST_SUITE_P(RunModeTests, KaurAVertRibbonSchemePerfTests, kGtestValues, kPerfTestName);
+
+}  // namespace kaur_a_vert_ribbon_scheme
