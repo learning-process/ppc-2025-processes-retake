@@ -1,5 +1,6 @@
 #pragma once
 
+#include <utility>
 #include <vector>
 
 #include "luchnikov_e_max_val_in_col_of_mat/common/include/common.hpp"
@@ -19,6 +20,11 @@ class LuchnikovEMaxValInColOfMatMPI : public BaseTask {
   bool PreProcessingImpl() override;
   bool RunImpl() override;
   bool PostProcessingImpl() override;
+
+  std::vector<int> RunSequential();
+  std::vector<int> PrepareFlatMatrix();
+  std::pair<std::vector<int>, std::vector<int>> CalculateDistribution();
+  std::vector<int> ComputeLocalMax(const std::vector<int> &local_flat, int local_rows);
 
   std::vector<std::vector<int>> matrix_;
   std::vector<int> result_;
