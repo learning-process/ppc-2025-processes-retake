@@ -1,6 +1,7 @@
 #include <gtest/gtest.h>
 
 #include <cstdlib>
+#include <utility>
 #include <vector>
 
 #include "akhmetov_daniil_sparse_mm_ccs/common/include/common.hpp"
@@ -39,7 +40,7 @@ class SparseCCSPerfTest : public ppc::util::BaseRunPerfTests<InType, OutType> {
 
     for (int i = 0; i < k_size; ++i) {
       bool found_diagonal = false;
-      for (size_t j = out.col_ptr[i]; j < out.col_ptr[i + 1]; ++j) {
+      for (int j = out.col_ptr[i]; j < out.col_ptr[i + 1]; ++j) {
         if (out.row_indices[j] == i) {
           if (std::abs(out.values[j] - 2.0) > 1e-9) {
             return false;
