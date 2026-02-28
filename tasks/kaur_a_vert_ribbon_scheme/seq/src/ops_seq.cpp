@@ -1,7 +1,6 @@
 #include "kaur_a_vert_ribbon_scheme/seq/include/ops_seq.hpp"
 
 #include <cstddef>
-#include <utility>
 #include <vector>
 
 #include "kaur_a_vert_ribbon_scheme/common/include/common.hpp"

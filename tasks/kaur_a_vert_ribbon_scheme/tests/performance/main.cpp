@@ -1,3 +1,5 @@
+// NOLINTBEGIN(readability-function-cognitive-complexity)
+
 #include <gtest/gtest.h>
 
 #include <cmath>
@@ -58,6 +60,7 @@ TEST_P(KaurAVertRibbonSchemePerfTests, RunPerfModes) {
   ExecuteTest(GetParam());
 }
 
+namespace {
 const auto kAllPerfTasks = ppc::util::MakeAllPerfTasks<InType, KaurAVertRibbonSchemeMPI, KaurAVertRibbonSchemeSEQ>(
     PPC_SETTINGS_kaur_a_vert_ribbon_scheme);
 
@@ -66,5 +69,8 @@ const auto kGtestValues = ppc::util::TupleToGTestValues(kAllPerfTasks);
 const auto kPerfTestName = KaurAVertRibbonSchemePerfTests::CustomPerfTestName;
 
 INSTANTIATE_TEST_SUITE_P(RunModeTests, KaurAVertRibbonSchemePerfTests, kGtestValues, kPerfTestName);
+}  // namespace
 
 }  // namespace kaur_a_vert_ribbon_scheme
+
+// NOLINTEND(readability-function-cognitive-complexity)

@@ -1,3 +1,5 @@
+// NOLINTBEGIN(readability-function-cognitive-complexity)
+
 #include <gtest/gtest.h>
 
 #include <array>
@@ -343,3 +345,5 @@ TEST_F(KaurAEdgeCasesTests, FloatingPointPrecision) {
 }
 
 }  // namespace kaur_a_vert_ribbon_scheme
+
+// NOLINTEND(readability-function-cognitive-complexity)
