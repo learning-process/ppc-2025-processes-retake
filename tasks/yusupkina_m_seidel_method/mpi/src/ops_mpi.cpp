@@ -124,7 +124,7 @@ bool YusupkinaMSeidelMethodMPI::RunImpl() {
     displs_elem[i] = displs[i] * n;
   }
 
-  MPI_Scatterv(global_matrix_ptr, sendcounts_elem.data(), displs_elem.data(), MPI_DOUBLE, local_A.data(),
+  MPI_Scatterv(global_matrix_ptr, sendcounts_elem.data(), displs_elem.data(), MPI_DOUBLE, local_a.data(),
                local_rows * n, MPI_DOUBLE, 0, MPI_COMM_WORLD);
 
   MPI_Scatterv(global_rhs_ptr, sendcounts.data(), displs.data(), MPI_DOUBLE, local_b.data(), local_rows, MPI_DOUBLE, 0,
@@ -137,7 +137,7 @@ bool YusupkinaMSeidelMethodMPI::RunImpl() {
 
   for (int iter = 0; iter < max_iter; iter++) {
     double local_error = 0.0;
-    RunOneIteration(n, local_rows, start_row, local_A, local_b, x, local_error);
+    RunOneIteration(n, local_rows, start_row, local_a, local_b, x, local_error);
 
     MPI_Allgatherv(MPI_IN_PLACE, 0, MPI_DATATYPE_NULL, x.data(), sendcounts.data(), displs.data(), MPI_DOUBLE,
                    MPI_COMM_WORLD);
