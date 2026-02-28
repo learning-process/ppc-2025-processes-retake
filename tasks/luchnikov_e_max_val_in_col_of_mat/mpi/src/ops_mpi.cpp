@@ -33,7 +33,7 @@ bool LuchnikovEMaxValInColOfMatMPI::ValidationImpl() {
 
   cols_ = static_cast<int>(matrix[0].size());
   for (const auto &row : matrix) {
-    if (std::cmp_not_equal(static_cast<int>(row.size()), cols_)) {
+    if (static_cast<int>(row.size()) != cols_) {
       return false;
     }
   }
@@ -58,7 +58,7 @@ bool LuchnikovEMaxValInColOfMatMPI::PreProcessingImpl() {
   return true;
 }
 
-std::vector<int> LuchnikovEMaxValInColOfMatMPI::RunSequential() {
+std::vector<int> LuchnikovEMaxValInColOfMatMPI::RunSequential() const {
   std::vector<int> local_result(cols_, INT_MIN);
   for (int j = 0; j < cols_; ++j) {
     for (int i = 0; i < rows_; ++i) {
@@ -68,7 +68,7 @@ std::vector<int> LuchnikovEMaxValInColOfMatMPI::RunSequential() {
   return local_result;
 }
 
-std::vector<int> LuchnikovEMaxValInColOfMatMPI::PrepareFlatMatrix() {
+std::vector<int> LuchnikovEMaxValInColOfMatMPI::PrepareFlatMatrix() const {
   std::vector<int> flat;
   if (rank_ != 0) {
     return flat;
@@ -81,7 +81,7 @@ std::vector<int> LuchnikovEMaxValInColOfMatMPI::PrepareFlatMatrix() {
   return flat;
 }
 
-std::pair<std::vector<int>, std::vector<int>> LuchnikovEMaxValInColOfMatMPI::CalculateDistribution() {
+std::pair<std::vector<int>, std::vector<int>> LuchnikovEMaxValInColOfMatMPI::CalculateDistribution() const {
   std::vector<int> sendcounts(size_, 0);
   std::vector<int> displs(size_, 0);
 
@@ -99,7 +99,7 @@ std::pair<std::vector<int>, std::vector<int>> LuchnikovEMaxValInColOfMatMPI::Cal
   return {sendcounts, displs};
 }
 
-std::vector<int> LuchnikovEMaxValInColOfMatMPI::ComputeLocalMax(const std::vector<int> &local_flat, int local_rows) {
+std::vector<int> LuchnikovEMaxValInColOfMatMPI::ComputeLocalMax(const std::vector<int> &local_flat, int local_rows) const {
   std::vector<int> local_max(cols_, INT_MIN);
   for (int i = 0; i < local_rows; ++i) {
     for (int j = 0; j < cols_; ++j) {
@@ -125,8 +125,8 @@ bool LuchnikovEMaxValInColOfMatMPI::RunImpl() {
   std::vector<int> local_flat(sendcounts[rank_]);
   const int *send_data = (rank_ == 0) ? flat_matrix.data() : nullptr;
 
-  MPI_Scatterv(send_data, sendcounts.data(), displs.data(), MPI_INT, local_flat.data(), sendcounts[rank_], MPI_INT, 0,
-               MPI_COMM_WORLD);
+  MPI_Scatterv(send_data, sendcounts.data(), displs.data(), MPI_INT,
+               local_flat.data(), sendcounts[rank_], MPI_INT, 0, MPI_COMM_WORLD);
 
   int local_rows = sendcounts[rank_] / cols_;
   std::vector<int> local_max = ComputeLocalMax(local_flat, local_rows);
