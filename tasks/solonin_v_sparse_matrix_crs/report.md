@@ -2,7 +2,7 @@
 
 - Student: Солонин Владислав Викторович, group 3823Б1ПР1
 - Technology: SEQ | MPI
-- Variant: 3
+- Variant: 4
 
 ## 1. Introduction
 
