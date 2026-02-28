@@ -200,7 +200,7 @@ const auto kGtestValues = ppc::util::ExpandToValues(kTestTasksList);
 
 const auto kPerfTestName = LuchnikovEMaxValInColOfMatFuncTests::PrintFuncTestName<LuchnikovEMaxValInColOfMatFuncTests>;
 
-InstantiateTestSuiteP(MatrixColumnTests, LuchnikovEMaxValInColOfMatFuncTests, kGtestValues, kPerfTestName);
+INSTANTIATE_TEST_SUITE_P(MatrixColumnTests, LuchnikovEMaxValInColOfMatFuncTests, kGtestValues, kPerfTestName);
 
 }  // namespace
 
