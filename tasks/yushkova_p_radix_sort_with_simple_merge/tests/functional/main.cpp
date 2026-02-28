@@ -3,6 +3,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <cstddef>
 #include <vector>
 
 #include "util/include/util.hpp"
@@ -11,6 +12,11 @@
 
 namespace yushkova_p_radix_sort_with_simple_merge {
 namespace {
+
+template <class TaskType>
+bool RunTask(TaskType &task) {
+  return task.Validation() && task.PreProcessing() && task.Run() && task.PostProcessing();
+}
 
 bool AlmostEqual(double a, double b) {
   return std::abs(a - b) < 1e-12;
@@ -34,42 +40,23 @@ std::vector<double> BuildReference(const std::vector<double> &input) {
   return expected;
 }
 
-}  // namespace
-
-TEST(YushkovaRadixSortSeq, SortsMixedValues) {
-  const std::vector<double> input = {2.5, -3.1, 0.0, 8.2, -1.0, 2.5, 7.7, -9.9};
-  const std::vector<double> expected = BuildReference(input);
-
+void CheckSeqCase(const std::vector<double> &input, const std::vector<double> &expected) {
   YushkovaPRadixSortWithSimpleMergeSEQ task(input);
-  ASSERT_TRUE(task.Validation());
-  ASSERT_TRUE(task.PreProcessing());
-  ASSERT_TRUE(task.Run());
-  ASSERT_TRUE(task.PostProcessing());
-
+  ASSERT_TRUE(RunTask(task));
   EXPECT_TRUE(SameVectors(std::get<0>(task.GetOutput()), expected));
   EXPECT_EQ(std::get<1>(task.GetOutput()), 0);
 }
 
-TEST(YushkovaRadixSortSeq, HandlesEdgeCases) {
-  {
-    const std::vector<double> empty_input;
-    YushkovaPRadixSortWithSimpleMergeSEQ task(empty_input);
-    ASSERT_TRUE(task.Validation());
-    ASSERT_TRUE(task.PreProcessing());
-    ASSERT_TRUE(task.Run());
-    ASSERT_TRUE(task.PostProcessing());
-    EXPECT_TRUE(std::get<0>(task.GetOutput()).empty());
-  }
+}  // namespace
 
-  {
-    const std::vector<double> one_element = {42.0};
-    YushkovaPRadixSortWithSimpleMergeSEQ task(one_element);
-    ASSERT_TRUE(task.Validation());
-    ASSERT_TRUE(task.PreProcessing());
-    ASSERT_TRUE(task.Run());
-    ASSERT_TRUE(task.PostProcessing());
-    EXPECT_TRUE(SameVectors(std::get<0>(task.GetOutput()), one_element));
-  }
+TEST(YushkovaRadixSortSeq, SortsMixedValues) {
+  const std::vector<double> input = {2.5, -3.1, 0.0, 8.2, -1.0, 2.5, 7.7, -9.9};
+  CheckSeqCase(input, BuildReference(input));
+}
+
+TEST(YushkovaRadixSortSeq, HandlesEdgeCases) {
+  CheckSeqCase({}, {});
+  CheckSeqCase({42.0}, {42.0});
 }
 
 TEST(YushkovaRadixSortMpi, MatchesStdSort) {
@@ -84,10 +71,7 @@ TEST(YushkovaRadixSortMpi, MatchesStdSort) {
   const std::vector<double> expected = BuildReference(input);
 
   YushkovaPRadixSortWithSimpleMergeMPI task(input);
-  ASSERT_TRUE(task.Validation());
-  ASSERT_TRUE(task.PreProcessing());
-  ASSERT_TRUE(task.Run());
-  ASSERT_TRUE(task.PostProcessing());
+  ASSERT_TRUE(RunTask(task));
 
   if (rank == 0) {
     EXPECT_TRUE(SameVectors(std::get<0>(task.GetOutput()), expected));
@@ -102,14 +86,11 @@ TEST(YushkovaRadixSortMpi, WorksWithNegativesAndFractions) {
   int rank = 0;
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 
-  const std::vector<double> input = {-0.5, -100.125, 0.25, 0.5, -0.25, 3.1415, -7.75, 2.7182, 0.0};
+  const std::vector<double> input = {-0.5, -100.125, 0.25, 0.5, -0.25, 3.2, -7.75, 2.6, 0.0};
   const std::vector<double> expected = BuildReference(input);
 
   YushkovaPRadixSortWithSimpleMergeMPI task(input);
-  ASSERT_TRUE(task.Validation());
-  ASSERT_TRUE(task.PreProcessing());
-  ASSERT_TRUE(task.Run());
-  ASSERT_TRUE(task.PostProcessing());
+  ASSERT_TRUE(RunTask(task));
 
   if (rank == 0) {
     EXPECT_TRUE(SameVectors(std::get<0>(task.GetOutput()), expected));

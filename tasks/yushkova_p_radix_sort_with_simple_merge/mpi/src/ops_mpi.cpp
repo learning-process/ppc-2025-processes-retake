@@ -7,8 +7,6 @@
 #include <cstdint>
 #include <vector>
 
-#include "yushkova_p_radix_sort_with_simple_merge/common/include/common.hpp"
-
 namespace yushkova_p_radix_sort_with_simple_merge {
 namespace {
 
@@ -106,7 +104,7 @@ void BuildScatterPlan(int total_size, int world_size, std::vector<int> &counts, 
 
 }  // namespace
 
-YushkovaPRadixSortWithSimpleMergeMPI::YushkovaPRadixSortWithSimpleMergeMPI(const InType &in) {
+YushkovaPRadixSortWithSimpleMergeMPI::YushkovaPRadixSortWithSimpleMergeMPI(const InType &in) : merged_result_() {
   SetTypeOfTask(GetStaticTypeOfTask());
   GetInput() = in;
   std::get<0>(GetOutput()).clear();
@@ -116,7 +114,7 @@ YushkovaPRadixSortWithSimpleMergeMPI::YushkovaPRadixSortWithSimpleMergeMPI(const
 bool YushkovaPRadixSortWithSimpleMergeMPI::ValidationImpl() {
   int initialized = 0;
   MPI_Initialized(&initialized);
-  return initialized != 0;
+  return (initialized != 0) && (GetDynamicTypeOfTask() == GetStaticTypeOfTask());
 }
 
 bool YushkovaPRadixSortWithSimpleMergeMPI::PreProcessingImpl() {

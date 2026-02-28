@@ -2,7 +2,6 @@
 
 #include <cstdint>
 #include <cstring>
-#include <string>
 #include <tuple>
 #include <vector>
 
@@ -12,7 +11,6 @@ namespace yushkova_p_radix_sort_with_simple_merge {
 
 using InType = std::vector<double>;
 using OutType = std::tuple<std::vector<double>, int>;
-using TestType = std::tuple<std::tuple<std::vector<double>, std::vector<double>>, std::string>;
 using BaseTask = ppc::task::Task<InType, OutType>;
 
 inline std::uint64_t EncodeDoubleKey(double value) {

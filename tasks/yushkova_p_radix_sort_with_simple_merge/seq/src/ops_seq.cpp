@@ -5,8 +5,6 @@
 #include <cstdint>
 #include <vector>
 
-#include "yushkova_p_radix_sort_with_simple_merge/common/include/common.hpp"
-
 namespace yushkova_p_radix_sort_with_simple_merge {
 namespace {
 
@@ -61,7 +59,7 @@ void RadixSortDoubleVector(std::vector<double> &data) {
 
 }  // namespace
 
-YushkovaPRadixSortWithSimpleMergeSEQ::YushkovaPRadixSortWithSimpleMergeSEQ(const InType &in) {
+YushkovaPRadixSortWithSimpleMergeSEQ::YushkovaPRadixSortWithSimpleMergeSEQ(const InType &in) : sorted_data_() {
   SetTypeOfTask(GetStaticTypeOfTask());
   GetInput() = in;
   std::get<0>(GetOutput()).clear();
@@ -69,7 +67,7 @@ YushkovaPRadixSortWithSimpleMergeSEQ::YushkovaPRadixSortWithSimpleMergeSEQ(const
 }
 
 bool YushkovaPRadixSortWithSimpleMergeSEQ::ValidationImpl() {
-  return true;
+  return GetDynamicTypeOfTask() == GetStaticTypeOfTask();
 }
 
 bool YushkovaPRadixSortWithSimpleMergeSEQ::PreProcessingImpl() {
