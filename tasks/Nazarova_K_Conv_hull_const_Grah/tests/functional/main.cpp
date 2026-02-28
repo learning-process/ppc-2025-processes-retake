@@ -127,12 +127,10 @@ Input MakeCase(const TestType &params) {
     return in;
   }
   if (label == "square_with_inside") {
-    // Corners + points on edges + inside + duplicates.
-    in.points = {Point{.x = 0, .y = 0},  Point{.x = 0, .y = 10}, Point{.x = 10, .y = 10},
-                 Point{.x = 10, .y = 0}, Point{.x = 0, .y = 0},  Point{.x = 10, .y = 10},  // duplicates
-                 Point{.x = 5, .y = 0},  Point{.x = 0, .y = 5},  Point{.x = 10, .y = 5},
-                 Point{.x = 5, .y = 10},                                                  // on edges
-                 Point{.x = 5, .y = 5},  Point{.x = 6, .y = 6},  Point{.x = 4, .y = 7}};  // inside
+    in.points = {Point{.x = 0, .y = 0},  Point{.x = 0, .y = 10},  Point{.x = 10, .y = 10}, Point{.x = 10, .y = 0},
+                 Point{.x = 0, .y = 0},  Point{.x = 10, .y = 10}, Point{.x = 5, .y = 0},   Point{.x = 0, .y = 5},
+                 Point{.x = 10, .y = 5}, Point{.x = 5, .y = 10},  Point{.x = 5, .y = 5},   Point{.x = 6, .y = 6},
+                 Point{.x = 4, .y = 7}};
     return in;
   }
   if (label == "collinear") {
@@ -141,8 +139,6 @@ Input MakeCase(const TestType &params) {
     return in;
   }
 
-  // random_n
-  // NOLINTNEXTLINE(cert-msc51-cpp)
   std::mt19937 gen(123U + static_cast<unsigned>(n));
   std::uniform_int_distribution<int> dist(-1000, 1000);
   in.points.resize(static_cast<std::size_t>(n));
