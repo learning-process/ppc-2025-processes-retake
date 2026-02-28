@@ -59,10 +59,8 @@ class NazyrovABroadcastFuncTest : public ppc::util::BaseRunFuncTests<InType, Out
       case 4: {
         input_data_.root = (size > 2) ? size / 2 : 0;
         input_data_.data.resize(1000);
-        std::mt19937 gen(std::random_device{}());
-        std::uniform_int_distribution<int> dist(-10000, 10000);
         for (std::size_t i = 0; i < input_data_.data.size(); ++i) {
-          input_data_.data[i] = dist(gen);
+          input_data_.data[i] = static_cast<int>(i * 7) - 3500;
         }
       } break;
       case 5:
