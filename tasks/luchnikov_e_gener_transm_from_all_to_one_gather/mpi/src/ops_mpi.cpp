@@ -27,12 +27,17 @@ bool LuchnikovEGenerTransmFromAllToOneGatherMPI::PreProcessingImpl() {
   size_t base_size = total_size / size_;
   size_t remainder = total_size % size_;
 
-  size_t local_start = rank_ * base_size + std::min(static_cast<size_t>(rank_), remainder);
-  size_t local_end = local_start + base_size + (static_cast<size_t>(rank_) < remainder ? 1 : 0);
+  std::vector<int> send_counts(size_);
+  std::vector<int> displacements(size_);
 
-  local_data_.clear();
-  for (size_t i = local_start; i < local_end && i < total_size; ++i) {
-    local_data_.push_back(GetInput()[i]);
+  for (int i = 0; i < size_; ++i) {
+    send_counts[i] = static_cast<int>(base_size + (static_cast<size_t>(i) < remainder ? 1 : 0));
+    displacements[i] = (i == 0) ? 0 : displacements[i - 1] + send_counts[i - 1];
+  }
+
+  local_data_.resize(send_counts[rank_]);
+  for (int i = 0; i < send_counts[rank_]; ++i) {
+    local_data_[i] = GetInput()[displacements[rank_] + i];
   }
 
   return true;

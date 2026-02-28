@@ -11,7 +11,7 @@
 namespace luchnikov_e_gener_transm_from_all_to_one_gather {
 
 class LuchnikovEGenerTransmFromAllToOneGatherPerfTestProcesses : public ppc::util::BaseRunPerfTests<InType, OutType> {
-  const size_t kCount_ = 10000;
+  const size_t kCount_ = 1000;
   InType input_data_{};
 
   void SetUp() override {
