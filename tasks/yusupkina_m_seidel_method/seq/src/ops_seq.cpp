@@ -19,7 +19,8 @@ bool YusupkinaMSeidelMethodSEQ::ValidationImpl() {
   if (in.n <= 0) {
     return false;
   }
-  if (in.matrix.size() != static_cast<size_t>(in.n * in.n)) {
+
+  if (in.matrix.size() != static_cast<size_t>(in.n) * in.n) {
     return false;
   }
   if (in.rhs.size() != static_cast<size_t>(in.n)) {
@@ -58,7 +59,7 @@ bool YusupkinaMSeidelMethodSEQ::RunImpl() {
   }
   const int max_iter = 1000;
   const double eps = 1e-6;
-  const auto &A = in.matrix;
+  const auto &a = in.matrix;
   const auto &b = in.rhs;
 
   for (int iter = 0; iter < max_iter; iter++) {
@@ -67,11 +68,11 @@ bool YusupkinaMSeidelMethodSEQ::RunImpl() {
       double sum = 0.0;
       for (int j = 0; j < n; j++) {
         if (i != j) {
-          sum += A[(i * n) + j] * x[j];
+          sum += a[(i * n) + j] * x[j];
         }
       }
 
-      double new_xi = (b[i] - sum) / A[(i * n) + i];
+      double new_xi = (b[i] - sum) / a[(i * n) + i];
       double error = std::abs(new_xi - x[i]);
       max_error = std::max(max_error, error);
       x[i] = new_xi;

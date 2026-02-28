@@ -1,10 +1,10 @@
 #include <gtest/gtest.h>
 
+#include <array>
 #include <cmath>
 #include <cstddef>
 #include <string>
 #include <tuple>
-#include <vector>
 
 #include "util/include/func_test_util.hpp"
 #include "util/include/util.hpp"
@@ -81,7 +81,7 @@ class YusupkinaMSeidelMethodFuncTests : public ppc::util::BaseRunFuncTests<InTyp
   }
 
   bool CheckTestOutputData(OutType &output_data) final {
-    const double epsilon = 1e-4;
+    const double epsilon = 1e-5;
 
     if (output_data.size() != expected_solution_.size()) {
       return false;

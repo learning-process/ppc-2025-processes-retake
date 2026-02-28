@@ -2,6 +2,7 @@
 
 #include <mpi.h>
 
+#include <algorithm>
 #include <cmath>
 #include <cstddef>
 #include <vector>
@@ -21,7 +22,7 @@ bool YusupkinaMSeidelMethodMPI::ValidationImpl() {
   if (in.n <= 0) {
     return false;
   }
-  if (in.matrix.size() != static_cast<size_t>(in.n * in.n)) {
+  if (in.matrix.size() != static_cast<size_t>(in.n) * in.n) {
     return false;
   }
   if (in.rhs.size() != static_cast<size_t>(in.n)) {
@@ -50,7 +51,7 @@ bool YusupkinaMSeidelMethodMPI::PreProcessingImpl() {
 }
 
 void YusupkinaMSeidelMethodMPI::RunOneIteration(int n, int local_rows, int start_row,
-                                                const std::vector<double> &local_A, const std::vector<double> &local_b,
+                                                const std::vector<double> &local_a, const std::vector<double> &local_b,
                                                 std::vector<double> &x, double &local_error) {
   local_error = 0.0;
 
@@ -60,22 +61,22 @@ void YusupkinaMSeidelMethodMPI::RunOneIteration(int n, int local_rows, int start
     double sum = local_b[i];
     for (int j = 0; j < n; j++) {
       if (j != global_i) {
-        sum -= local_A[i * n + j] * x[j];
+        sum -= local_a[(i * n) + j] * x[j];
       }
     }
 
-    double new_x = sum / local_A[i * n + global_i];
+    double new_x = sum / local_a[(i * n) + global_i];
     double error = std::abs(new_x - x[global_i]);
-    if (error > local_error) {
-      local_error = error;
-    }
+    local_error = std::max(local_error, error);
 
     x[global_i] = new_x;
   }
 }
 
 bool YusupkinaMSeidelMethodMPI::RunImpl() {
-  int rank, size;
+  int rank = 0;
+  int size = 0;
+
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
   MPI_Comm_size(MPI_COMM_WORLD, &size);
 
@@ -113,7 +114,7 @@ bool YusupkinaMSeidelMethodMPI::RunImpl() {
   int local_rows = sendcounts[rank];
   int start_row = displs[rank];
 
-  std::vector<double> local_A(local_rows * n);
+  std::vector<double> local_a(static_cast<size_t>(local_rows) * n);
   std::vector<double> local_b(local_rows);
 
   std::vector<int> sendcounts_elem(size);

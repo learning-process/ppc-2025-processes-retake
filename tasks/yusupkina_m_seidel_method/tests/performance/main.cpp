@@ -27,20 +27,20 @@ class YusupkinaMSeidelMethodPerfTests : public ppc::util::BaseRunPerfTests<InTyp
     for (int i = 0; i < n; ++i) {
       double diag_sum = 0.0;
       if (i > 0) {
-        matrix[static_cast<size_t>(i) * n + (i - 1)] = -1.0;
+        matrix[(static_cast<size_t>(i) * n) + (i - 1)] = -1.0;
         diag_sum += 1.0;
       }
       if (i < n - 1) {
-        matrix[static_cast<size_t>(i) * n + (i + 1)] = -1.0;
+        matrix[(static_cast<size_t>(i) * n) + (i + 1)] = -1.0;
         diag_sum += 1.0;
       }
-      matrix[static_cast<size_t>(i) * n + i] = diag_sum + 10.0;
+      matrix[(static_cast<size_t>(i) * n) + i] = diag_sum + 10.0;
     }
 
     for (int i = 0; i < n; ++i) {
       double sum = 0.0;
       for (int j = 0; j < n; ++j) {
-        sum += matrix[static_cast<size_t>(i) * n + j] * expected_solution_[j];
+        sum += matrix[(static_cast<size_t>(i) * n) + j] * expected_solution_[j];
       }
       rhs[i] = sum;
     }

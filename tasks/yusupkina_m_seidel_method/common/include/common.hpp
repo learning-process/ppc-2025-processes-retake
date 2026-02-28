@@ -10,7 +10,7 @@ namespace yusupkina_m_seidel_method {
 struct InputData {
   std::vector<double> matrix;
   std::vector<double> rhs;
-  int n;
+  int n{0};
 };
 
 using InType = InputData;
