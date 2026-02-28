@@ -1,7 +1,6 @@
 #include <gtest/gtest.h>
-
-#include <string>
-#include <tuple>
+#include <algorithm>
+#include <array>
 #include <vector>
 
 #include "marov_radix_sort_double/common/include/common.hpp"

@@ -1,0 +1,13 @@
+---
+Checks: '-*,readability-*,modernize-*,cppcoreguidelines-*,bugprone-*,performance-*,misc-include-cleaner'
+WarningsAsErrors: ''
+HeaderFilterRegex: '.*'
+AnalyzeTemporaryDtors: false
+FormatStyle: none
+CheckOptions:
+  - key: readability-IdentifierNamingPolicy.CheckNamespaces
+    value: 1
+  - key: readability-IdentifierNamingPolicy.CheckMacros
+    value: 0
+  - key: readability-IdentifierNamingPolicy.CheckEnumConstants
+    value: 1

@@ -2,8 +2,10 @@
 
 #include <mpi.h>
 
+#include <algorithm>
 #include <cstdint>
 #include <cstring>
+#include <utility>
 #include <vector>
 
 #include "marov_radix_sort_double/common/include/common.hpp"
