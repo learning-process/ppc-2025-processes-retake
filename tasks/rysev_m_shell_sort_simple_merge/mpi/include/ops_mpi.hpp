@@ -20,10 +20,15 @@ class RysevMShellSortMPI : public BaseTask {
   bool RunImpl() override;
   bool PostProcessingImpl() override;
 
-  void ShellSort(std::vector<int> &arr);
+  static void ShellSort(std::vector<int> &arr);
 
-  int rank_;
-  int num_procs_;
+  bool DistributeData(const std::vector<int> &input_data, int data_size, std::vector<int> &send_counts,
+                      std::vector<int> &displs, std::vector<int> &local_block);
+  void MergeResults(int data_size, const std::vector<int> &send_counts, const std::vector<int> &displs,
+                    const std::vector<int> &gathered_data);
+
+  int rank_ = 0;
+  int num_procs_ = 0;
   std::vector<int> local_block_;
 };
 

@@ -12,7 +12,7 @@ namespace rysev_m_shell_sort_simple_merge {
 
 class ShellSortPerfTest : public ppc::util::BaseRunPerfTests<InType, OutType> {
   const int kSize_ = 10000;
-  InType input_data_{};
+  InType input_data_;
   OutType expected_data_;
 
   void SetUp() override {
@@ -21,7 +21,7 @@ class ShellSortPerfTest : public ppc::util::BaseRunPerfTests<InType, OutType> {
       input_data_[i] = kSize_ - i;
     }
     expected_data_ = input_data_;
-    std::sort(expected_data_.begin(), expected_data_.end());
+    std::ranges::sort(expected_data_);
   }
 
   bool CheckTestOutputData(OutType &output_data) final {

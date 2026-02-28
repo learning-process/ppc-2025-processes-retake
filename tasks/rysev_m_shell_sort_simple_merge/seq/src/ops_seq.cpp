@@ -1,7 +1,9 @@
 #include "rysev_m_shell_sort_simple_merge/seq/include/ops_seq.hpp"
 
-#include <algorithm>
+#include <utility>
 #include <vector>
+
+#include "rysev_m_shell_sort_simple_merge/common/include/common.hpp"
 
 namespace rysev_m_shell_sort_simple_merge {
 
@@ -25,9 +27,10 @@ void RysevShellSortSEQ::ShellSort(std::vector<int> &arr) {
   for (int gap = n / 2; gap > 0; gap /= 2) {
     for (int i = gap; i < n; ++i) {
       int temp = arr[i];
-      int j;
-      for (j = i; j >= gap && arr[j - gap] > temp; j -= gap) {
+      int j = i;
+      while (j >= gap && arr[j - gap] > temp) {
         arr[j] = arr[j - gap];
+        j -= gap;
       }
       arr[j] = temp;
     }

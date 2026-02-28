@@ -1,5 +1,7 @@
 #pragma once
 
+#include <vector>
+
 #include "rysev_m_shell_sort_simple_merge/common/include/common.hpp"
 #include "task/include/task.hpp"
 
@@ -18,7 +20,7 @@ class RysevShellSortSEQ : public BaseTask {
   bool RunImpl() override;
   bool PostProcessingImpl() override;
 
-  void ShellSort(std::vector<int> &arr);
+  static void ShellSort(std::vector<int> &arr);
 };
 
 }  // namespace rysev_m_shell_sort_simple_merge

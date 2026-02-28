@@ -37,7 +37,7 @@ class RysevMShellSortFuncTests : public ppc::util::BaseRunFuncTests<InType, OutT
 
   bool CheckTestOutputData(OutType &output_data) final {
     std::vector<int> expected = input_data_;
-    std::sort(expected.begin(), expected.end());
+    std::ranges::sort(expected);
     return expected == output_data;
   }
 
