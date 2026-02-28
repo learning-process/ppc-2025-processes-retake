@@ -3,6 +3,7 @@
 
 #include <algorithm>
 #include <cstddef>
+#include <limits>
 #include <random>
 #include <string>
 #include <vector>
@@ -39,7 +40,8 @@ class LuchnilkovEMaxValInColOfMatFuncTestsProcesses : public ppc::util::BaseRunF
   }
 
   bool CheckTestOutputData(OutType &output_data) final {
-    if (this->task_->GetTypeOfTask() == ppc::task::TypeOfTask::kMPI) {
+    // Проверяем по типу задачи через dynamic_cast вместо GetTypeOfTask
+    if (dynamic_cast<LuchnilkovEMaxValInColOfMatMPI *>(this->GetTask())) {
       int rank = 0;
       MPI_Comm_rank(MPI_COMM_WORLD, &rank);
       if (rank != 0) {

@@ -34,7 +34,7 @@ class LuchnilkovEMaxValInColOfMatPerfTestProcesses : public ppc::util::BaseRunPe
   }
 
   bool CheckTestOutputData(OutType &output_data) final {
-    if (this->task_->GetTypeOfTask() == ppc::task::TypeOfTask::kMPI) {
+    if (dynamic_cast<LuchnilkovEMaxValInColOfMatMPI *>(this->GetTask())) {
       int rank = 0;
       MPI_Comm_rank(MPI_COMM_WORLD, &rank);
       if (rank != 0) {
