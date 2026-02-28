@@ -3,6 +3,7 @@
 #include <vector>
 
 #include "Nazarova_K_Conv_hull_const_Grah/common/include/common.hpp"
+#include "task/include/task.hpp"
 
 namespace nazarova_k_conv_hull_const_grah_processes {
 
