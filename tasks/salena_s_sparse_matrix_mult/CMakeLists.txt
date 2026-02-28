@@ -1,0 +1,1 @@
+add_subdirectory(salena_s_sparse_matrix_mult)
