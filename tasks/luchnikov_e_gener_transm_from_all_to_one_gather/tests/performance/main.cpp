@@ -14,7 +14,7 @@
 namespace luchnikov_e_gener_transm_from_all_to_one_gather {
 
 class LuchnikovEGenerTransmFromAllToOneGatherPerfTestProcesses : public ppc::util::BaseRunPerfTests<InType, OutType> {
-  static constexpr size_t kCount = 1000;  // Изменено на static constexpr
+  static constexpr size_t kCount = 1000;
   InType input_data_{};
 
   void SetUp() override {
@@ -29,7 +29,6 @@ class LuchnikovEGenerTransmFromAllToOneGatherPerfTestProcesses : public ppc::uti
   }
 
   bool CheckTestOutputData(OutType &output_data) final {
-    // Получаем тип задачи через GetTask()
     auto task_type = this->GetTask().lock()->GetTypeOfTask();
 
     if (task_type == ppc::task::TypeOfTask::kMPI) {

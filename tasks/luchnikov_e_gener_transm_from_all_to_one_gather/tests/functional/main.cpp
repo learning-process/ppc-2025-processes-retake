@@ -37,7 +37,6 @@ class LuchnikovEGenerTransmFromAllToOneGatherFuncTestsProcesses
   }
 
   bool CheckTestOutputData(OutType &output_data) final {
-    // Получаем тип задачи через GetTask()
     auto task_type = this->GetTask().lock()->GetTypeOfTask();
 
     if (task_type == ppc::task::TypeOfTask::kMPI) {
