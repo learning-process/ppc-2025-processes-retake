@@ -96,12 +96,17 @@ TEST_P(NozdrinAIterMethSeidelPerfTestProcesses, RunPerfModes) {
   ExecuteTest(GetParam());
 }
 
-const auto kAllPerfTasks = ppc::util::MakeAllPerfTasks<InType, NozdrinAIterMethSeidelMPI, NozdrinAIterMethSeidelSEQ>(
+namespace {
+
+const auto kAllPerfTasks =
+  ppc::util::MakeAllPerfTasks<InType, NozdrinAIterMethSeidelMPI, NozdrinAIterMethSeidelSEQ>(
     PPC_SETTINGS_nozdrin_a_iter_meth_seidel);
 
 const auto kGtestValues = ppc::util::TupleToGTestValues(kAllPerfTasks);
 
 const auto kPerfTestName = NozdrinAIterMethSeidelPerfTestProcesses::CustomPerfTestName;
+
+}  // namespace
 
 INSTANTIATE_TEST_SUITE_P(RunModeTests, NozdrinAIterMethSeidelPerfTestProcesses, kGtestValues, kPerfTestName);
 
