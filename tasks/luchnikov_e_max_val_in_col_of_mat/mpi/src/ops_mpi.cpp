@@ -2,11 +2,9 @@
 
 #include <mpi.h>
 
-#include <algorithm>
 #include <climits>
-#include <cstddef>
-#include <utility>
-#include <vector>
+
+#include "luchnikov_e_max_val_in_col_of_mat/mpi/include/ops_mpi.hpp"
 
 namespace luchnikov_e_max_val_in_col_of_mat {
 
@@ -86,8 +84,8 @@ bool LuchnikovEMaxValInColOfMatMPI::RunImpl() {
 
   std::vector<int> local_flat(sendcounts[rank_]);
 
-  MPI_Scatterv(flat_matrix.data(), sendcounts.data(), displs.data(), MPI_INT,
-               local_flat.data(), sendcounts[rank_], MPI_INT, 0, MPI_COMM_WORLD);
+  MPI_Scatterv(flat_matrix.data(), sendcounts.data(), displs.data(), MPI_INT, local_flat.data(), sendcounts[rank_],
+               MPI_INT, 0, MPI_COMM_WORLD);
 
   int local_rows = sendcounts[rank_] / cols_;
   std::vector<int> local_max(cols_, INT_MIN);
