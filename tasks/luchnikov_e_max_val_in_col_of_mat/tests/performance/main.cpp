@@ -1,6 +1,5 @@
 #include <gtest/gtest.h>
 
-#include <algorithm>
 #include <climits>
 #include <cstddef>
 #include <limits>
@@ -18,6 +17,7 @@ class LuchnikovEMaxValInColOfMatPerfTest : public ppc::util::BaseRunPerfTests<In
   InType input_data_;
   OutType expected_output_;
 
+ protected:
   void SetUp() override {
     input_data_ = GenerateLargeMatrix(kMatrixSize_);
     expected_output_ = CalculateExpectedResult(input_data_);
@@ -32,19 +32,19 @@ class LuchnikovEMaxValInColOfMatPerfTest : public ppc::util::BaseRunPerfTests<In
   }
 
  private:
-  InType GenerateLargeMatrix(int size) {
+  static InType GenerateLargeMatrix(int size) {
     InType matrix(size, std::vector<int>(size));
 
     for (int i = 0; i < size; ++i) {
       for (int j = 0; j < size; ++j) {
-        matrix[i][j] = ((i + 1) * (j + 1) * 7) % 10000 + 1;
+        matrix[i][j] = ((((i + 1) * (j + 1) * 7) % 10000) + 1);
       }
     }
 
     return matrix;
   }
 
-  OutType CalculateExpectedResult(const InType &matrix) {
+  static OutType CalculateExpectedResult(const InType &matrix) {
     if (matrix.empty()) {
       return {};
     }
@@ -56,9 +56,7 @@ class LuchnikovEMaxValInColOfMatPerfTest : public ppc::util::BaseRunPerfTests<In
     for (size_t j = 0; j < cols; ++j) {
       int max_val = std::numeric_limits<int>::min();
       for (size_t i = 0; i < rows; ++i) {
-        if (matrix[i][j] > max_val) {
-          max_val = matrix[i][j];
-        }
+        max_val = std::max(matrix[i][j], max_val);
       }
       result[j] = max_val;
     }

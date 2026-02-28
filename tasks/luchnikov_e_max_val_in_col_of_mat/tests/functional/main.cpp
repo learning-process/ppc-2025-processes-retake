@@ -28,7 +28,8 @@ class LuchnikovEMaxValInColOfMatFuncTests : public ppc::util::BaseRunFuncTests<I
 
  protected:
   void SetUp() override {
-    TestType params = std::get<static_cast<size_t>(ppc::util::GTestParamIndex::kTestParams)>(GetParam());
+    const auto &full_params = GetParam();
+    const auto &params = std::get<static_cast<size_t>(ppc::util::GTestParamIndex::kTestParams)>(full_params);
     int matrix_size = std::get<0>(params);
     std::string test_type = std::get<1>(params);
 
@@ -142,24 +143,24 @@ class LuchnikovEMaxValInColOfMatFuncTests : public ppc::util::BaseRunFuncTests<I
     }
   }
 
-  InType GenerateTestMatrix(int size, const std::string &test_type) {
+  static InType GenerateTestMatrix(int size, const std::string &test_type) {
     InType matrix(size, std::vector<int>(size));
 
-    static const std::unordered_map<std::string, MatrixGenerator> generators = {
+    static const std::unordered_map<std::string, MatrixGenerator> kGenerators = {
         {"pattern1", FillPattern1},   {"pattern2", FillPattern2},  {"pattern3", FillPattern3},
         {"pattern4", FillPattern4},   {"pattern5", FillPattern5},  {"pattern6", FillPattern6},
         {"pattern7", FillPattern7},   {"pattern8", FillPattern8},  {"pattern9", FillPattern9},
         {"pattern10", FillPattern10}, {"pattern11", FillPattern11}};
 
-    auto it = generators.find(test_type);
-    if (it != generators.end()) {
+    auto it = kGenerators.find(test_type);
+    if (it != kGenerators.end()) {
       it->second(matrix, size);
     }
 
     return matrix;
   }
 
-  OutType CalculateExpectedResult(const InType &matrix) {
+  static OutType CalculateExpectedResult(const InType &matrix) {
     if (matrix.empty()) {
       return {};
     }
@@ -170,9 +171,7 @@ class LuchnikovEMaxValInColOfMatFuncTests : public ppc::util::BaseRunFuncTests<I
 
     for (size_t j = 0; j < cols; ++j) {
       for (size_t i = 0; i < rows; ++i) {
-        if (matrix[i][j] > result[j]) {
-          result[j] = matrix[i][j];
-        }
+        result[j] = std::max(matrix[i][j], result[j]);
       }
     }
 
