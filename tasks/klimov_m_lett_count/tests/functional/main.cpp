@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <array>
+#include <cstddef>
 #include <random>
 #include <string>
 #include <tuple>
@@ -30,7 +31,7 @@ class KlimovMLettCountTest : public ppc::util::BaseRunFuncTests<InputType, Outpu
       input_data_ = pattern;
       expected_result_ = expected;
     } else {
-      input_data_ = GenerateRandomString(expected);
+      input_data_ = GenerateRandomString(static_cast<std::size_t>(expected));
       expected_result_ = expected;
     }
   }
@@ -47,20 +48,20 @@ class KlimovMLettCountTest : public ppc::util::BaseRunFuncTests<InputType, Outpu
   InputType input_data_;
   OutputType expected_result_ = 0;
 
-  static std::string GenerateRandomString(size_t letter_count) {
+  static std::string GenerateRandomString(std::size_t letter_count) {
     std::mt19937 rng(static_cast<unsigned int>(letter_count));
-    std::uniform_int_distribution<size_t> len_dist(100, 500);
-    size_t total_len = len_dist(rng);
+    std::uniform_int_distribution<std::size_t> len_dist(100, 500);
+    std::size_t total_len = len_dist(rng);
     std::string result;
     result.reserve(total_len);
 
     std::string letters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
-    std::uniform_int_distribution<size_t> letter_idx(0, letters.size() - 1);
-    for (size_t i = 0; i < letter_count; ++i) {
+    std::uniform_int_distribution<std::size_t> letter_idx(0, letters.size() - 1);
+    for (std::size_t i = 0; i < letter_count; ++i) {
       result += letters[letter_idx(rng)];
     }
     std::uniform_int_distribution<> digit_dist(48, 57);
-    for (size_t i = letter_count; i < total_len; ++i) {
+    for (std::size_t i = letter_count; i < total_len; ++i) {
       result += static_cast<char>(digit_dist(rng));
     }
     std::shuffle(result.begin(), result.end(), rng);
@@ -80,9 +81,9 @@ const std::array<TestParam, 20> kTestCases = {
      std::make_tuple(std::make_tuple("aabcd123abcd123abcd", 13), "mixed1"),
      std::make_tuple(std::make_tuple("abcd_____________123abcd", 8), "mixed2"),
      std::make_tuple(std::make_tuple("a", 1), "single_letter"),
-     std::make_tuple(std::make_tuple("126756", 0), "only_digits"),
+     std::make_tuple(std::make_tuple("1243356", 0), "only_digits"),
      std::make_tuple(std::make_tuple("a1a1a1a1a1a1a1a1a1a1a1a1", 12), "alternating"),
-     std::make_tuple(std::make_tuple("!@467678&*()", 0), "punctuation"),
+     std::make_tuple(std::make_tuple("!@345678&*()", 0), "punctuation"),
      std::make_tuple(std::make_tuple("aaaaaaaaaaaaaaaaaaaa", 20), "many_letters"),
      std::make_tuple(std::make_tuple("tatatatatatatatatatatatatatatatatatatatata", 42), "pattern"),
      std::make_tuple(std::make_tuple("er11er11er11er11", 8), "digits_in_between"),
@@ -94,10 +95,10 @@ const std::array<TestParam, 20> kTestCases = {
              "EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE",
              100),
          "long_string"),
-     std::make_tuple(std::make_tuple("вопылкнгш", 0), "cyrillic"),
+     std::make_tuple(std::make_tuple("фбсдуащуо", 0), "cyrillic"),
      std::make_tuple(std::make_tuple("aa", 2), "two_letters"),
      std::make_tuple(std::make_tuple("aaa", 3), "three_letters"),
-     std::make_tuple(std::make_tuple("aabb0123456767", 4), "letters_and_digits"),
+     std::make_tuple(std::make_tuple("aabb0123456789", 4), "letters_and_digits"),
      std::make_tuple(std::make_tuple("generate", 100), "generated")}};
 
 const auto kTaskList = std::tuple_cat(

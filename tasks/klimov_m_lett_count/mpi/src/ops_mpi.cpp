@@ -6,6 +6,8 @@
 #include <cctype>
 #include <string>
 
+#include "klimov_m_lett_count/common/include/common.hpp"
+
 namespace klimov_m_lett_count {
 
 KlimovMLettCountMPI::KlimovMLettCountMPI(const InputType &in) {
@@ -21,7 +23,7 @@ int KlimovMLettCountMPI::CountLettersInSegment(const char *data, int length) {
     return 0;
   }
   for (int i = 0; i < length; ++i) {
-    if (std::isalpha(static_cast<unsigned char>(data[i]))) {
+    if (std::isalpha(static_cast<unsigned char>(data[i])) != 0) {
       ++count;
     }
   }
@@ -37,7 +39,7 @@ bool KlimovMLettCountMPI::PreProcessingImpl() {
 }
 
 bool KlimovMLettCountMPI::RunImpl() {
-  int rank;
+  int rank = 0;
   int global_result = 0;
   std::string local_segment;
   unsigned int chunk_size = 0;
@@ -54,14 +56,14 @@ bool KlimovMLettCountMPI::RunImpl() {
     MPI_Bcast(&chunk_size, 1, MPI_UNSIGNED, 0, MPI_COMM_WORLD);
     MPI_Bcast(&remainder, 1, MPI_UNSIGNED, 0, MPI_COMM_WORLD);
 
-    unsigned int start_0 = 0 * chunk_size + std::min(0U, remainder);
-    unsigned int end_0 = 1 * chunk_size + std::min(1U, remainder);
+    unsigned int start_0 = (0 * chunk_size) + std::min(0U, remainder);
+    unsigned int end_0 = (1 * chunk_size) + std::min(1U, remainder);
     actual_len = end_0 - start_0;
     local_segment = (actual_len > 0) ? input_str.substr(start_0, actual_len) : "";
 
     for (int i = 1; i < numProcs_; ++i) {
-      unsigned int start = i * chunk_size + std::min(static_cast<unsigned int>(i), remainder);
-      unsigned int end = (i + 1) * chunk_size + std::min(static_cast<unsigned int>(i + 1), remainder);
+      unsigned int start = (i * chunk_size) + std::min(static_cast<unsigned int>(i), remainder);
+      unsigned int end = ((i + 1) * chunk_size) + std::min(static_cast<unsigned int>(i + 1), remainder);
       unsigned int seg_len = end - start;
 
       MPI_Send(&seg_len, 1, MPI_UNSIGNED, i, 0, MPI_COMM_WORLD);

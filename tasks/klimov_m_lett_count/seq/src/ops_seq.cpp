@@ -2,6 +2,8 @@
 
 #include <cctype>
 
+#include "klimov_m_lett_count/common/include/common.hpp"
+
 namespace klimov_m_lett_count {
 
 KlimovMLettCountSEQ::KlimovMLettCountSEQ(const InputType &in) {
@@ -16,7 +18,7 @@ int KlimovMLettCountSEQ::CountLettersInString(const char *data, int length) {
     return 0;
   }
   for (int i = 0; i < length; ++i) {
-    if (std::isalpha(static_cast<unsigned char>(data[i]))) {
+    if (std::isalpha(static_cast<unsigned char>(data[i])) != 0) {
       ++count;
     }
   }
