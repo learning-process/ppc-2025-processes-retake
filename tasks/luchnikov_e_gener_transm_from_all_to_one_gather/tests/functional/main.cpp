@@ -42,6 +42,9 @@ class LuchnikovEGenerTransmFromAllToOneGatherFuncTestsProcesses
   InType GetTestInputData() final {
     return input_data_;
   }
+
+ private:
+  InType input_data_;
 };
 
 namespace {
@@ -50,10 +53,10 @@ TEST_P(LuchnikovEGenerTransmFromAllToOneGatherFuncTestsProcesses, GatherTest) {
   ExecuteTest(GetParam());
 }
 
-const std::array<TestType, 12> kTestParam = {
-    std::make_tuple(1, "1"), std::make_tuple(2, "2"),   std::make_tuple(3, "3"),   std::make_tuple(4, "4"),
-    std::make_tuple(5, "5"), std::make_tuple(6, "6"),   std::make_tuple(7, "7"),   std::make_tuple(8, "8"),
-    std::make_tuple(9, "9"), std::make_tuple(10, "10"), std::make_tuple(11, "11"), std::make_tuple(12, "12")};
+const std::array<TestType, 10> kTestParam = {
+    std::make_tuple(1, "1"),   std::make_tuple(2, "2"),   std::make_tuple(3, "3"),   std::make_tuple(5, "5"),
+    std::make_tuple(7, "7"),   std::make_tuple(10, "10"), std::make_tuple(15, "15"), std::make_tuple(20, "20"),
+    std::make_tuple(25, "25"), std::make_tuple(30, "30")};
 
 const auto kTestTasksList =
     std::tuple_cat(ppc::util::AddFuncTask<LuchnikovEGenerTransmFromAllToOneGatherMPI, InType>(
