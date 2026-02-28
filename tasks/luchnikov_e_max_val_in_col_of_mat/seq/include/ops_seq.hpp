@@ -1,18 +1,16 @@
 #pragma once
 
-#include <vector>
-
 #include "luchnikov_e_max_val_in_col_of_mat/common/include/common.hpp"
 #include "task/include/task.hpp"
 
 namespace luchnikov_e_max_val_in_col_of_mat {
 
-class LuchnikovEMaxValInColOfMatSEQ : public BaseTask {
+class LuchnilkovEMaxValInColOfMatSEQ : public BaseTask {
  public:
   static constexpr ppc::task::TypeOfTask GetStaticTypeOfTask() {
     return ppc::task::TypeOfTask::kSEQ;
   }
-  explicit LuchnikovEMaxValInColOfMatSEQ(const InType &in);
+  explicit LuchnilkovEMaxValInColOfMatSEQ(const InType &in);
 
  private:
   bool ValidationImpl() override;

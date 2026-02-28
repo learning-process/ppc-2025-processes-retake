@@ -1,7 +1,5 @@
 #include <gtest/gtest.h>
 
-#include <algorithm>
-#include <climits>
 #include <cstddef>
 #include <limits>
 #include <vector>
@@ -13,14 +11,11 @@
 
 namespace luchnikov_e_max_val_in_col_of_mat {
 
-class LuchnikovEMaxValInColOfMatPerfTest : public ppc::util::BaseRunPerfTests<InType, OutType> {
-  const int kMatrixSize_ = 100;
-  InType input_data_;
-  OutType expected_output_;
+class LuchnilkovEMaxValInColOfMatRunPerfTestProcesses : public ppc::util::BaseRunPerfTests<InType, OutType> {
+  static constexpr int kMatrixSize_ = 100;
 
- protected:
   void SetUp() override {
-    input_data_ = GenerateLargeMatrix(kMatrixSize_);
+    input_data_ = GenerateLargeMatrix();
     expected_output_ = CalculateExpectedResult(input_data_);
   }
 
@@ -33,55 +28,66 @@ class LuchnikovEMaxValInColOfMatPerfTest : public ppc::util::BaseRunPerfTests<In
   }
 
  private:
-  static InType GenerateLargeMatrix(int size) {
+  InType input_data_{};
+  OutType expected_output_{};
+
+  InType static GenerateLargeMatrix() {
+    return GenerateMatrix(kMatrixSize_, [](int i, int j) { return ((i * 19 + j * 23) % 10000) + 1; });
+  }
+
+  InType static GenerateMatrix(int size, auto element_generator) {
     InType matrix(size, std::vector<int>(size));
-
-    for (int i = 0; i < size; ++i) {
-      for (int j = 0; j < size; ++j) {
-        matrix[i][j] = ((((i + 1) * (j + 1) * 7) % 10000) + 1);
-      }
-    }
-
+    FillMatrix(matrix, element_generator);
     return matrix;
   }
 
-  static OutType CalculateExpectedResult(const InType &matrix) {
+  void static FillMatrix(InType &matrix, auto element_generator) {
+    for (size_t i = 0; i < matrix.size(); ++i) {
+      for (size_t j = 0; j < matrix[i].size(); ++j) {
+        matrix[i][j] = element_generator(i, j);
+      }
+    }
+  }
+
+  OutType static CalculateExpectedResult(const InType &matrix) {
+    return FindMaxInEachColumn(matrix);
+  }
+
+  OutType static FindMaxInEachColumn(const InType &matrix) {
     if (matrix.empty()) {
       return {};
     }
-
-    size_t rows = matrix.size();
     size_t cols = matrix[0].size();
     OutType result(cols, std::numeric_limits<int>::min());
 
     for (size_t j = 0; j < cols; ++j) {
-      int max_val = std::numeric_limits<int>::min();
-      for (size_t i = 0; i < rows; ++i) {
-        max_val = std::max(matrix[i][j], max_val);
-      }
-      result[j] = max_val;
+      result[j] = FindColumnMax(matrix, j);
     }
-
     return result;
+  }
+
+  int static FindColumnMax(const InType &matrix, size_t col) {
+    int max_val = std::numeric_limits<int>::min();
+    for (size_t i = 0; i < matrix.size(); ++i) {
+      if (matrix[i][col] > max_val) {
+        max_val = matrix[i][col];
+      }
+    }
+    return max_val;
   }
 };
 
-TEST_P(LuchnikovEMaxValInColOfMatPerfTest, PerformanceRun) {
+TEST_P(LuchnilkovEMaxValInColOfMatRunPerfTestProcesses, RunPerfModes) {
   ExecuteTest(GetParam());
 }
 
-namespace {
-
 const auto kAllPerfTasks =
-    ppc::util::MakeAllPerfTasks<InType, LuchnikovEMaxValInColOfMatMPI, LuchnikovEMaxValInColOfMatSEQ>(
+    ppc::util::MakeAllPerfTasks<InType, LuchnilkovEMaxValInColOfMatMPI, LuchnilkovEMaxValInColOfMatSEQ>(
         PPC_SETTINGS_luchnikov_e_max_val_in_col_of_mat);
 
 const auto kGtestValues = ppc::util::TupleToGTestValues(kAllPerfTasks);
+const auto kPerfTestName = LuchnilkovEMaxValInColOfMatRunPerfTestProcesses::CustomPerfTestName;
 
-const auto kPerfTestName = LuchnikovEMaxValInColOfMatPerfTest::CustomPerfTestName;
-
-INSTANTIATE_TEST_SUITE_P(PerformanceTests, LuchnikovEMaxValInColOfMatPerfTest, kGtestValues, kPerfTestName);
-
-}  // namespace
+INSTANTIATE_TEST_SUITE_P(RunModeTests, LuchnilkovEMaxValInColOfMatRunPerfTestProcesses, kGtestValues, kPerfTestName);
 
 }  // namespace luchnikov_e_max_val_in_col_of_mat

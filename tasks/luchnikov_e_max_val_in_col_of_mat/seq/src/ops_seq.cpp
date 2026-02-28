@@ -1,21 +1,22 @@
 #include "luchnikov_e_max_val_in_col_of_mat/seq/include/ops_seq.hpp"
 
 #include <algorithm>
-#include <climits>
-#include <cstddef>
+#include <limits>
 #include <vector>
 
 #include "luchnikov_e_max_val_in_col_of_mat/common/include/common.hpp"
+#include "util/include/util.hpp"
 
 namespace luchnikov_e_max_val_in_col_of_mat {
 
-LuchnikovEMaxValInColOfMatSEQ::LuchnikovEMaxValInColOfMatSEQ(const InType &in) : matrix_(in) {
+LuchnilkovEMaxValInColOfMatSEQ::LuchnilkovEMaxValInColOfMatSEQ(const InType &in) {
   SetTypeOfTask(GetStaticTypeOfTask());
   GetInput() = in;
+  matrix_ = in;
   result_.clear();
 }
 
-bool LuchnikovEMaxValInColOfMatSEQ::ValidationImpl() {
+bool LuchnilkovEMaxValInColOfMatSEQ::ValidationImpl() {
   const auto &matrix = GetInput();
 
   if (matrix.empty()) {
@@ -32,39 +33,44 @@ bool LuchnikovEMaxValInColOfMatSEQ::ValidationImpl() {
   return GetOutput().empty();
 }
 
-bool LuchnikovEMaxValInColOfMatSEQ::PreProcessingImpl() {
+bool LuchnilkovEMaxValInColOfMatSEQ::PreProcessingImpl() {
   const auto &matrix = GetInput();
 
   if (!matrix.empty()) {
     size_t cols = matrix[0].size();
-    result_.assign(cols, INT_MIN);
+    result_.assign(cols, std::numeric_limits<int>::min());
   }
 
   return true;
 }
 
-bool LuchnikovEMaxValInColOfMatSEQ::RunImpl() {
+bool LuchnilkovEMaxValInColOfMatSEQ::RunImpl() {
   const auto &matrix = GetInput();
 
   if (matrix.empty()) {
     return false;
   }
 
-  size_t rows = matrix.size();
-  size_t cols = matrix[0].size();
+  size_t row_count = matrix.size();
+  size_t col_count = matrix[0].size();
 
-  for (size_t j = 0; j < cols; ++j) {
-    int max_val = INT_MIN;
-    for (size_t i = 0; i < rows; ++i) {
-      max_val = std::max(matrix[i][j], max_val);
+  std::vector<std::vector<int>> transposed(col_count, std::vector<int>(row_count));
+
+  for (size_t i = 0; i < row_count; ++i) {
+    for (size_t j = 0; j < col_count; ++j) {
+      transposed[j][i] = matrix[i][j];
     }
-    result_[j] = max_val;
+  }
+
+  for (size_t j = 0; j < col_count; ++j) {
+    auto max_iter = std::max_element(transposed[j].begin(), transposed[j].end());
+    result_[j] = *max_iter;
   }
 
   return true;
 }
 
-bool LuchnikovEMaxValInColOfMatSEQ::PostProcessingImpl() {
+bool LuchnilkovEMaxValInColOfMatSEQ::PostProcessingImpl() {
   GetOutput() = result_;
   return !result_.empty();
 }
