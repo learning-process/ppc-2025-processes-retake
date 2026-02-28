@@ -99,7 +99,8 @@ std::pair<std::vector<int>, std::vector<int>> LuchnikovEMaxValInColOfMatMPI::Cal
   return {sendcounts, displs};
 }
 
-std::vector<int> LuchnikovEMaxValInColOfMatMPI::ComputeLocalMax(const std::vector<int> &local_flat, int local_rows) const {
+std::vector<int> LuchnikovEMaxValInColOfMatMPI::ComputeLocalMax(const std::vector<int> &local_flat,
+                                                                int local_rows) const {
   std::vector<int> local_max(cols_, INT_MIN);
   for (int i = 0; i < local_rows; ++i) {
     for (int j = 0; j < cols_; ++j) {
@@ -125,8 +126,8 @@ bool LuchnikovEMaxValInColOfMatMPI::RunImpl() {
   std::vector<int> local_flat(sendcounts[rank_]);
   const int *send_data = (rank_ == 0) ? flat_matrix.data() : nullptr;
 
-  MPI_Scatterv(send_data, sendcounts.data(), displs.data(), MPI_INT,
-               local_flat.data(), sendcounts[rank_], MPI_INT, 0, MPI_COMM_WORLD);
+  MPI_Scatterv(send_data, sendcounts.data(), displs.data(), MPI_INT, local_flat.data(), sendcounts[rank_], MPI_INT, 0,
+               MPI_COMM_WORLD);
 
   int local_rows = sendcounts[rank_] / cols_;
   std::vector<int> local_max = ComputeLocalMax(local_flat, local_rows);

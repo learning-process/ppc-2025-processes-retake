@@ -14,6 +14,7 @@
 #include "luchnikov_e_max_val_in_col_of_mat/mpi/include/ops_mpi.hpp"
 #include "luchnikov_e_max_val_in_col_of_mat/seq/include/ops_seq.hpp"
 #include "util/include/func_test_util.hpp"
+#include "util/include/util.hpp"
 
 namespace luchnikov_e_max_val_in_col_of_mat {
 
