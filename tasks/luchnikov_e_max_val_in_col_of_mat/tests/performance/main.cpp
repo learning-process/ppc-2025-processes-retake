@@ -12,7 +12,7 @@
 namespace luchnikov_e_max_val_in_col_of_mat {
 
 class LuchnilkovEMaxValInColOfMatRunPerfTestProcesses : public ppc::util::BaseRunPerfTests<InType, OutType> {
-  static constexpr int kMatrixSize_ = 100;
+  static constexpr int kMatrixSize = 100;
 
   void SetUp() override {
     input_data_ = GenerateLargeMatrix();
@@ -28,20 +28,20 @@ class LuchnilkovEMaxValInColOfMatRunPerfTestProcesses : public ppc::util::BaseRu
   }
 
  private:
-  InType input_data_{};
-  OutType expected_output_{};
+  InType input_data_;
+  OutType expected_output_;
 
-  InType static GenerateLargeMatrix() {
-    return GenerateMatrix(kMatrixSize_, [](int i, int j) { return ((i * 19 + j * 23) % 10000) + 1; });
+  static InType GenerateLargeMatrix() {
+    return GenerateMatrix(kMatrixSize, [](int i, int j) { return ((i * 19 + j * 23) % 10000) + 1; });
   }
 
-  InType static GenerateMatrix(int size, auto element_generator) {
+  static InType GenerateMatrix(int size, auto element_generator) {
     InType matrix(size, std::vector<int>(size));
     FillMatrix(matrix, element_generator);
     return matrix;
   }
 
-  void static FillMatrix(InType &matrix, auto element_generator) {
+  static void FillMatrix(InType &matrix, auto element_generator) {
     for (size_t i = 0; i < matrix.size(); ++i) {
       for (size_t j = 0; j < matrix[i].size(); ++j) {
         matrix[i][j] = element_generator(i, j);
@@ -49,11 +49,11 @@ class LuchnilkovEMaxValInColOfMatRunPerfTestProcesses : public ppc::util::BaseRu
     }
   }
 
-  OutType static CalculateExpectedResult(const InType &matrix) {
+  static OutType CalculateExpectedResult(const InType &matrix) {
     return FindMaxInEachColumn(matrix);
   }
 
-  OutType static FindMaxInEachColumn(const InType &matrix) {
+  static OutType FindMaxInEachColumn(const InType &matrix) {
     if (matrix.empty()) {
       return {};
     }
@@ -66,12 +66,10 @@ class LuchnilkovEMaxValInColOfMatRunPerfTestProcesses : public ppc::util::BaseRu
     return result;
   }
 
-  int static FindColumnMax(const InType &matrix, size_t col) {
+  static int FindColumnMax(const InType &matrix, size_t col) {
     int max_val = std::numeric_limits<int>::min();
-    for (size_t i = 0; i < matrix.size(); ++i) {
-      if (matrix[i][col] > max_val) {
-        max_val = matrix[i][col];
-      }
+    for (const auto &row : matrix) {
+      max_val = std::max(max_val, row[col]);
     }
     return max_val;
   }

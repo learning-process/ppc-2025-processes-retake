@@ -2,19 +2,16 @@
 
 #include <mpi.h>
 
-#include <algorithm>
+#include <cstddef>  // ДОБАВЛЕНО: для size_t
 #include <limits>
 #include <vector>
 
-#include "luchnikov_e_max_val_in_col_of_mat/common/include/common.hpp"
-#include "util/include/util.hpp"
-
 namespace luchnikov_e_max_val_in_col_of_mat {
 
-LuchnilkovEMaxValInColOfMatMPI::LuchnilkovEMaxValInColOfMatMPI(const InType &in) {
+LuchnilkovEMaxValInColOfMatMPI::LuchnilkovEMaxValInColOfMatMPI(const InType &in)
+    : matrix_(in) {  // ИСПРАВЛЕНО: инициализация в member initializer list
   SetTypeOfTask(GetStaticTypeOfTask());
   GetInput() = in;
-  matrix_ = in;
   result_.clear();
 }
 
@@ -53,7 +50,8 @@ bool LuchnilkovEMaxValInColOfMatMPI::RunImpl() {
     return false;
   }
 
-  int rank, world_size;
+  int rank = 0;        // ИСПРАВЛЕНО: инициализация и разделение объявлений
+  int world_size = 0;  // ИСПРАВЛЕНО: инициализация и разделение объявлений
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
   MPI_Comm_size(MPI_COMM_WORLD, &world_size);
 
@@ -76,7 +74,8 @@ bool LuchnilkovEMaxValInColOfMatMPI::RunImpl() {
 
   std::vector<int> flat_matrix;
   if (rank == 0) {
-    flat_matrix.reserve(total_rows * num_cols);
+    flat_matrix.reserve(static_cast<size_t>(total_rows) *
+                        static_cast<size_t>(num_cols));  // ИСПРАВЛЕНО: явное приведение типов
     for (const auto &row : matrix) {
       flat_matrix.insert(flat_matrix.end(), row.begin(), row.end());
     }
@@ -93,10 +92,8 @@ bool LuchnilkovEMaxValInColOfMatMPI::RunImpl() {
 
   for (int i = 0; i < local_rows; ++i) {
     for (int j = 0; j < num_cols; ++j) {
-      int value = local_data[i * num_cols + j];
-      if (value > local_max[j]) {
-        local_max[j] = value;
-      }
+      int value = local_data[(i * num_cols) + j];
+      local_max[j] = std::max(value, local_max[j]);
     }
   }
 

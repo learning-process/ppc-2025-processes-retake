@@ -1,18 +1,15 @@
 #include "luchnikov_e_max_val_in_col_of_mat/seq/include/ops_seq.hpp"
 
 #include <algorithm>
+#include <cstddef>
 #include <limits>
 #include <vector>
 
-#include "luchnikov_e_max_val_in_col_of_mat/common/include/common.hpp"
-#include "util/include/util.hpp"
-
 namespace luchnikov_e_max_val_in_col_of_mat {
 
-LuchnilkovEMaxValInColOfMatSEQ::LuchnilkovEMaxValInColOfMatSEQ(const InType &in) {
+LuchnilkovEMaxValInColOfMatSEQ::LuchnilkovEMaxValInColOfMatSEQ(const InType &in) : matrix_(in) {
   SetTypeOfTask(GetStaticTypeOfTask());
   GetInput() = in;
-  matrix_ = in;
   result_.clear();
 }
 
