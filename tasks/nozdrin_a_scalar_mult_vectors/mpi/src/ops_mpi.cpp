@@ -4,6 +4,7 @@
 
 #include <algorithm>
 #include <cstdint>
+#include <limits>
 
 #include "nozdrin_a_scalar_mult_vectors/common/include/common.hpp"
 
@@ -17,7 +18,8 @@ NozdrinAScalarMultVectorsMPI::NozdrinAScalarMultVectorsMPI(const InType &in) {
 
 bool NozdrinAScalarMultVectorsMPI::ValidationImpl() {
     const auto &in = GetInput();
-    return !in.a.empty() && (in.a.size() == in.b.size());
+    const auto max_count = static_cast<std::size_t>(std::numeric_limits<int>::max());
+    return !in.a.empty() && (in.a.size() == in.b.size()) && (in.a.size() <= max_count);
 }
 
 bool NozdrinAScalarMultVectorsMPI::PreProcessingImpl() {
@@ -33,8 +35,8 @@ bool NozdrinAScalarMultVectorsMPI::RunImpl() {
 
     InType in = (rank == 0) ? GetInput() : InType{};
 
-        std::uint64_t n = (rank == 0) ? static_cast<std::uint64_t>(in.a.size()) : 0;
-        MPI_Bcast(&n, 1, MPI_UNSIGNED_LONG_LONG, 0, MPI_COMM_WORLD);
+    std::uint64_t n = (rank == 0) ? static_cast<std::uint64_t>(in.a.size()) : 0;
+    MPI_Bcast(&n, 1, MPI_UINT64_T, 0, MPI_COMM_WORLD);
 
     if (n == 0) {
         if (rank == 0) {
@@ -43,15 +45,21 @@ bool NozdrinAScalarMultVectorsMPI::RunImpl() {
         return true;
     }
 
+    if (n > static_cast<std::uint64_t>(std::numeric_limits<int>::max())) {
+        return false;
+    }
+
+    const int count = static_cast<int>(n);
+
     if (rank != 0) {
         in.a.resize(n);
         in.b.resize(n);
     }
 
-    MPI_Bcast(in.a.data(), static_cast<int>(n), MPI_DOUBLE, 0, MPI_COMM_WORLD);
-    MPI_Bcast(in.b.data(), static_cast<int>(n), MPI_DOUBLE, 0, MPI_COMM_WORLD);
+    MPI_Bcast(in.a.data(), count, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+    MPI_Bcast(in.b.data(), count, MPI_DOUBLE, 0, MPI_COMM_WORLD);
 
-        GetInput() = in;
+    GetInput() = in;
 
     const std::uint64_t base = n / static_cast<std::uint64_t>(size);
     const std::uint64_t rem = n % static_cast<std::uint64_t>(size);
@@ -64,11 +72,11 @@ bool NozdrinAScalarMultVectorsMPI::RunImpl() {
         local_sum += in.a[i] * in.b[i];
     }
 
-        double global_sum = 0.0;
-        MPI_Reduce(&local_sum, &global_sum, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
-        MPI_Bcast(&global_sum, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+    double global_sum = 0.0;
+    MPI_Reduce(&local_sum, &global_sum, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+    MPI_Bcast(&global_sum, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
 
-        GetOutput() = global_sum;
+    GetOutput() = global_sum;
 
     return true;
 }
