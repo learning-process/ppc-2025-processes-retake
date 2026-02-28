@@ -1,6 +1,7 @@
 #include <gtest/gtest.h>
 
 #include <cmath>
+#include <cstddef>
 #include <vector>
 
 #include "util/include/perf_test_util.hpp"
@@ -12,17 +13,17 @@ namespace yusupkina_m_seidel_method {
 
 class YusupkinaMSeidelMethodPerfTests : public ppc::util::BaseRunPerfTests<InType, OutType> {
  protected:
-  InType input_data_;
-  OutType expected_solution_;
+  InType input_data;
+  OutType expected_solution;
 
   void SetUp() override {
     const int n = 8000;
 
     std::vector<double> matrix(static_cast<size_t>(n) * n, 0.0);
     std::vector<double> rhs(n, 0.0);
-    expected_solution_.resize(n);
+    expected_solution.resize(n);
     for (int i = 0; i < n; ++i) {
-      expected_solution_[i] = std::sin(0.001 * i) + 2.0;
+      expected_solution[i] = std::sin(0.001 * i) + 2.0;
     }
     for (int i = 0; i < n; ++i) {
       double diag_sum = 0.0;
@@ -40,23 +41,23 @@ class YusupkinaMSeidelMethodPerfTests : public ppc::util::BaseRunPerfTests<InTyp
     for (int i = 0; i < n; ++i) {
       double sum = 0.0;
       for (int j = 0; j < n; ++j) {
-        sum += matrix[(static_cast<size_t>(i) * n) + j] * expected_solution_[j];
+        sum += matrix[(static_cast<size_t>(i) * n) + j] * expected_solution[j];
       }
       rhs[i] = sum;
     }
 
-    input_data_ = InType{.matrix = matrix, .rhs = rhs, .n = n};
+    input_data = InType{.matrix = matrix, .rhs = rhs, .n = n};
   }
 
   bool CheckTestOutputData(OutType &output_data) final {
     const double epsilon = 1e-4;
 
-    if (output_data.size() != expected_solution_.size()) {
+    if (output_data.size() != expected_solution.size()) {
       return false;
     }
 
     for (size_t i = 0; i < output_data.size(); i++) {
-      if (std::abs(output_data[i] - expected_solution_[i]) > epsilon) {
+      if (std::abs(output_data[i] - expected_solution[i]) > epsilon) {
         return false;
       }
     }
@@ -64,7 +65,7 @@ class YusupkinaMSeidelMethodPerfTests : public ppc::util::BaseRunPerfTests<InTyp
   }
 
   InType GetTestInputData() final {
-    return input_data_;
+    return input_data;
   }
 };
 
