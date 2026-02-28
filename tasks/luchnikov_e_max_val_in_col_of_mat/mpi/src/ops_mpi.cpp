@@ -1,4 +1,4 @@
-#include "luchnikov_e_max_val_in_col_of_mat\mpi\include\ops_mpi.hpp"
+#include "luchnikov_e_max_val_in_col_of_mat/mpi/include/ops_mpi.hpp"
 
 #include <mpi.h>
 
@@ -7,6 +7,8 @@
 #include <cstddef>
 #include <utility>
 #include <vector>
+
+#include "luchnikov_e_max_val_in_col_of_mat/common/include/common.hpp"
 
 namespace luchnikov_e_max_val_in_col_of_mat {
 
@@ -20,18 +22,19 @@ bool LuchnikovEMaxValInColOfMatMPI::ValidationImpl() {
   MPI_Comm_rank(MPI_COMM_WORLD, &rank_);
   MPI_Comm_size(MPI_COMM_WORLD, &size_);
 
-  if (rank_ == 0) {
-    const auto &matrix = GetInput();
+  if (rank_ != 0) {
+    return GetOutput().empty();
+  }
 
-    if (matrix.empty()) {
+  const auto &matrix = GetInput();
+  if (matrix.empty()) {
+    return false;
+  }
+
+  cols_ = static_cast<int>(matrix[0].size());
+  for (const auto &row : matrix) {
+    if (std::cmp_not_equal(static_cast<int>(row.size()), cols_)) {
       return false;
-    }
-
-    cols_ = static_cast<int>(matrix[0].size());
-    for (const auto &row : matrix) {
-      if (std::cmp_not_equal(static_cast<int>(row.size()), cols_)) {
-        return false;
-      }
     }
   }
 
@@ -64,9 +67,7 @@ bool LuchnikovEMaxValInColOfMatMPI::RunImpl() {
     const auto &matrix = GetInput();
     flat_matrix.reserve(static_cast<size_t>(rows_) * static_cast<size_t>(cols_));
     for (int i = 0; i < rows_; ++i) {
-      for (int j = 0; j < cols_; ++j) {
-        flat_matrix.push_back(matrix[i][j]);
-      }
+      flat_matrix.insert(flat_matrix.end(), matrix[i].begin(), matrix[i].end());
     }
   }
 
@@ -75,8 +76,8 @@ bool LuchnikovEMaxValInColOfMatMPI::RunImpl() {
 
   int base_rows = rows_ / size_;
   int extra_rows = rows_ % size_;
-
   int offset = 0;
+
   for (int i = 0; i < size_; ++i) {
     int current_rows = base_rows + (i < extra_rows ? 1 : 0);
     sendcounts[i] = current_rows * cols_;
@@ -100,14 +101,16 @@ bool LuchnikovEMaxValInColOfMatMPI::RunImpl() {
   }
 
   MPI_Allreduce(local_max.data(), result_.data(), cols_, MPI_INT, MPI_MAX, MPI_COMM_WORLD);
-
   MPI_Barrier(MPI_COMM_WORLD);
+
   return true;
 }
 
 bool LuchnikovEMaxValInColOfMatMPI::PostProcessingImpl() {
-  GetOutput() = result_;
-  return !result_.empty();
+  if (rank_ == 0) {
+    GetOutput() = result_;
+  }
+  return true;
 }
 
 }  // namespace luchnikov_e_max_val_in_col_of_mat
