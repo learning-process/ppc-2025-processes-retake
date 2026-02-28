@@ -1,5 +1,6 @@
 #include "marov_radix_sort_double/seq/include/ops_seq.hpp"
 
+#include <algorithm>
 #include <cstdint>
 #include <cstring>
 #include <vector>
@@ -10,11 +11,11 @@ namespace marov_radix_sort_double {
 
 namespace {
 
-// Преобразование double в uint64_t для сортировки
+// Convert double to uint64_t for sorting
 uint64_t DoubleToSortableUint64(double val) {
   uint64_t bits = 0;
   std::memcpy(&bits, &val, sizeof(double));
-  // Инвертируем биты для отрицательных чисел
+  // Invert bits for negative numbers
   if ((bits >> 63) != 0) {
     bits = ~bits;
   } else {
@@ -23,9 +24,9 @@ uint64_t DoubleToSortableUint64(double val) {
   return bits;
 }
 
-// Обратное преобразование
+// Convert back to double
 double SortableUint64ToDouble(uint64_t bits) {
-  // Восстанавливаем исходное представление
+  // Restore original representation
   if ((bits >> 63) != 0) {
     bits &= ~(1ULL << 63);
   } else {
@@ -36,7 +37,7 @@ double SortableUint64ToDouble(uint64_t bits) {
   return val;
 }
 
-// Поразрядная сортировка для массива double
+// Radix sort for double array
 void RadixSortDoubles(std::vector<double>& data) {
   if (data.size() <= 1) {
     return;
@@ -47,18 +48,18 @@ void RadixSortDoubles(std::vector<double>& data) {
     keys[i] = DoubleToSortableUint64(data[i]);
   }
 
-  const int k_radix = 256;
+  const int kRadix = 256;
   std::vector<uint64_t> temp(data.size());
 
   for (int shift = 0; shift < 64; shift += 8) {
-    std::vector<size_t> count(k_radix + 1, 0);
+    std::vector<size_t> count(kRadix + 1, 0);
 
     for (uint64_t key : keys) {
       uint8_t digit = (key >> shift) & 0xFF;
       ++count[digit + 1];
     }
 
-    for (int i = 0; i < k_radix; ++i) {
+    for (int i = 0; i < kRadix; ++i) {
       count[i + 1] += count[i];
     }
 
@@ -79,27 +80,27 @@ void RadixSortDoubles(std::vector<double>& data) {
 
 }  // namespace
 
-MarovRadixSortDoubleSEQ::MarovRadixSortDoubleSEQ(const InType& in) {
+MarovRadixSortDoubleSeq::MarovRadixSortDoubleSeq(const InType& in) {
   SetTypeOfTask(GetStaticTypeOfTask());
   GetInput() = in;
 }
 
-bool MarovRadixSortDoubleSEQ::ValidationImpl() {
+bool MarovRadixSortDoubleSeq::ValidationImpl() {
   return true;
 }
 
-bool MarovRadixSortDoubleSEQ::PreProcessingImpl() {
+bool MarovRadixSortDoubleSeq::PreProcessingImpl() {
   return true;
 }
 
-bool MarovRadixSortDoubleSEQ::RunImpl() {
+bool MarovRadixSortDoubleSeq::RunImpl() {
   auto& input = GetInput();
   RadixSortDoubles(input);
   GetOutput() = input;
   return true;
 }
 
-bool MarovRadixSortDoubleSEQ::PostProcessingImpl() {
+bool MarovRadixSortDoubleSeq::PostProcessingImpl() {
   return true;
 }
 

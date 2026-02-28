@@ -5,12 +5,12 @@
 
 namespace marov_count_letters {
 
-class MarovCountLettersMPI : public BaseTask {
+class MarovCountLettersMpi : public BaseTask {
  public:
   static constexpr ppc::task::TypeOfTask GetStaticTypeOfTask() {
-    return ppc::task::TypeOfTask::kMPI;
+    return ppc::task::TypeOfTask::kMpi;
   }
-  explicit MarovCountLettersMPI(const InType& in);
+  explicit MarovCountLettersMpi(const InType& in);
 
  private:
   int proc_rank_{0};

@@ -5,12 +5,12 @@
 
 namespace marov_count_letters {
 
-class MarovCountLettersSEQ : public BaseTask {
+class MarovCountLettersSeq : public BaseTask {
  public:
   static constexpr ppc::task::TypeOfTask GetStaticTypeOfTask() {
-    return ppc::task::TypeOfTask::kSEQ;
+    return ppc::task::TypeOfTask::kSeq;
   }
-  explicit MarovCountLettersSEQ(const InType& in);
+  explicit MarovCountLettersSeq(const InType& in);
 
  private:
   bool ValidationImpl() override;

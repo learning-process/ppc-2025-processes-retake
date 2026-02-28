@@ -3,10 +3,9 @@
 #include <cstddef>
 #include <vector>
 
-// NOLINTBEGIN(readability-identifier-naming, cppcoreguidelines-macro-to-enum)
-// MPI-style names are required for compatibility with MPI API
-typedef int MPI_Datatype;
-typedef int MPI_Op;
+// MPI-style types for compatibility with MPI API
+using MpiDatatype = int;
+using MpiOp = int;
 
 #define MPI_INT 1
 #define MPI_FLOAT 2
@@ -14,28 +13,27 @@ typedef int MPI_Op;
 #define MPI_SUM 1
 #define MPI_MAX 2
 #define MPI_MIN 3
-// NOLINTEND(readability-identifier-naming, cppcoreguidelines-macro-to-enum)
 
-struct MPI_Comm {
+struct MpiComm {
   int rank;
   int size;
   std::vector<int> parent;
   std::vector<std::vector<int>> children;
 
-  MPI_Comm(int r, int s);
-  void buildTree();
+  MpiComm(int r, int s);
+  void BuildTree();
 };
 
-void Send(const void* buf, int count, MPI_Datatype datatype, int dest, int tag,
-          MPI_Comm* comm);
+void Send(const void* buf, int count, MpiDatatype datatype, int dest, int tag,
+          MpiComm* comm);
 
-void Recv(void* buf, int count, MPI_Datatype datatype, int source, int tag,
-          MPI_Comm* comm, void* status);
+void Recv(void* buf, int count, MpiDatatype datatype, int source, int tag,
+          MpiComm* comm, void* status);
 
-size_t getTypeSize(MPI_Datatype datatype);
+size_t GetTypeSize(MpiDatatype datatype);
 
 template <typename T>
-void applyOperation(T* result, const T* data, int count, MPI_Op op);
+void ApplyOperation(T* result, const T* data, int count, MpiOp op);
 
-int my_allreduce(const void* sendbuf, void* recvbuf, int count,
-                 MPI_Datatype datatype, MPI_Op op, MPI_Comm* comm);
+int MyAllreduce(const void* sendbuf, void* recvbuf, int count,
+                MpiDatatype datatype, MpiOp op, MpiComm* comm);

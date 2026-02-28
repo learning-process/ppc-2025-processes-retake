@@ -10,7 +10,7 @@
 
 namespace marov_count_letters {
 
-MarovCountLettersMPI::MarovCountLettersMPI(const InType& in) {
+MarovCountLettersMpi::MarovCountLettersMpi(const InType& in) {
   MPI_Comm_rank(MPI_COMM_WORLD, &proc_rank_);
   MPI_Comm_size(MPI_COMM_WORLD, &proc_size_);
 
@@ -19,15 +19,15 @@ MarovCountLettersMPI::MarovCountLettersMPI(const InType& in) {
   GetOutput() = 0;
 }
 
-bool MarovCountLettersMPI::ValidationImpl() {
+bool MarovCountLettersMpi::ValidationImpl() {
   return true;
 }
 
-bool MarovCountLettersMPI::PreProcessingImpl() {
+bool MarovCountLettersMpi::PreProcessingImpl() {
   return true;
 }
 
-bool MarovCountLettersMPI::RunImpl() {
+bool MarovCountLettersMpi::RunImpl() {
   std::string input_str;
   int str_len = 0;
 
@@ -36,10 +36,10 @@ bool MarovCountLettersMPI::RunImpl() {
     str_len = static_cast<int>(input_str.size());
   }
 
-  // Рассылка длины строки всем процессам
+  // Broadcast string length
   MPI_Bcast(&str_len, 1, MPI_INT, 0, MPI_COMM_WORLD);
 
-  // Разделение данных между процессами
+  // Split data between processes
   const int base = str_len / proc_size_;
   const int rem = str_len % proc_size_;
 
@@ -65,7 +65,7 @@ bool MarovCountLettersMPI::RunImpl() {
                send_counts.data(), displs.data(), MPI_CHAR,
                local_data.data(), local_size, MPI_CHAR, 0, MPI_COMM_WORLD);
 
-  // Подсчет буквенных символов локально
+  // Count letter characters locally
   int local_count = 0;
   for (int i = 0; i < local_size; ++i) {
     if (std::isalpha(static_cast<unsigned char>(local_data[i])) != 0) {
@@ -73,9 +73,10 @@ bool MarovCountLettersMPI::RunImpl() {
     }
   }
 
-  // Редукция - сумма всех локальных подсчетов
+  // Reduction - sum of all local counts
   int global_count = 0;
-  MPI_Reduce(&local_count, &global_count, 1, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
+  MPI_Reduce(&local_count, &global_count, 1, MPI_INT, MPI_SUM, 0,
+             MPI_COMM_WORLD);
 
   if (proc_rank_ == 0) {
     GetOutput() = global_count;
@@ -84,7 +85,7 @@ bool MarovCountLettersMPI::RunImpl() {
   return true;
 }
 
-bool MarovCountLettersMPI::PostProcessingImpl() {
+bool MarovCountLettersMpi::PostProcessingImpl() {
   return true;
 }
 

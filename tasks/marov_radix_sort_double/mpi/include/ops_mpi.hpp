@@ -5,12 +5,12 @@
 
 namespace marov_radix_sort_double {
 
-class MarovRadixSortDoubleMPI : public BaseTask {
+class MarovRadixSortDoubleMpi : public BaseTask {
  public:
   static constexpr ppc::task::TypeOfTask GetStaticTypeOfTask() {
-    return ppc::task::TypeOfTask::kMPI;
+    return ppc::task::TypeOfTask::kMpi;
   }
-  explicit MarovRadixSortDoubleMPI(const InType& in);
+  explicit MarovRadixSortDoubleMpi(const InType& in);
 
  private:
   int proc_rank_{0};

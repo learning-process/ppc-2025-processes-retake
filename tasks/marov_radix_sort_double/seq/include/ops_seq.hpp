@@ -5,12 +5,12 @@
 
 namespace marov_radix_sort_double {
 
-class MarovRadixSortDoubleSEQ : public BaseTask {
+class MarovRadixSortDoubleSeq : public BaseTask {
  public:
   static constexpr ppc::task::TypeOfTask GetStaticTypeOfTask() {
-    return ppc::task::TypeOfTask::kSEQ;
+    return ppc::task::TypeOfTask::kSeq;
   }
-  explicit MarovRadixSortDoubleSEQ(const InType& in);
+  explicit MarovRadixSortDoubleSeq(const InType& in);
 
  private:
   bool ValidationImpl() override;
