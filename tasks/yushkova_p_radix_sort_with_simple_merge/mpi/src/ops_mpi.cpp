@@ -2,10 +2,12 @@
 
 #include <mpi.h>
 
-#include <array>
 #include <cstddef>
 #include <cstdint>
+#include <utility>
 #include <vector>
+
+#include "yushkova_p_radix_sort_with_simple_merge/common/include/common.hpp"
 
 namespace yushkova_p_radix_sort_with_simple_merge {
 namespace {
@@ -19,22 +21,22 @@ std::vector<std::uint64_t> BuildKeyBuffer(const std::vector<double> &data) {
 }
 
 void ByteCountingPass(std::vector<std::uint64_t> &keys, std::vector<std::uint64_t> &temp, int shift) {
-  std::array<std::size_t, 256> freq{};
-  freq.fill(0);
+  constexpr std::size_t kBuckets = 256;
+  std::vector<std::size_t> freq(kBuckets, 0);
 
   for (const std::uint64_t key : keys) {
-    const std::size_t bucket = static_cast<std::size_t>((key >> shift) & 0xFFULL);
+    const auto bucket = static_cast<std::size_t>((key >> shift) & 0xFFULL);
     ++freq[bucket];
   }
 
-  std::array<std::size_t, 256> position{};
+  std::vector<std::size_t> position(kBuckets, 0);
   position[0] = 0;
   for (std::size_t i = 1; i < position.size(); ++i) {
     position[i] = position[i - 1] + freq[i - 1];
   }
 
   for (const std::uint64_t key : keys) {
-    const std::size_t bucket = static_cast<std::size_t>((key >> shift) & 0xFFULL);
+    const auto bucket = static_cast<std::size_t>((key >> shift) & 0xFFULL);
     temp[position[bucket]] = key;
     ++position[bucket];
   }
@@ -102,9 +104,54 @@ void BuildScatterPlan(int total_size, int world_size, std::vector<int> &counts, 
   }
 }
 
+bool TryReceiveAndMergeAtStep(int rank, int world_size, int step, std::vector<double> &local_data) {
+  if ((rank % (2 * step)) != 0) {
+    return false;
+  }
+
+  const int sender = rank + step;
+  if (sender >= world_size) {
+    return false;
+  }
+
+  int received_count = 0;
+  MPI_Recv(&received_count, 1, MPI_INT, sender, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+
+  std::vector<double> received_data(received_count);
+  if (received_count > 0) {
+    MPI_Recv(received_data.data(), received_count, MPI_DOUBLE, sender, 1, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+  }
+
+  local_data = MergeTwoSortedVectors(local_data, received_data);
+  return true;
+}
+
+bool TrySendAndFinishAtStep(int rank, int step, const std::vector<double> &local_data) {
+  if ((rank % (2 * step)) != step) {
+    return false;
+  }
+
+  const int receiver = rank - step;
+  const int send_count = static_cast<int>(local_data.size());
+  MPI_Send(&send_count, 1, MPI_INT, receiver, 0, MPI_COMM_WORLD);
+  if (send_count > 0) {
+    MPI_Send(local_data.data(), send_count, MPI_DOUBLE, receiver, 1, MPI_COMM_WORLD);
+  }
+  return true;
+}
+
+void MergeByTree(int rank, int world_size, std::vector<double> &local_data) {
+  for (int step = 1; step < world_size; step *= 2) {
+    if (TrySendAndFinishAtStep(rank, step, local_data)) {
+      break;
+    }
+    TryReceiveAndMergeAtStep(rank, world_size, step, local_data);
+  }
+}
+
 }  // namespace
 
-YushkovaPRadixSortWithSimpleMergeMPI::YushkovaPRadixSortWithSimpleMergeMPI(const InType &in) : merged_result_() {
+YushkovaPRadixSortWithSimpleMergeMPI::YushkovaPRadixSortWithSimpleMergeMPI(const InType &in) {
   SetTypeOfTask(GetStaticTypeOfTask());
   GetInput() = in;
   std::get<0>(GetOutput()).clear();
@@ -145,33 +192,7 @@ bool YushkovaPRadixSortWithSimpleMergeMPI::RunImpl() {
 
   RadixSortDoubleVector(local_data);
 
-  int step = 1;
-  while (step < world_size) {
-    if ((rank % (2 * step)) == 0) {
-      const int sender = rank + step;
-      if (sender < world_size) {
-        int received_count = 0;
-        MPI_Recv(&received_count, 1, MPI_INT, sender, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-
-        std::vector<double> received_data(received_count);
-        if (received_count > 0) {
-          MPI_Recv(received_data.data(), received_count, MPI_DOUBLE, sender, 1, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-        }
-
-        local_data = MergeTwoSortedVectors(local_data, received_data);
-      }
-    } else if ((rank % (2 * step)) == step) {
-      const int receiver = rank - step;
-      const int send_count = static_cast<int>(local_data.size());
-      MPI_Send(&send_count, 1, MPI_INT, receiver, 0, MPI_COMM_WORLD);
-      if (send_count > 0) {
-        MPI_Send(local_data.data(), send_count, MPI_DOUBLE, receiver, 1, MPI_COMM_WORLD);
-      }
-      break;
-    }
-
-    step *= 2;
-  }
+  MergeByTree(rank, world_size, local_data);
 
   if (rank == 0) {
     merged_result_ = std::move(local_data);

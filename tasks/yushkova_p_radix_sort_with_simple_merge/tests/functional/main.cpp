@@ -36,7 +36,7 @@ bool SameVectors(const std::vector<double> &a, const std::vector<double> &b) {
 
 std::vector<double> BuildReference(const std::vector<double> &input) {
   std::vector<double> expected = input;
-  std::sort(expected.begin(), expected.end());
+  std::ranges::sort(expected);
   return expected;
 }
 

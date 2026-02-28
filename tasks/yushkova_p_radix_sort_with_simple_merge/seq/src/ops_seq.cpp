@@ -1,9 +1,10 @@
 #include "yushkova_p_radix_sort_with_simple_merge/seq/include/ops_seq.hpp"
 
-#include <array>
 #include <cstddef>
 #include <cstdint>
 #include <vector>
+
+#include "yushkova_p_radix_sort_with_simple_merge/common/include/common.hpp"
 
 namespace yushkova_p_radix_sort_with_simple_merge {
 namespace {
@@ -17,22 +18,22 @@ std::vector<std::uint64_t> BuildKeyBuffer(const std::vector<double> &data) {
 }
 
 void ByteCountingPass(std::vector<std::uint64_t> &keys, std::vector<std::uint64_t> &temp, int shift) {
-  std::array<std::size_t, 256> freq{};
-  freq.fill(0);
+  constexpr std::size_t kBuckets = 256;
+  std::vector<std::size_t> freq(kBuckets, 0);
 
   for (const std::uint64_t key : keys) {
-    const std::size_t bucket = static_cast<std::size_t>((key >> shift) & 0xFFULL);
+    const auto bucket = static_cast<std::size_t>((key >> shift) & 0xFFULL);
     ++freq[bucket];
   }
 
-  std::array<std::size_t, 256> position{};
+  std::vector<std::size_t> position(kBuckets, 0);
   position[0] = 0;
   for (std::size_t i = 1; i < position.size(); ++i) {
     position[i] = position[i - 1] + freq[i - 1];
   }
 
   for (const std::uint64_t key : keys) {
-    const std::size_t bucket = static_cast<std::size_t>((key >> shift) & 0xFFULL);
+    const auto bucket = static_cast<std::size_t>((key >> shift) & 0xFFULL);
     temp[position[bucket]] = key;
     ++position[bucket];
   }
@@ -59,7 +60,7 @@ void RadixSortDoubleVector(std::vector<double> &data) {
 
 }  // namespace
 
-YushkovaPRadixSortWithSimpleMergeSEQ::YushkovaPRadixSortWithSimpleMergeSEQ(const InType &in) : sorted_data_() {
+YushkovaPRadixSortWithSimpleMergeSEQ::YushkovaPRadixSortWithSimpleMergeSEQ(const InType &in) {
   SetTypeOfTask(GetStaticTypeOfTask());
   GetInput() = in;
   std::get<0>(GetOutput()).clear();

@@ -14,12 +14,21 @@ namespace yushkova_p_radix_sort_with_simple_merge {
 namespace {
 
 template <class TaskType>
-bool RunTask(TaskType &task) {
-  return task.Validation() && task.PreProcessing() && task.Run() && task.PostProcessing();
+void ExecuteTask(TaskType &task) {
+  ASSERT_TRUE(task.Validation());
+  ASSERT_TRUE(task.PreProcessing());
+  ASSERT_TRUE(task.Run());
+  ASSERT_TRUE(task.PostProcessing());
+}
+
+void CheckSortedOutput(const std::vector<double> &output, std::size_t size) {
+  EXPECT_TRUE(std::ranges::is_sorted(output));
+  EXPECT_EQ(output.size(), size);
 }
 
 std::vector<double> MakeRandomInput(std::size_t size) {
-  std::mt19937_64 gen(42);
+  std::random_device rd;
+  std::mt19937_64 gen(rd());
   std::uniform_real_distribution<double> dist(-10000.0, 10000.0);
 
   std::vector<double> data(size);
@@ -42,11 +51,10 @@ class YushkovaRadixSortPerf : public ::testing::Test {
 
 TEST_F(YushkovaRadixSortPerf, SeqPerformanceRun) {
   YushkovaPRadixSortWithSimpleMergeSEQ task(data);
-  ASSERT_TRUE(RunTask(task));
+  ExecuteTask(task);
 
   const auto &output = std::get<0>(task.GetOutput());
-  EXPECT_TRUE(std::is_sorted(output.begin(), output.end()));
-  EXPECT_EQ(output.size(), data.size());
+  CheckSortedOutput(output, data.size());
 }
 
 TEST_F(YushkovaRadixSortPerf, MpiPerformanceRun) {
@@ -58,12 +66,11 @@ TEST_F(YushkovaRadixSortPerf, MpiPerformanceRun) {
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 
   YushkovaPRadixSortWithSimpleMergeMPI task(data);
-  ASSERT_TRUE(RunTask(task));
+  ExecuteTask(task);
 
   if (rank == 0) {
     const auto &output = std::get<0>(task.GetOutput());
-    EXPECT_TRUE(std::is_sorted(output.begin(), output.end()));
-    EXPECT_EQ(output.size(), data.size());
+    CheckSortedOutput(output, data.size());
   }
 }
 

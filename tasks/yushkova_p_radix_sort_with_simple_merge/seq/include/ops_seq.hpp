@@ -1,5 +1,8 @@
 #pragma once
 
+#include <vector>
+
+#include "task/include/task.hpp"
 #include "yushkova_p_radix_sort_with_simple_merge/common/include/common.hpp"
 
 namespace yushkova_p_radix_sort_with_simple_merge {
