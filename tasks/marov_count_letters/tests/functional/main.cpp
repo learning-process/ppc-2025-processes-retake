@@ -56,9 +56,9 @@ const std::array kTestCases = {
 };
 
 const auto kAllTestTasks =
-    std::tuple_cat(ppc::util::AddFuncTask<MarovCountLettersMPI, InType>(
+    std::tuple_cat(ppc::util::AddFuncTask<MarovCountLettersMpi, InType>(
                        kTestCases, PPC_SETTINGS_marov_count_letters),
-                   ppc::util::AddFuncTask<MarovCountLettersSEQ, InType>(
+                   ppc::util::AddFuncTask<MarovCountLettersSeq, InType>(
                        kTestCases, PPC_SETTINGS_marov_count_letters));
 
 INSTANTIATE_TEST_SUITE_P(

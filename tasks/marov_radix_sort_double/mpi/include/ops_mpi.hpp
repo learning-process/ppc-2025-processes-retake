@@ -8,7 +8,7 @@ namespace marov_radix_sort_double {
 class MarovRadixSortDoubleMpi : public BaseTask {
  public:
   static constexpr ppc::task::TypeOfTask GetStaticTypeOfTask() {
-    return ppc::task::TypeOfTask::kMpi;
+    return ppc::task::TypeOfTask::kMPI;
   }
   explicit MarovRadixSortDoubleMpi(const InType& in);
 

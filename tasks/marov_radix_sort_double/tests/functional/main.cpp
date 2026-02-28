@@ -59,9 +59,9 @@ const std::array kTestCases = {
 };
 
 const auto kAllTestTasks =
-    std::tuple_cat(ppc::util::AddFuncTask<MarovRadixSortDoubleMPI, InType>(
+    std::tuple_cat(ppc::util::AddFuncTask<MarovRadixSortDoubleMpi, InType>(
                        kTestCases, PPC_SETTINGS_marov_radix_sort_double),
-                   ppc::util::AddFuncTask<MarovRadixSortDoubleSEQ, InType>(
+                   ppc::util::AddFuncTask<MarovRadixSortDoubleSeq, InType>(
                        kTestCases, PPC_SETTINGS_marov_radix_sort_double));
 
 INSTANTIATE_TEST_SUITE_P(

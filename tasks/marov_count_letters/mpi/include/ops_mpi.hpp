@@ -8,7 +8,7 @@ namespace marov_count_letters {
 class MarovCountLettersMpi : public BaseTask {
  public:
   static constexpr ppc::task::TypeOfTask GetStaticTypeOfTask() {
-    return ppc::task::TypeOfTask::kMpi;
+    return ppc::task::TypeOfTask::kMPI;
   }
   explicit MarovCountLettersMpi(const InType& in);
 

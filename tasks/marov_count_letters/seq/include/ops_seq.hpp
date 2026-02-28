@@ -8,7 +8,7 @@ namespace marov_count_letters {
 class MarovCountLettersSeq : public BaseTask {
  public:
   static constexpr ppc::task::TypeOfTask GetStaticTypeOfTask() {
-    return ppc::task::TypeOfTask::kSeq;
+    return ppc::task::TypeOfTask::kSEQ;
   }
   explicit MarovCountLettersSeq(const InType& in);
 
