@@ -12,11 +12,11 @@ struct Point {
   int y = 0;
 };
 
-inline bool operator==(const Point& a, const Point& b) {
+inline bool operator==(const Point &a, const Point &b) {
   return a.x == b.x && a.y == b.y;
 }
 
-inline bool operator!=(const Point& a, const Point& b) {
+inline bool operator!=(const Point &a, const Point &b) {
   return !(a == b);
 }
 

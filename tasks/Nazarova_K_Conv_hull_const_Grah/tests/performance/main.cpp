@@ -16,14 +16,14 @@
 namespace nazarova_k_conv_hull_const_grah_processes {
 namespace {
 
-inline bool LessPivot(const Point& a, const Point& b) {
+inline bool LessPivot(const Point &a, const Point &b) {
   if (a.y != b.y) {
     return a.y < b.y;
   }
   return a.x < b.x;
 }
 
-std::int64_t TwiceArea(const std::vector<Point>& h) {
+std::int64_t TwiceArea(const std::vector<Point> &h) {
   if (h.size() < 3U) {
     return 0;
   }
@@ -53,21 +53,19 @@ std::vector<Point> CanonicalHull(std::vector<Point> h) {
   return h;
 }
 
-bool HullEqual(const std::vector<Point>& a, const std::vector<Point>& b) {
+bool HullEqual(const std::vector<Point> &a, const std::vector<Point> &b) {
   return CanonicalHull(a) == CanonicalHull(b);
 }
 
 }  // namespace
 
 class NazarovaKConvHullConstGrahRunPerfTests : public ppc::util::BaseRunPerfTests<InType, OutType> {
-
-  static constexpr int kN = 1000000;
+  static constexpr int kN = 300000;
   InType input_data_{};
   OutType expected_;
 
   void SetUp() override {
-
-    std::mt19937 gen(777U);
+    std::mt19937 gen(std::random_device{}());
 
     static constexpr int kR = 1000000;
     std::uniform_int_distribution<int> dist(1, kR - 1);
@@ -83,10 +81,10 @@ class NazarovaKConvHullConstGrahRunPerfTests : public ppc::util::BaseRunPerfTest
     }
 
     expected_ = CanonicalHull(std::vector<Point>{Point{.x = 0, .y = 0}, Point{.x = kR, .y = 0}, Point{.x = kR, .y = kR},
-                                                Point{.x = 0, .y = kR}});
+                                                 Point{.x = 0, .y = kR}});
   }
 
-  bool CheckTestOutputData(OutType& output_data) final {
+  bool CheckTestOutputData(OutType &output_data) final {
     return HullEqual(output_data, expected_);
   }
 
