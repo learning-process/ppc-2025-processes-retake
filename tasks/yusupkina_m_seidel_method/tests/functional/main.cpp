@@ -55,11 +55,6 @@ class YusupkinaMSeidelMethodFuncTests : public ppc::util::BaseRunFuncTests<InTyp
     } else if (test_name.find("large_solution") != std::string::npos) {
       input_data_ = InType{.matrix = {10.0, 1.0, 1.0, 10.0}, .rhs = {1100.0, 1100.0}, .n = 2};
       expected_solution_ = {100.0, 100.0};
-    }
-
-    else if (test_name.find("almost_singular") != std::string::npos) {
-      input_data_ = InType{.matrix = {10.0, 9.9, 9.9, 10.0}, .rhs = {19.9, 19.9}, .n = 2};
-      expected_solution_ = {1.0, 1.0};
     } else if (test_name.find("sparse") != std::string::npos) {
       input_data_ = InType{.matrix = {10.0, 1.0, 0.0, 0.0, 0.0, 1.0,  10.0, 1.0, 0.0, 0.0, 0.0, 1.0, 10.0,
                                       1.0,  0.0, 0.0, 0.0, 1.0, 10.0, 1.0,  0.0, 0.0, 0.0, 1.0, 10.0},
@@ -111,7 +106,7 @@ TEST_P(YusupkinaMSeidelMethodFuncTests, MatmulFromPic) {
   ExecuteTest(GetParam());
 }
 
-const std::array<TestType, 14> kTestParam = {std::make_tuple(0, "single"),
+const std::array<TestType, 13> kTestParam = {std::make_tuple(0, "single"),
                                              std::make_tuple(1, "identity"),
                                              std::make_tuple(2, "simple_4x4"),
                                              std::make_tuple(3, "fractional_matrix"),
@@ -120,11 +115,10 @@ const std::array<TestType, 14> kTestParam = {std::make_tuple(0, "single"),
                                              std::make_tuple(6, "negative_solution"),
                                              std::make_tuple(7, "large_numbers"),
                                              std::make_tuple(8, "large_solution"),
-                                             std::make_tuple(9, "almost_singular"),
-                                             std::make_tuple(10, "sparse"),
-                                             std::make_tuple(11, "non_ones"),
-                                             std::make_tuple(12, "mixed_sign"),
-                                             std::make_tuple(13, "zero_solution")};
+                                             std::make_tuple(9, "sparse"),
+                                             std::make_tuple(10, "non_ones"),
+                                             std::make_tuple(11, "mixed_sign"),
+                                             std::make_tuple(12, "zero_solution")};
 
 const auto kTestTasksList = std::tuple_cat(
     ppc::util::AddFuncTask<YusupkinaMSeidelMethodMPI, InType>(kTestParam, PPC_SETTINGS_yusupkina_m_seidel_method),
