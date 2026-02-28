@@ -1,10 +1,12 @@
-#include "luchnikov_e_max_val_in_col_of_mat/mpi/include/ops_mpi.hpp"
+#include "luchnikov_e_max_val_in_col_of_mat\mpi\include\ops_mpi.hpp"
 
 #include <mpi.h>
 
+#include <algorithm>
 #include <climits>
-
-#include "luchnikov_e_max_val_in_col_of_mat/mpi/include/ops_mpi.hpp"
+#include <cstddef>
+#include <utility>
+#include <vector>
 
 namespace luchnikov_e_max_val_in_col_of_mat {
 

@@ -1,21 +1,21 @@
 #include <gtest/gtest.h>
 
-#include <algorithm>
 #include <array>
-#include <climits>
 #include <cstddef>
 #include <limits>
 #include <string>
 #include <tuple>
+#include <unordered_map>
 #include <vector>
 
 #include "luchnikov_e_max_val_in_col_of_mat/common/include/common.hpp"
 #include "luchnikov_e_max_val_in_col_of_mat/mpi/include/ops_mpi.hpp"
 #include "luchnikov_e_max_val_in_col_of_mat/seq/include/ops_seq.hpp"
 #include "util/include/func_test_util.hpp"
-#include "util/include/util.hpp"
 
 namespace luchnikov_e_max_val_in_col_of_mat {
+
+using MatrixGenerator = std::function<void(InType &, int)>;
 
 class LuchnikovEMaxValInColOfMatFuncTests : public ppc::util::BaseRunFuncTests<InType, OutType, TestType> {
  public:
@@ -23,8 +23,10 @@ class LuchnikovEMaxValInColOfMatFuncTests : public ppc::util::BaseRunFuncTests<I
     return std::to_string(std::get<0>(test_param)) + "_" + std::get<1>(test_param);
   }
 
+  LuchnikovEMaxValInColOfMatFuncTests() : input_data_(), expected_output_() default;
+
  protected:
-  void SetUp() override {
+  void static SetUp() override {
     TestType params = std::get<static_cast<size_t>(ppc::util::GTestParamIndex::kTestParams)>(GetParam());
     int matrix_size = std::get<0>(params);
     std::string test_type = std::get<1>(params);
@@ -45,75 +47,112 @@ class LuchnikovEMaxValInColOfMatFuncTests : public ppc::util::BaseRunFuncTests<I
   InType input_data_;
   OutType expected_output_;
 
+  static void FillPattern1(InType &matrix, int size) {
+    for (int i = 0; i < size; ++i) {
+      for (int j = 0; j < size; ++j) {
+        matrix[i][j] = (i * 17 + j * 13) % 100;
+      }
+    }
+  }
+
+  static void FillPattern2(InType &matrix, int size) {
+    for (int i = 0; i < size; ++i) {
+      for (int j = 0; j < size; ++j) {
+        matrix[i][j] = (i * size) + j + 1;
+      }
+    }
+  }
+
+  static void FillPattern3(InType &matrix, int size) {
+    for (int i = 0; i < size; ++i) {
+      for (int j = 0; j < size; ++j) {
+        matrix[i][j] = (size * size) - ((i * size) + j);
+      }
+    }
+  }
+
+  static void FillPattern4(InType &matrix, int size) {
+    for (int i = 0; i < size; ++i) {
+      for (int j = 0; j < size; ++j) {
+        matrix[i][j] = 42;
+      }
+    }
+  }
+
+  static void FillPattern5(InType &matrix, int size) {
+    for (int i = 0; i < size; ++i) {
+      for (int j = 0; j < size; ++j) {
+        matrix[i][j] = (i == j) ? 1000 : 1;
+      }
+    }
+  }
+
+  static void FillPattern6(InType &matrix, int size) {
+    for (int i = 0; i < size; ++i) {
+      for (int j = 0; j < size; ++j) {
+        matrix[i][j] = -(((i * 17 + j * 13) % 100) + 1);
+      }
+    }
+  }
+
+  static void FillPattern7(InType &matrix, int size) {
+    for (int i = 0; i < size; ++i) {
+      for (int j = 0; j < size; ++j) {
+        int val = ((i * 17 + j * 13) % 201) - 100;
+        matrix[i][j] = val;
+      }
+    }
+  }
+
+  static void FillPattern8(InType &matrix, int size) {
+    for (int i = 0; i < size; ++i) {
+      for (int j = 0; j < size; ++j) {
+        matrix[i][j] = 1;
+      }
+    }
+    int max_row = size / 2;
+    int max_col = size / 2;
+    if (size > 0) {
+      matrix[max_row][max_col] = 10000;
+    }
+  }
+
+  static void FillPattern9(InType &matrix, int size) {
+    for (int i = 0; i < size; ++i) {
+      for (int j = 0; j < size; ++j) {
+        matrix[i][j] = j + 1;
+      }
+    }
+  }
+
+  static void FillPattern10(InType &matrix, int size) {
+    for (int i = 0; i < size; ++i) {
+      for (int j = 0; j < size; ++j) {
+        matrix[i][j] = size - j;
+      }
+    }
+  }
+
+  static void FillPattern11(InType &matrix, int size) {
+    for (int i = 0; i < size; ++i) {
+      for (int j = 0; j < size; ++j) {
+        matrix[i][j] = ((i + 1) * (j + 1) * 7) % 150;
+      }
+    }
+  }
+
   static InType GenerateTestMatrix(int size, const std::string &test_type) {
     InType matrix(size, std::vector<int>(size));
 
-    if (test_type == "pattern1") {
-      for (int i = 0; i < size; ++i) {
-        for (int j = 0; j < size; ++j) {
-          matrix[i][j] = (i * 17 + j * 13) % 100;
-        }
-      }
-    } else if (test_type == "pattern2") {
-      for (int i = 0; i < size; ++i) {
-        for (int j = 0; j < size; ++j) {
-          matrix[i][j] = (i * size) + j + 1;
-        }
-      }
-    } else if (test_type == "pattern3") {
-      for (int i = 0; i < size; ++i) {
-        for (int j = 0; j < size; ++j) {
-          matrix[i][j] = (size * size) - ((i * size) + j);
-        }
-      }
-    } else if (test_type == "pattern4") {
-      for (int i = 0; i < size; ++i) {
-        for (int j = 0; j < size; ++j) {
-          matrix[i][j] = 42;
-        }
-      }
-    } else if (test_type == "pattern5") {
-      for (int i = 0; i < size; ++i) {
-        for (int j = 0; j < size; ++j) {
-          matrix[i][j] = (i == j) ? 1000 : 1;
-        }
-      }
-    } else if (test_type == "pattern6") {
-      for (int i = 0; i < size; ++i) {
-        for (int j = 0; j < size; ++j) {
-          matrix[i][j] = -(((i * 17 + j * 13) % 100) + 1);
-        }
-      }
-    } else if (test_type == "pattern7") {
-      for (int i = 0; i < size; ++i) {
-        for (int j = 0; j < size; ++j) {
-          int val = ((i * 17 + j * 13) % 201) - 100;
-          matrix[i][j] = val;
-        }
-      }
-    } else if (test_type == "pattern8") {
-      for (int i = 0; i < size; ++i) {
-        for (int j = 0; j < size; ++j) {
-          matrix[i][j] = 1;
-        }
-      }
-      int max_row = size / 2;
-      int max_col = size / 2;
-      if (size > 0) {
-        matrix[max_row][max_col] = 10000;
-      }
-    } else if (test_type == "pattern9") {
-      for (int i = 0; i < size; ++i) {
-        for (int j = 0; j < size; ++j) {
-          matrix[i][j] = j + 1;
-        }
-      }
-    } else if (test_type == "pattern10") {
-      for (int i = 0; i < size; ++i) {
-        for (int j = 0; j < size; ++j) {
-          matrix[i][j] = size - j;
-        }
-      }
+    static const std::unordered_map<std::string, MatrixGenerator> kGenerators = {
+        {"pattern1", FillPattern1},   {"pattern2", FillPattern2},  {"pattern3", FillPattern3},
+        {"pattern4", FillPattern4},   {"pattern5", FillPattern5},  {"pattern6", FillPattern6},
+        {"pattern7", FillPattern7},   {"pattern8", FillPattern8},  {"pattern9", FillPattern9},
+        {"pattern10", FillPattern10}, {"pattern11", FillPattern11}};
+
+    auto it = kGenerators.find(test_type);
+    if (it != kGenerators.end()) {
+      it->second(matrix, size);
     }
 
     return matrix;
@@ -130,7 +169,9 @@ class LuchnikovEMaxValInColOfMatFuncTests : public ppc::util::BaseRunFuncTests<I
 
     for (size_t j = 0; j < cols; ++j) {
       for (size_t i = 0; i < rows; ++i) {
-        result[j] = std::max(matrix[i][j], result[j]);
+        if (matrix[i][j] > result[j]) {
+          result[j] = matrix[i][j];
+        }
       }
     }
 
@@ -144,11 +185,11 @@ TEST_P(LuchnikovEMaxValInColOfMatFuncTests, MaxValInColumnsTest) {
   ExecuteTest(GetParam());
 }
 
-const std::array<TestType, 10> kTestParam = {std::make_tuple(3, "pattern1"),  std::make_tuple(5, "pattern2"),
-                                             std::make_tuple(7, "pattern3"),  std::make_tuple(4, "pattern4"),
-                                             std::make_tuple(6, "pattern5"),  std::make_tuple(8, "pattern6"),
-                                             std::make_tuple(10, "pattern7"), std::make_tuple(3, "pattern8"),
-                                             std::make_tuple(5, "pattern9"),  std::make_tuple(7, "pattern10")};
+const std::array<TestType, 11> kTestParam = {
+    std::make_tuple(3, "pattern1"),  std::make_tuple(5, "pattern2"), std::make_tuple(7, "pattern3"),
+    std::make_tuple(4, "pattern4"),  std::make_tuple(6, "pattern5"), std::make_tuple(8, "pattern6"),
+    std::make_tuple(10, "pattern7"), std::make_tuple(3, "pattern8"), std::make_tuple(5, "pattern9"),
+    std::make_tuple(7, "pattern10"), std::make_tuple(9, "pattern11")};
 
 const auto kTestTasksList = std::tuple_cat(ppc::util::AddFuncTask<LuchnikovEMaxValInColOfMatMPI, InType>(
                                                kTestParam, PPC_SETTINGS_luchnikov_e_max_val_in_col_of_mat),
@@ -159,7 +200,7 @@ const auto kGtestValues = ppc::util::ExpandToValues(kTestTasksList);
 
 const auto kPerfTestName = LuchnikovEMaxValInColOfMatFuncTests::PrintFuncTestName<LuchnikovEMaxValInColOfMatFuncTests>;
 
-INSTANTIATE_TEST_SUITE_P(MatrixColumnTests, LuchnikovEMaxValInColOfMatFuncTests, kGtestValues, kPerfTestName);
+InstantiateTestSuiteP(MatrixColumnTests, LuchnikovEMaxValInColOfMatFuncTests, kGtestValues, kPerfTestName);
 
 }  // namespace
 

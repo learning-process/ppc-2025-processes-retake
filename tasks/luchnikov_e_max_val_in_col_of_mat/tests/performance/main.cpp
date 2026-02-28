@@ -32,19 +32,19 @@ class LuchnikovEMaxValInColOfMatPerfTest : public ppc::util::BaseRunPerfTests<In
   }
 
  private:
-  static InType GenerateLargeMatrix(int size) {
+  InType GenerateLargeMatrix(int size) {
     InType matrix(size, std::vector<int>(size));
 
     for (int i = 0; i < size; ++i) {
       for (int j = 0; j < size; ++j) {
-        matrix[i][j] = ((i * 19 + j * 23) % 10000) + 1;
+        matrix[i][j] = ((i + 1) * (j + 1) * 7) % 10000 + 1;
       }
     }
 
     return matrix;
   }
 
-  static OutType CalculateExpectedResult(const InType &matrix) {
+  OutType CalculateExpectedResult(const InType &matrix) {
     if (matrix.empty()) {
       return {};
     }
@@ -54,9 +54,13 @@ class LuchnikovEMaxValInColOfMatPerfTest : public ppc::util::BaseRunPerfTests<In
     OutType result(cols, std::numeric_limits<int>::min());
 
     for (size_t j = 0; j < cols; ++j) {
+      int max_val = std::numeric_limits<int>::min();
       for (size_t i = 0; i < rows; ++i) {
-        result[j] = std::max(matrix[i][j], result[j]);
+        if (matrix[i][j] > max_val) {
+          max_val = matrix[i][j];
+        }
       }
+      result[j] = max_val;
     }
 
     return result;
