@@ -25,7 +25,7 @@ class KrapivinACcsMultRunFuncTestsProcesses : public ppc::util::BaseRunFuncTests
   }
 
  protected:
-  void SetUp() override {
+  void SetUp() override {  //rerun ci comment
     TestType params = std::get<static_cast<std::size_t>(ppc::util::GTestParamIndex::kTestParams)>(GetParam());
     int rows1 = std::get<0>(params);
     int cols1 = std::get<1>(params);
