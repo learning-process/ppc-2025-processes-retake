@@ -1,13 +1,6 @@
 ---
-Checks: '-*,readability-*,modernize-*,cppcoreguidelines-*,bugprone-*,performance-*,misc-include-cleaner'
-WarningsAsErrors: ''
+Checks: '-*,bugprone-*,cert-*,clang-*,concurrency-*,cppcoreguidelines-*,misc-*,modernize-*,mpi-*,openmp-*,performance-*,portability-*,readability-*,-readability-identifier-naming,-misc-include-cleaner,-readability-function-cognitive-complexity,-cppcoreguidelines-avoid-c-arrays,-cppcoreguidelines-pro-bounds-constant-array-index'
 HeaderFilterRegex: '.*'
-AnalyzeTemporaryDtors: false
-FormatStyle: none
 CheckOptions:
-  - key: readability-IdentifierNamingPolicy.CheckNamespaces
-    value: 1
-  - key: readability-IdentifierNamingPolicy.CheckMacros
+  - key: readability-identifier-naming.CheckMacros
     value: 0
-  - key: readability-IdentifierNamingPolicy.CheckEnumConstants
-    value: 1
