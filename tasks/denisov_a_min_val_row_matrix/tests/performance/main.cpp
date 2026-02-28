@@ -2,7 +2,6 @@
 #include <mpi.h>
 
 #include <algorithm>
-#include <numeric>
 #include <random>
 
 #include "denisov_a_min_val_row_matrix/common/include/common.hpp"

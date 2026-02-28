@@ -24,11 +24,7 @@ bool DenisovAMinValRowMatrixMPI::ValidationImpl() {
   }
 
   const auto cols = input[0].size();
-  if (!std::ranges::all_of(input, [cols](const auto &row) { return row.size() == cols; })) {
-    return false;
-  }
-
-  return true;
+  return std::ranges::all_of(input, [cols](const auto &row) { return row.size() == cols; });
 }
 
 bool DenisovAMinValRowMatrixMPI::PreProcessingImpl() {
@@ -47,16 +43,16 @@ bool DenisovAMinValRowMatrixMPI::RunImpl() {
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
   MPI_Comm_size(MPI_COMM_WORLD, &size);
 
-  std::array<int, 2> dims = {0, 0};
+  std::array<int, 2> dimensions = {0, 0};
   if (rank == 0) {
     const auto &input = GetInput();
-    dims[0] = static_cast<int>(input.size());
-    dims[1] = static_cast<int>(input[0].size());
+    dimensions[0] = static_cast<int>(input.size());
+    dimensions[1] = static_cast<int>(input[0].size());
   }
-  MPI_Bcast(dims.data(), 2, MPI_INT, 0, MPI_COMM_WORLD);
+  MPI_Bcast(dimensions.data(), 2, MPI_INT, 0, MPI_COMM_WORLD);
 
-  int rows = dims[0];
-  int cols = dims[1];
+  int rows = dimensions[0];
+  int cols = dimensions[1];
   int base_rows = rows / size;
   int extra_rows = rows % size;
   int local_rows = base_rows + ((rank < extra_rows) ? 1 : 0);

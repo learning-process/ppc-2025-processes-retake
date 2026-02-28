@@ -3,12 +3,12 @@
 
 #include <algorithm>
 #include <array>
-#include <numeric>
+#include <cstddef>
 #include <random>
 #include <string>
 #include <tuple>
-#include <vector>
 
+#include "denisov_a_min_val_row_matrix/common/include/common.hpp"
 #include "denisov_a_min_val_row_matrix/mpi/include/ops_mpi.hpp"
 #include "denisov_a_min_val_row_matrix/seq/include/ops_seq.hpp"
 #include "util/include/func_test_util.hpp"
