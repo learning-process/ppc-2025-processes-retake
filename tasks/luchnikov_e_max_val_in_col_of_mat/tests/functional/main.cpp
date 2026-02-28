@@ -2,6 +2,7 @@
 
 #include <array>
 #include <cstddef>
+#include <functional>
 #include <limits>
 #include <string>
 #include <tuple>
@@ -23,10 +24,10 @@ class LuchnikovEMaxValInColOfMatFuncTests : public ppc::util::BaseRunFuncTests<I
     return std::to_string(std::get<0>(test_param)) + "_" + std::get<1>(test_param);
   }
 
-  LuchnikovEMaxValInColOfMatFuncTests() : input_data_(), expected_output_() default;
+  LuchnikovEMaxValInColOfMatFuncTests() = default;
 
  protected:
-  void static SetUp() override {
+  void SetUp() override {
     TestType params = std::get<static_cast<size_t>(ppc::util::GTestParamIndex::kTestParams)>(GetParam());
     int matrix_size = std::get<0>(params);
     std::string test_type = std::get<1>(params);
@@ -141,24 +142,24 @@ class LuchnikovEMaxValInColOfMatFuncTests : public ppc::util::BaseRunFuncTests<I
     }
   }
 
-  static InType GenerateTestMatrix(int size, const std::string &test_type) {
+  InType GenerateTestMatrix(int size, const std::string &test_type) {
     InType matrix(size, std::vector<int>(size));
 
-    static const std::unordered_map<std::string, MatrixGenerator> kGenerators = {
+    static const std::unordered_map<std::string, MatrixGenerator> generators = {
         {"pattern1", FillPattern1},   {"pattern2", FillPattern2},  {"pattern3", FillPattern3},
         {"pattern4", FillPattern4},   {"pattern5", FillPattern5},  {"pattern6", FillPattern6},
         {"pattern7", FillPattern7},   {"pattern8", FillPattern8},  {"pattern9", FillPattern9},
         {"pattern10", FillPattern10}, {"pattern11", FillPattern11}};
 
-    auto it = kGenerators.find(test_type);
-    if (it != kGenerators.end()) {
+    auto it = generators.find(test_type);
+    if (it != generators.end()) {
       it->second(matrix, size);
     }
 
     return matrix;
   }
 
-  static OutType CalculateExpectedResult(const InType &matrix) {
+  OutType CalculateExpectedResult(const InType &matrix) {
     if (matrix.empty()) {
       return {};
     }
