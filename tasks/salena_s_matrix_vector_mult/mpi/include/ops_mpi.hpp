@@ -21,7 +21,7 @@ class TestTaskMPI : public BaseTask {
   bool RunImpl() override;
   bool PostProcessingImpl() override;
 
-  static std::vector<double> Transpose(const std::vector<double>& matrix, int rows, int cols);
+  static std::vector<double> Transpose(const std::vector<double> &matrix, int rows, int cols);
 };
 
 }  // namespace salena_s_matrix_vector_mult

@@ -41,7 +41,7 @@ bool TestTaskMPI::PreProcessingImpl() {
   return true;
 }
 
-std::vector<double> TestTaskMPI::Transpose(const std::vector<double>& matrix, int rows, int cols) {
+std::vector<double> TestTaskMPI::Transpose(const std::vector<double> &matrix, int rows, int cols) {
   std::vector<double> transposed(static_cast<size_t>(rows) * static_cast<size_t>(cols));
   for (int i = 0; i < rows; ++i) {
     for (int j = 0; j < cols; ++j) {
