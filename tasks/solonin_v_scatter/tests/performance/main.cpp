@@ -1,4 +1,5 @@
 #include <gtest/gtest.h>
+#include <mpi.h>
 
 #include <cstddef>
 #include <numeric>
@@ -31,7 +32,11 @@ class SoloninVScatterPerfTests : public ppc::util::BaseRunPerfTests<InType, OutT
 
   InType GetTestInputData() final {
     int rank = 0;
-    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+    int initialized = 0;
+    MPI_Initialized(&initialized);
+    if (initialized != 0) {
+      MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+    }
     if (rank == root_) {
       return std::make_tuple(buf_, send_count_, root_);
     }
