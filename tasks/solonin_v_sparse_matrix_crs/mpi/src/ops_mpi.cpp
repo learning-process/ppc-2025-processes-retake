@@ -17,10 +17,10 @@ namespace solonin_v_sparse_matrix_crs {
 
 SoloninVSparseMulCRSMPI::SoloninVSparseMulCRSMPI(const InType &in)
     : vals_a_(std::get<0>(in)),
-      cols_a_(std::get<1>(in)),
-      ptr_a_(std::get<2>(in)),
       vals_b_(std::get<3>(in)),
+      cols_a_(std::get<1>(in)),
       cols_b_(std::get<4>(in)),
+      ptr_a_(std::get<2>(in)),
       ptr_b_(std::get<5>(in)),
       rows_a_(std::get<6>(in)),
       cols_a_count_(std::get<7>(in)),
