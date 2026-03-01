@@ -30,7 +30,11 @@ class SoloninVScatterFuncTests : public ppc::util::BaseRunFuncTests<InType, OutT
     root_ = std::get<3>(params);
 
     int rank = 0;
-    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+    int initialized = 0;
+    MPI_Initialized(&initialized);
+    if (initialized != 0) {
+      MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+    }
 
     // Expected: each rank gets its chunk
     expected_.assign(data_.begin() + rank * send_count_, data_.begin() + rank * send_count_ + send_count_);
@@ -38,7 +42,11 @@ class SoloninVScatterFuncTests : public ppc::util::BaseRunFuncTests<InType, OutT
 
   bool CheckTestOutputData(OutType &out) final {
     int rank = 0;
-    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+    int initialized = 0;
+    MPI_Initialized(&initialized);
+    if (initialized != 0) {
+      MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+    }
     if (out.size() != static_cast<size_t>(send_count_)) {
       return false;
     }
@@ -52,7 +60,11 @@ class SoloninVScatterFuncTests : public ppc::util::BaseRunFuncTests<InType, OutT
 
   InType GetTestInputData() final {
     int rank = 0;
-    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+    int initialized = 0;
+    MPI_Initialized(&initialized);
+    if (initialized != 0) {
+      MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+    }
     if (rank == root_) {
       return std::make_tuple(data_, send_count_, root_);
     }
