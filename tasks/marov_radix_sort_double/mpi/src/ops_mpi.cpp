@@ -106,7 +106,7 @@ std::vector<double> MergeSorted(const std::vector<double>& a,
 
 }  // namespace
 
-MarovRadixSortDoubleMPI::MarovRadixSortDoubleMPI(const InType& in) {
+MarovRadixSortDoubleMpi::MarovRadixSortDoubleMpi(const InType& in) {
   MPI_Comm_rank(MPI_COMM_WORLD, &proc_rank_);
   MPI_Comm_size(MPI_COMM_WORLD, &proc_size_);
 
@@ -114,17 +114,17 @@ MarovRadixSortDoubleMPI::MarovRadixSortDoubleMPI(const InType& in) {
   GetInput() = in;
 }
 
-bool MarovRadixSortDoubleMPI::ValidationImpl() {
+bool MarovRadixSortDoubleMpi::ValidationImpl() {
   int initialized = 0;
   MPI_Initialized(&initialized);
   return initialized != 0;
 }
 
-bool MarovRadixSortDoubleMPI::PreProcessingImpl() {
+bool MarovRadixSortDoubleMpi::PreProcessingImpl() {
   return true;
 }
 
-bool MarovRadixSortDoubleMPI::RunImpl() {
+bool MarovRadixSortDoubleMpi::RunImpl() {
   const auto& input = GetInput();
   int n = static_cast<int>(input.size());
 
@@ -183,7 +183,7 @@ bool MarovRadixSortDoubleMPI::RunImpl() {
   return true;
 }
 
-bool MarovRadixSortDoubleMPI::PostProcessingImpl() {
+bool MarovRadixSortDoubleMpi::PostProcessingImpl() {
   return true;
 }
 
