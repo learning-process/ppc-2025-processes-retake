@@ -93,7 +93,7 @@ const auto kPerfTestName = KaurAVertRibbonSchemeFuncTests::PrintFuncTestName<Kau
 
 INSTANTIATE_TEST_SUITE_P(PicMatrixTests, KaurAVertRibbonSchemeFuncTests, kGtestValues, kPerfTestName);
 
-static bool VectorsNear(const std::vector<double> &a, const std::vector<double> &b, double eps) {
+bool VectorsNear(const std::vector<double> &a, const std::vector<double> &b, double eps) {
   if (a.size() != b.size()) {
     return false;
   }
@@ -105,7 +105,7 @@ static bool VectorsNear(const std::vector<double> &a, const std::vector<double> 
   return true;
 }
 
-static bool RunAndCheck(const TaskData &data, const std::vector<double> &expected) {
+bool RunAndCheck(const TaskData &data, const std::vector<double> &expected) {
   KaurAVertRibbonSchemeSEQ task(data);
   if (!task.Validation()) {
     return false;
@@ -233,7 +233,7 @@ TEST(KaurAVertRibbonSchemeTest, FloatingPointPrecision) {
   ASSERT_TRUE(RunAndCheck(data, expected));
 }
 
-static bool ValidationFails(const TaskData &data) {
+bool ValidationFails(const TaskData &data) {
   KaurAVertRibbonSchemeSEQ task(data);
   return !task.Validation();
 }
