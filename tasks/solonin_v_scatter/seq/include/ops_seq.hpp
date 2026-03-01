@@ -6,7 +6,9 @@ namespace solonin_v_scatter {
 
 class SoloninVScatterSEQ : public BaseTask {
  public:
-  static constexpr ppc::task::TypeOfTask GetStaticTypeOfTask() { return ppc::task::TypeOfTask::kSEQ; }
+  static constexpr ppc::task::TypeOfTask GetStaticTypeOfTask() {
+    return ppc::task::TypeOfTask::kSEQ;
+  }
   explicit SoloninVScatterSEQ(const InType &in);
 
  private:

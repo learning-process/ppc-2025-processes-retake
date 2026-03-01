@@ -39,10 +39,12 @@ class SoloninVScatterPerfTests : public ppc::util::BaseRunPerfTests<InType, OutT
   }
 };
 
-TEST_P(SoloninVScatterPerfTests, RunPerfModes) { ExecuteTest(GetParam()); }
+TEST_P(SoloninVScatterPerfTests, RunPerfModes) {
+  ExecuteTest(GetParam());
+}
 
-const auto kAllPerfTasks = ppc::util::MakeAllPerfTasks<InType, SoloninVScatterMPI, SoloninVScatterSEQ>(
-    PPC_SETTINGS_solonin_v_scatter);
+const auto kAllPerfTasks =
+    ppc::util::MakeAllPerfTasks<InType, SoloninVScatterMPI, SoloninVScatterSEQ>(PPC_SETTINGS_solonin_v_scatter);
 const auto kGtestValues = ppc::util::TupleToGTestValues(kAllPerfTasks);
 const auto kPerfTestName = SoloninVScatterPerfTests::CustomPerfTestName;
 

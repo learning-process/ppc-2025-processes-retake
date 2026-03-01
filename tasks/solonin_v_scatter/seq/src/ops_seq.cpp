@@ -19,8 +19,7 @@ bool SoloninVScatterSEQ::ValidationImpl() {
   const auto &buf = std::get<0>(GetInput());
   int count = std::get<1>(GetInput());
   int root = std::get<2>(GetInput());
-  return !buf.empty() && count > 0 && root == 0 &&
-         static_cast<int>(buf.size()) >= count;
+  return !buf.empty() && count > 0 && root == 0 && static_cast<int>(buf.size()) >= count;
 }
 
 bool SoloninVScatterSEQ::PreProcessingImpl() {

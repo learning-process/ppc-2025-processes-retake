@@ -33,16 +33,19 @@ class SoloninVScatterFuncTests : public ppc::util::BaseRunFuncTests<InType, OutT
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 
     // Expected: each rank gets its chunk
-    expected_.assign(data_.begin() + rank * send_count_,
-                     data_.begin() + rank * send_count_ + send_count_);
+    expected_.assign(data_.begin() + rank * send_count_, data_.begin() + rank * send_count_ + send_count_);
   }
 
   bool CheckTestOutputData(OutType &out) final {
     int rank = 0;
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-    if (out.size() != static_cast<size_t>(send_count_)) return false;
+    if (out.size() != static_cast<size_t>(send_count_)) {
+      return false;
+    }
     for (int i = 0; i < send_count_; i++) {
-      if (out[i] != expected_[i]) return false;
+      if (out[i] != expected_[i]) {
+        return false;
+      }
     }
     return true;
   }
@@ -77,23 +80,20 @@ std::vector<int> MakeData(int send_count, int num_procs) {
 constexpr int kMaxProcs = 4;
 
 const std::array<TestType, 10> kTests = {
-    std::make_tuple(1, MakeData(1, kMaxProcs), 1, 0),
-    std::make_tuple(2, MakeData(2, kMaxProcs), 2, 0),
-    std::make_tuple(3, MakeData(4, kMaxProcs), 4, 0),
-    std::make_tuple(4, MakeData(8, kMaxProcs), 8, 0),
-    std::make_tuple(5, MakeData(16, kMaxProcs), 16, 0),
-    std::make_tuple(6, MakeData(32, kMaxProcs), 32, 0),
-    std::make_tuple(7, MakeData(64, kMaxProcs), 64, 0),
-    std::make_tuple(8, MakeData(100, kMaxProcs), 100, 0),
-    std::make_tuple(9, MakeData(256, kMaxProcs), 256, 0),
-    std::make_tuple(10, MakeData(512, kMaxProcs), 512, 0),
+    std::make_tuple(1, MakeData(1, kMaxProcs), 1, 0),     std::make_tuple(2, MakeData(2, kMaxProcs), 2, 0),
+    std::make_tuple(3, MakeData(4, kMaxProcs), 4, 0),     std::make_tuple(4, MakeData(8, kMaxProcs), 8, 0),
+    std::make_tuple(5, MakeData(16, kMaxProcs), 16, 0),   std::make_tuple(6, MakeData(32, kMaxProcs), 32, 0),
+    std::make_tuple(7, MakeData(64, kMaxProcs), 64, 0),   std::make_tuple(8, MakeData(100, kMaxProcs), 100, 0),
+    std::make_tuple(9, MakeData(256, kMaxProcs), 256, 0), std::make_tuple(10, MakeData(512, kMaxProcs), 512, 0),
 };
 
-TEST_P(SoloninVScatterFuncTests, FunctionalTests) { ExecuteTest(GetParam()); }
+TEST_P(SoloninVScatterFuncTests, FunctionalTests) {
+  ExecuteTest(GetParam());
+}
 
-const auto kTaskList = std::tuple_cat(
-    ppc::util::AddFuncTask<SoloninVScatterMPI, InType>(kTests, PPC_SETTINGS_solonin_v_scatter),
-    ppc::util::AddFuncTask<SoloninVScatterSEQ, InType>(kTests, PPC_SETTINGS_solonin_v_scatter));
+const auto kTaskList =
+    std::tuple_cat(ppc::util::AddFuncTask<SoloninVScatterMPI, InType>(kTests, PPC_SETTINGS_solonin_v_scatter),
+                   ppc::util::AddFuncTask<SoloninVScatterSEQ, InType>(kTests, PPC_SETTINGS_solonin_v_scatter));
 
 const auto kGtestValues = ppc::util::ExpandToValues(kTaskList);
 const auto kTestName = SoloninVScatterFuncTests::PrintFuncTestName<SoloninVScatterFuncTests>;

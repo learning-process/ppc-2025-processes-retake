@@ -25,8 +25,12 @@ bool SoloninVScatterMPI::ValidationImpl() {
     const auto &buf = std::get<0>(GetInput());
     int count = std::get<1>(GetInput());
     int root = std::get<2>(GetInput());
-    if (buf.empty() || count <= 0 || root < 0 || root >= world_size_) return false;
-    if (static_cast<int>(buf.size()) < count * world_size_) return false;
+    if (buf.empty() || count <= 0 || root < 0 || root >= world_size_) {
+      return false;
+    }
+    if (static_cast<int>(buf.size()) < count * world_size_) {
+      return false;
+    }
   }
   return true;
 }
@@ -66,13 +70,13 @@ bool SoloninVScatterMPI::RunImpl() {
     const auto &send_buf = std::get<0>(GetInput());
 
     // Copy own chunk first
-    std::copy(send_buf.begin() + root * count,
-              send_buf.begin() + root * count + count,
-              GetOutput().begin());
+    std::copy(send_buf.begin() + root * count, send_buf.begin() + root * count + count, GetOutput().begin());
 
     // Send to all other ranks
     for (int dest = 0; dest < world_size_; dest++) {
-      if (dest == root) continue;
+      if (dest == root) {
+        continue;
+      }
       MPI_Send(send_buf.data() + dest * count, count, MPI_INT, dest, 0, MPI_COMM_WORLD);
     }
   } else {
