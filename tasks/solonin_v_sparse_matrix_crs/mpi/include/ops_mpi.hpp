@@ -26,9 +26,10 @@ class SoloninVSparseMulCRSMPI : public BaseTask {
   void SendAToRank(int dest);
   void ReceiveAFromRoot();
   void ComputeLocal();
-  void ProcessLocalRow(int local_idx, std::vector<double> &row_vals, std::vector<int> &row_cols);
+  void ProcessLocalRow(int local_idx, std::vector<double> &rv, std::vector<int> &rc);
   void GatherResults();
-  void CollectFromRank(int src, std::vector<std::vector<double>> &all_vals, std::vector<std::vector<int>> &all_cols);
+  static void CollectFromRank(int src, std::vector<std::vector<double>> &all_vals,
+                              std::vector<std::vector<int>> &all_cols);
   void AssembleResult(std::vector<std::vector<double>> &all_vals, std::vector<std::vector<int>> &all_cols);
   static void SortRow(std::vector<double> &rv, std::vector<int> &rc);
 
