@@ -93,242 +93,86 @@ const auto kPerfTestName = KaurAVertRibbonSchemeFuncTests::PrintFuncTestName<Kau
 
 INSTANTIATE_TEST_SUITE_P(PicMatrixTests, KaurAVertRibbonSchemeFuncTests, kGtestValues, kPerfTestName);
 
-namespace {
-void AssertVectorsNear(const std::vector<double> &actual, const std::vector<double> &expected, double eps) {
-  ASSERT_EQ(actual.size(), expected.size());
-  for (std::size_t i = 0; i < expected.size(); i++) {
-    ASSERT_NEAR(actual[i], expected[i], eps);
+struct EdgeTestCase {
+  std::string name;
+  TaskData data;
+  std::vector<double> expected;
+  bool should_fail_validation{false};
+};
+
+class KaurAVertRibbonSchemeParamTest : public ::testing::TestWithParam<EdgeTestCase> {};
+
+TEST_P(KaurAVertRibbonSchemeParamTest, CheckEdgeCase) {
+  const auto &param = GetParam();
+  KaurAVertRibbonSchemeSEQ task(param.data);
+
+  if (param.should_fail_validation) {
+    EXPECT_FALSE(task.Validation());
+    return;
+  }
+
+  ASSERT_TRUE(task.Validation());
+  ASSERT_TRUE(task.PreProcessing());
+  ASSERT_TRUE(task.Run());
+  ASSERT_TRUE(task.PostProcessing());
+
+  const auto &output = task.GetOutput();
+  ASSERT_EQ(output.size(), param.expected.size());
+  for (std::size_t i = 0; i < param.expected.size(); i++) {
+    ASSERT_NEAR(output[i], param.expected[i], 1e-9);
   }
 }
-}  // namespace
 
-TEST(KaurAVertRibbonSchemeEdgeTests, SingleElementMatrix) {
-  TaskData data;
-  data.rows = 1;
-  data.cols = 1;
-  data.matrix = {5.0};
-  data.vector = {3.0};
-
-  KaurAVertRibbonSchemeSEQ task(data);
-  ASSERT_TRUE(task.Validation());
-  ASSERT_TRUE(task.PreProcessing());
-  ASSERT_TRUE(task.Run());
-  ASSERT_TRUE(task.PostProcessing());
-
-  std::vector<double> expected = {15.0};
-  AssertVectorsNear(task.GetOutput(), expected, 1e-9);
-}
-
-TEST(KaurAVertRibbonSchemeEdgeTests, IdentityMatrix) {
-  TaskData data;
-  data.rows = 3;
-  data.cols = 3;
-  data.matrix = {1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0};
-  data.vector = {2.0, 4.0, 6.0};
-
-  KaurAVertRibbonSchemeSEQ task(data);
-  ASSERT_TRUE(task.Validation());
-  ASSERT_TRUE(task.PreProcessing());
-  ASSERT_TRUE(task.Run());
-  ASSERT_TRUE(task.PostProcessing());
-
-  std::vector<double> expected = {2.0, 4.0, 6.0};
-  AssertVectorsNear(task.GetOutput(), expected, 1e-9);
-}
-
-TEST(KaurAVertRibbonSchemeEdgeTests, ZeroMatrix) {
-  TaskData data;
-  data.rows = 2;
-  data.cols = 2;
-  data.matrix = {0.0, 0.0, 0.0, 0.0};
-  data.vector = {1.0, 1.0};
-
-  KaurAVertRibbonSchemeSEQ task(data);
-  ASSERT_TRUE(task.Validation());
-  ASSERT_TRUE(task.PreProcessing());
-  ASSERT_TRUE(task.Run());
-  ASSERT_TRUE(task.PostProcessing());
-
-  std::vector<double> expected = {0.0, 0.0};
-  AssertVectorsNear(task.GetOutput(), expected, 1e-9);
-}
-
-TEST(KaurAVertRibbonSchemeEdgeTests, ZeroVector) {
-  TaskData data;
-  data.rows = 2;
-  data.cols = 2;
-  data.matrix = {1.0, 2.0, 3.0, 4.0};
-  data.vector = {0.0, 0.0};
-
-  KaurAVertRibbonSchemeSEQ task(data);
-  ASSERT_TRUE(task.Validation());
-  ASSERT_TRUE(task.PreProcessing());
-  ASSERT_TRUE(task.Run());
-  ASSERT_TRUE(task.PostProcessing());
-
-  std::vector<double> expected = {0.0, 0.0};
-  AssertVectorsNear(task.GetOutput(), expected, 1e-9);
-}
-
-TEST(KaurAVertRibbonSchemeEdgeTests, RectangularMatrixMoreRows) {
-  TaskData data;
-  data.rows = 4;
-  data.cols = 2;
-  data.matrix = {1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0};
-  data.vector = {1.0, 2.0};
-
-  KaurAVertRibbonSchemeSEQ task(data);
-  ASSERT_TRUE(task.Validation());
-  ASSERT_TRUE(task.PreProcessing());
-  ASSERT_TRUE(task.Run());
-  ASSERT_TRUE(task.PostProcessing());
-
-  std::vector<double> expected = {11.0, 14.0, 17.0, 20.0};
-  AssertVectorsNear(task.GetOutput(), expected, 1e-9);
-}
-
-TEST(KaurAVertRibbonSchemeEdgeTests, RectangularMatrixMoreCols) {
-  TaskData data;
-  data.rows = 2;
-  data.cols = 4;
-  data.matrix = {1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0};
-  data.vector = {1.0, 1.0, 1.0, 1.0};
-
-  KaurAVertRibbonSchemeSEQ task(data);
-  ASSERT_TRUE(task.Validation());
-  ASSERT_TRUE(task.PreProcessing());
-  ASSERT_TRUE(task.Run());
-  ASSERT_TRUE(task.PostProcessing());
-
-  std::vector<double> expected = {16.0, 20.0};
-  AssertVectorsNear(task.GetOutput(), expected, 1e-9);
-}
-
-TEST(KaurAVertRibbonSchemeEdgeTests, NegativeValues) {
-  TaskData data;
-  data.rows = 2;
-  data.cols = 2;
-  data.matrix = {-1.0, -2.0, -3.0, -4.0};
-  data.vector = {-1.0, -2.0};
-
-  KaurAVertRibbonSchemeSEQ task(data);
-  ASSERT_TRUE(task.Validation());
-  ASSERT_TRUE(task.PreProcessing());
-  ASSERT_TRUE(task.Run());
-  ASSERT_TRUE(task.PostProcessing());
-
-  std::vector<double> expected = {7.0, 10.0};
-  AssertVectorsNear(task.GetOutput(), expected, 1e-9);
-}
-
-TEST(KaurAVertRibbonSchemeEdgeTests, LargeMatrix) {
-  const int size = 100;
-  TaskData data;
-  data.rows = size;
-  data.cols = size;
-  data.matrix.resize(static_cast<std::size_t>(size) * size, 1.0);
-  data.vector.resize(size, 1.0);
-
-  KaurAVertRibbonSchemeSEQ task(data);
-  ASSERT_TRUE(task.Validation());
-  ASSERT_TRUE(task.PreProcessing());
-  ASSERT_TRUE(task.Run());
-  ASSERT_TRUE(task.PostProcessing());
-
-  std::vector<double> expected(size, static_cast<double>(size));
-  AssertVectorsNear(task.GetOutput(), expected, 1e-9);
-}
-
-TEST(KaurAVertRibbonSchemeEdgeTests, InvalidRowsZero) {
-  TaskData data;
-  data.rows = 0;
-  data.cols = 2;
-  data.matrix = {};
-  data.vector = {1.0, 2.0};
-  KaurAVertRibbonSchemeSEQ task(data);
-  EXPECT_FALSE(task.Validation());
-}
-
-TEST(KaurAVertRibbonSchemeEdgeTests, InvalidColsZero) {
-  TaskData data;
-  data.rows = 2;
-  data.cols = 0;
-  data.matrix = {};
-  data.vector = {};
-  KaurAVertRibbonSchemeSEQ task(data);
-  EXPECT_FALSE(task.Validation());
-}
-
-TEST(KaurAVertRibbonSchemeEdgeTests, InvalidMatrixSize) {
-  TaskData data;
-  data.rows = 2;
-  data.cols = 2;
-  data.matrix = {1.0, 2.0, 3.0};
-  data.vector = {1.0, 2.0};
-  KaurAVertRibbonSchemeSEQ task(data);
-  EXPECT_FALSE(task.Validation());
-}
-
-TEST(KaurAVertRibbonSchemeEdgeTests, InvalidVectorSize) {
-  TaskData data;
-  data.rows = 2;
-  data.cols = 2;
-  data.matrix = {1.0, 2.0, 3.0, 4.0};
-  data.vector = {1.0};
-  KaurAVertRibbonSchemeSEQ task(data);
-  EXPECT_FALSE(task.Validation());
-}
-
-TEST(KaurAVertRibbonSchemeEdgeTests, SingleRow) {
-  TaskData data;
-  data.rows = 1;
-  data.cols = 5;
-  data.matrix = {1.0, 2.0, 3.0, 4.0, 5.0};
-  data.vector = {1.0, 2.0, 3.0, 4.0, 5.0};
-
-  KaurAVertRibbonSchemeSEQ task(data);
-  ASSERT_TRUE(task.Validation());
-  ASSERT_TRUE(task.PreProcessing());
-  ASSERT_TRUE(task.Run());
-  ASSERT_TRUE(task.PostProcessing());
-
-  std::vector<double> expected = {55.0};
-  AssertVectorsNear(task.GetOutput(), expected, 1e-9);
-}
-
-TEST(KaurAVertRibbonSchemeEdgeTests, SingleColumn) {
-  TaskData data;
-  data.rows = 5;
-  data.cols = 1;
-  data.matrix = {1.0, 2.0, 3.0, 4.0, 5.0};
-  data.vector = {2.0};
-
-  KaurAVertRibbonSchemeSEQ task(data);
-  ASSERT_TRUE(task.Validation());
-  ASSERT_TRUE(task.PreProcessing());
-  ASSERT_TRUE(task.Run());
-  ASSERT_TRUE(task.PostProcessing());
-
-  std::vector<double> expected = {2.0, 4.0, 6.0, 8.0, 10.0};
-  AssertVectorsNear(task.GetOutput(), expected, 1e-9);
-}
-
-TEST(KaurAVertRibbonSchemeEdgeTests, FloatingPointPrecision) {
-  TaskData data;
-  data.rows = 2;
-  data.cols = 2;
-  data.matrix = {0.1, 0.2, 0.3, 0.4};
-  data.vector = {0.5, 0.5};
-
-  KaurAVertRibbonSchemeSEQ task(data);
-  ASSERT_TRUE(task.Validation());
-  ASSERT_TRUE(task.PreProcessing());
-  ASSERT_TRUE(task.Run());
-  ASSERT_TRUE(task.PostProcessing());
-
-  std::vector<double> expected = {0.2, 0.3};
-  AssertVectorsNear(task.GetOutput(), expected, 1e-9);
-}
+INSTANTIATE_TEST_SUITE_P(
+    KaurAVertRibbonSchemeEdgeTests, KaurAVertRibbonSchemeParamTest,
+    ::testing::Values(
+        EdgeTestCase{"SingleElementMatrix", TaskData{.matrix = {5.0}, .vector = {3.0}, .rows = 1, .cols = 1}, {15.0}},
+        EdgeTestCase{"IdentityMatrix",
+                     TaskData{.matrix = {1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0},
+                              .vector = {2.0, 4.0, 6.0},
+                              .rows = 3,
+                              .cols = 3},
+                     {2.0, 4.0, 6.0}},
+        EdgeTestCase{"ZeroMatrix",
+                     TaskData{.matrix = {0.0, 0.0, 0.0, 0.0}, .vector = {1.0, 1.0}, .rows = 2, .cols = 2},
+                     {0.0, 0.0}},
+        EdgeTestCase{"ZeroVector",
+                     TaskData{.matrix = {1.0, 2.0, 3.0, 4.0}, .vector = {0.0, 0.0}, .rows = 2, .cols = 2},
+                     {0.0, 0.0}},
+        EdgeTestCase{
+            "RectangularMatrixMoreRows",
+            TaskData{.matrix = {1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0}, .vector = {1.0, 2.0}, .rows = 4, .cols = 2},
+            {11.0, 14.0, 17.0, 20.0}},
+        EdgeTestCase{"RectangularMatrixMoreCols",
+                     TaskData{.matrix = {1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0},
+                              .vector = {1.0, 1.0, 1.0, 1.0},
+                              .rows = 2,
+                              .cols = 4},
+                     {16.0, 20.0}},
+        EdgeTestCase{"NegativeValues",
+                     TaskData{.matrix = {-1.0, -2.0, -3.0, -4.0}, .vector = {-1.0, -2.0}, .rows = 2, .cols = 2},
+                     {7.0, 10.0}},
+        EdgeTestCase{
+            "SingleRow",
+            TaskData{.matrix = {1.0, 2.0, 3.0, 4.0, 5.0}, .vector = {1.0, 2.0, 3.0, 4.0, 5.0}, .rows = 1, .cols = 5},
+            {55.0}},
+        EdgeTestCase{"SingleColumn",
+                     TaskData{.matrix = {1.0, 2.0, 3.0, 4.0, 5.0}, .vector = {2.0}, .rows = 5, .cols = 1},
+                     {2.0, 4.0, 6.0, 8.0, 10.0}},
+        EdgeTestCase{"FloatingPointPrecision",
+                     TaskData{.matrix = {0.1, 0.2, 0.3, 0.4}, .vector = {0.5, 0.5}, .rows = 2, .cols = 2},
+                     {0.2, 0.3}},
+        EdgeTestCase{"InvalidRowsZero", TaskData{.matrix = {}, .vector = {1.0, 2.0}, .rows = 0, .cols = 2}, {}, true},
+        EdgeTestCase{"InvalidColsZero", TaskData{.matrix = {}, .vector = {}, .rows = 2, .cols = 0}, {}, true},
+        EdgeTestCase{"InvalidMatrixSize",
+                     TaskData{.matrix = {1.0, 2.0, 3.0}, .vector = {1.0, 2.0}, .rows = 2, .cols = 2},
+                     {},
+                     true},
+        EdgeTestCase{"InvalidVectorSize",
+                     TaskData{.matrix = {1.0, 2.0, 3.0, 4.0}, .vector = {1.0}, .rows = 2, .cols = 2},
+                     {},
+                     true}),
+    [](const ::testing::TestParamInfo<EdgeTestCase> &info) { return info.param.name; });
 
 }  // namespace
 }  // namespace kaur_a_vert_ribbon_scheme
