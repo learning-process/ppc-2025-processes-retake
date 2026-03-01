@@ -2,7 +2,8 @@
 
 #include <mpi.h>
 
-#include <algorithm>
+#include <cstddef>
+#include <vector>
 
 namespace salena_s_matrix_vector_mult {
 
@@ -15,7 +16,7 @@ TestTaskMPI::TestTaskMPI(const InType &in) {
 }
 
 bool TestTaskMPI::ValidationImpl() {
-  int rank;
+  int rank = 0;
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
   if (rank == 0) {
     if (GetInput().rows <= 0 || GetInput().cols <= 0) {
@@ -32,7 +33,7 @@ bool TestTaskMPI::ValidationImpl() {
 }
 
 bool TestTaskMPI::PreProcessingImpl() {
-  int rank;
+  int rank = 0;
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
   if (rank == 0) {
     GetOutput().assign(GetInput().rows, 0.0);
@@ -40,18 +41,24 @@ bool TestTaskMPI::PreProcessingImpl() {
   return true;
 }
 
+std::vector<double> TestTaskMPI::Transpose(const std::vector<double>& matrix, int rows, int cols) {
+  std::vector<double> transposed(static_cast<size_t>(rows) * static_cast<size_t>(cols));
+  for (int i = 0; i < rows; ++i) {
+    for (int j = 0; j < cols; ++j) {
+      transposed[(j * rows) + i] = matrix[(i * cols) + j];
+    }
+  }
+  return transposed;
+}
+
 bool TestTaskMPI::RunImpl() {
-  int rank, size;
+  int rank = 0;
+  int size = 0;
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
   MPI_Comm_size(MPI_COMM_WORLD, &size);
 
-  int rows = 0;
-  int cols = 0;
-
-  if (rank == 0) {
-    rows = GetInput().rows;
-    cols = GetInput().cols;
-  }
+  int rows = (rank == 0) ? GetInput().rows : 0;
+  int cols = (rank == 0) ? GetInput().cols : 0;
 
   MPI_Bcast(&rows, 1, MPI_INT, 0, MPI_COMM_WORLD);
   MPI_Bcast(&cols, 1, MPI_INT, 0, MPI_COMM_WORLD);
@@ -65,20 +72,17 @@ bool TestTaskMPI::RunImpl() {
 
   std::vector<int> send_counts(size);
   std::vector<int> displs(size);
+  std::vector<int> vec_counts(size);
+  std::vector<int> vec_displs(size);
 
   int current_displ = 0;
+  int cur_vec = 0;
   for (int i = 0; i < size; ++i) {
     int c = delta_cols + (i < rem_cols ? 1 : 0);
     send_counts[i] = c * rows;
     displs[i] = current_displ;
     current_displ += send_counts[i];
-  }
 
-  std::vector<int> vec_counts(size);
-  std::vector<int> vec_displs(size);
-  int cur_vec = 0;
-  for (int i = 0; i < size; ++i) {
-    int c = delta_cols + (i < rem_cols ? 1 : 0);
     vec_counts[i] = c;
     vec_displs[i] = cur_vec;
     cur_vec += c;
@@ -86,16 +90,10 @@ bool TestTaskMPI::RunImpl() {
 
   std::vector<double> local_matrix(send_counts[rank]);
   std::vector<double> local_vec(vec_counts[rank]);
-
   std::vector<double> matrix_transposed;
+
   if (rank == 0) {
-    matrix_transposed.resize(static_cast<size_t>(rows) * static_cast<size_t>(cols));
-    const auto &matrix = GetInput().matrix;
-    for (int i = 0; i < rows; ++i) {
-      for (int j = 0; j < cols; ++j) {
-        matrix_transposed[(j * rows) + i] = matrix[(i * cols) + j];
-      }
-    }
+    matrix_transposed = Transpose(GetInput().matrix, rows, cols);
   }
 
   MPI_Scatterv(rank == 0 ? matrix_transposed.data() : nullptr, send_counts.data(), displs.data(), MPI_DOUBLE,
@@ -114,11 +112,7 @@ bool TestTaskMPI::RunImpl() {
     }
   }
 
-  if (rank == 0) {
-    MPI_Reduce(local_res.data(), GetOutput().data(), rows, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
-  } else {
-    MPI_Reduce(local_res.data(), nullptr, rows, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
-  }
+  MPI_Reduce(local_res.data(), rank == 0 ? GetOutput().data() : nullptr, rows, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
 
   return true;
 }
