@@ -93,6 +93,7 @@ const auto kPerfTestName = KaurAVertRibbonSchemeFuncTests::PrintFuncTestName<Kau
 
 INSTANTIATE_TEST_SUITE_P(PicMatrixTests, KaurAVertRibbonSchemeFuncTests, kGtestValues, kPerfTestName);
 
+// Вспомогательная функция для проверки векторов
 namespace {
 void AssertVectorsNear(const std::vector<double> &actual, const std::vector<double> &expected, double eps) {
   ASSERT_EQ(actual.size(), expected.size());
@@ -100,84 +101,83 @@ void AssertVectorsNear(const std::vector<double> &actual, const std::vector<doub
     ASSERT_NEAR(actual[i], expected[i], eps);
   }
 }
+
+// Вспомогательная функция для выполнения задачи
+void ExecuteTaskAndCheck(const TaskData &data, const std::vector<double> &expected) {
+  KaurAVertRibbonSchemeSEQ task(data);
+  ASSERT_TRUE(task.Validation());
+  ASSERT_TRUE(task.PreProcessing());
+  ASSERT_TRUE(task.Run());
+  ASSERT_TRUE(task.PostProcessing());
+  AssertVectorsNear(task.GetOutput(), expected, 1e-9);
+}
 }  // namespace
 
-class KaurAVertRibbonSchemeTestBase : public ::testing::Test {
- protected:
-  void RunTest(const TaskData &data, const std::vector<double> &expected) {
-    KaurAVertRibbonSchemeSEQ task(data);
-    ASSERT_TRUE(task.Validation());
-    ASSERT_TRUE(task.PreProcessing());
-    ASSERT_TRUE(task.Run());
-    ASSERT_TRUE(task.PostProcessing());
-    AssertVectorsNear(task.GetOutput(), expected, 1e-9);
-  }
-};
-
-TEST_F(KaurAVertRibbonSchemeTestBase, SingleElementMatrix) {
+// Тесты с использованием вспомогательной функции
+TEST(KaurAVertRibbonSchemeEdgeTests, SingleElementMatrix) {
   TaskData data;
   data.rows = 1;
   data.cols = 1;
   data.matrix = {5.0};
   data.vector = {3.0};
-  RunTest(data, {15.0});
+  ExecuteTaskAndCheck(data, {15.0});
 }
 
-TEST_F(KaurAVertRibbonSchemeTestBase, IdentityMatrix) {
+TEST(KaurAVertRibbonSchemeEdgeTests, IdentityMatrix) {
   TaskData data;
   data.rows = 3;
   data.cols = 3;
   data.matrix = {1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0};
   data.vector = {2.0, 4.0, 6.0};
-  RunTest(data, {2.0, 4.0, 6.0});
+  ExecuteTaskAndCheck(data, {2.0, 4.0, 6.0});
 }
 
-TEST_F(KaurAVertRibbonSchemeTestBase, ZeroMatrix) {
+TEST(KaurAVertRibbonSchemeEdgeTests, ZeroMatrix) {
   TaskData data;
   data.rows = 2;
   data.cols = 2;
   data.matrix = {0.0, 0.0, 0.0, 0.0};
   data.vector = {1.0, 1.0};
-  RunTest(data, {0.0, 0.0});
+  ExecuteTaskAndCheck(data, {0.0, 0.0});
 }
 
-TEST_F(KaurAVertRibbonSchemeTestBase, ZeroVector) {
+TEST(KaurAVertRibbonSchemeEdgeTests, ZeroVector) {
   TaskData data;
   data.rows = 2;
   data.cols = 2;
   data.matrix = {1.0, 2.0, 3.0, 4.0};
   data.vector = {0.0, 0.0};
-  RunTest(data, {0.0, 0.0});
+  ExecuteTaskAndCheck(data, {0.0, 0.0});
 }
 
-TEST_F(KaurAVertRibbonSchemeTestBase, RectangularMatrixMoreRows) {
+TEST(KaurAVertRibbonSchemeEdgeTests, RectangularMatrixMoreRows) {
   TaskData data;
   data.rows = 4;
   data.cols = 2;
   data.matrix = {1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0};
   data.vector = {1.0, 2.0};
-  RunTest(data, {11.0, 14.0, 17.0, 20.0});
+  ExecuteTaskAndCheck(data, {11.0, 14.0, 17.0, 20.0});
 }
 
-TEST_F(KaurAVertRibbonSchemeTestBase, RectangularMatrixMoreCols) {
+TEST(KaurAVertRibbonSchemeEdgeTests, RectangularMatrixMoreCols) {
   TaskData data;
   data.rows = 2;
   data.cols = 4;
   data.matrix = {1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0};
   data.vector = {1.0, 1.0, 1.0, 1.0};
-  RunTest(data, {16.0, 20.0});
+  ExecuteTaskAndCheck(data, {16.0, 20.0});
 }
 
-TEST_F(KaurAVertRibbonSchemeTestBase, NegativeValues) {
+TEST(KaurAVertRibbonSchemeEdgeTests, NegativeValues) {
   TaskData data;
   data.rows = 2;
   data.cols = 2;
   data.matrix = {-1.0, -2.0, -3.0, -4.0};
   data.vector = {-1.0, -2.0};
-  RunTest(data, {7.0, 10.0});
+  ExecuteTaskAndCheck(data, {7.0, 10.0});
 }
 
-TEST_F(KaurAVertRibbonSchemeTestBase, LargeMatrix) {
+TEST(KaurAVertRibbonSchemeEdgeTests, LargeMatrix) {
   const int size = 100;
   TaskData data;
   data.rows = size;
@@ -185,10 +185,10 @@ TEST_F(KaurAVertRibbonSchemeTestBase, LargeMatrix) {
   data.matrix.resize(static_cast<std::size_t>(size) * size, 1.0);
   data.vector.resize(size, 1.0);
   std::vector<double> expected(size, static_cast<double>(size));
-  RunTest(data, expected);
+  ExecuteTaskAndCheck(data, expected);
 }
 
-TEST_F(KaurAVertRibbonSchemeTestBase, InvalidRowsZero) {
+TEST(KaurAVertRibbonSchemeEdgeTests, InvalidRowsZero) {
   TaskData data;
   data.rows = 0;
   data.cols = 2;
@@ -198,7 +198,7 @@ TEST_F(KaurAVertRibbonSchemeTestBase, InvalidRowsZero) {
   EXPECT_FALSE(task.Validation());
 }
 
-TEST_F(KaurAVertRibbonSchemeTestBase, InvalidColsZero) {
+TEST(KaurAVertRibbonSchemeEdgeTests, InvalidColsZero) {
   TaskData data;
   data.rows = 2;
   data.cols = 0;
@@ -208,7 +208,7 @@ TEST_F(KaurAVertRibbonSchemeTestBase, InvalidColsZero) {
   EXPECT_FALSE(task.Validation());
 }
 
-TEST_F(KaurAVertRibbonSchemeTestBase, InvalidMatrixSize) {
+TEST(KaurAVertRibbonSchemeEdgeTests, InvalidMatrixSize) {
   TaskData data;
   data.rows = 2;
   data.cols = 2;
@@ -218,7 +218,7 @@ TEST_F(KaurAVertRibbonSchemeTestBase, InvalidMatrixSize) {
   EXPECT_FALSE(task.Validation());
 }
 
-TEST_F(KaurAVertRibbonSchemeTestBase, InvalidVectorSize) {
+TEST(KaurAVertRibbonSchemeEdgeTests, InvalidVectorSize) {
   TaskData data;
   data.rows = 2;
   data.cols = 2;
@@ -228,31 +228,31 @@ TEST_F(KaurAVertRibbonSchemeTestBase, InvalidVectorSize) {
   EXPECT_FALSE(task.Validation());
 }
 
-TEST_F(KaurAVertRibbonSchemeTestBase, SingleRow) {
+TEST(KaurAVertRibbonSchemeEdgeTests, SingleRow) {
   TaskData data;
   data.rows = 1;
   data.cols = 5;
   data.matrix = {1.0, 2.0, 3.0, 4.0, 5.0};
   data.vector = {1.0, 2.0, 3.0, 4.0, 5.0};
-  RunTest(data, {55.0});
+  ExecuteTaskAndCheck(data, {55.0});
 }
 
-TEST_F(KaurAVertRibbonSchemeTestBase, SingleColumn) {
+TEST(KaurAVertRibbonSchemeEdgeTests, SingleColumn) {
   TaskData data;
   data.rows = 5;
   data.cols = 1;
   data.matrix = {1.0, 2.0, 3.0, 4.0, 5.0};
   data.vector = {2.0};
-  RunTest(data, {2.0, 4.0, 6.0, 8.0, 10.0});
+  ExecuteTaskAndCheck(data, {2.0, 4.0, 6.0, 8.0, 10.0});
 }
 
-TEST_F(KaurAVertRibbonSchemeTestBase, FloatingPointPrecision) {
+TEST(KaurAVertRibbonSchemeEdgeTests, FloatingPointPrecision) {
   TaskData data;
   data.rows = 2;
   data.cols = 2;
   data.matrix = {0.1, 0.2, 0.3, 0.4};
   data.vector = {0.5, 0.5};
-  RunTest(data, {0.2, 0.3});
+  ExecuteTaskAndCheck(data, {0.2, 0.3});
 }
 
 }  // namespace
