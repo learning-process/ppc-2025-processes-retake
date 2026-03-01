@@ -116,15 +116,12 @@ TEST_P(KaurMultyMatrixFuncTest, MatrixMultiplyCorrectness) {
   ExecuteTest(GetParam());
 }
 
-const std::array<TestType, 3> kTestParams = {
-    std::make_tuple(1, "small"),
-    std::make_tuple(2, "medium"),
-    std::make_tuple(3, "large")
-};
+const std::array<TestType, 3> kTestParams = {std::make_tuple(1, "small"), std::make_tuple(2, "medium"),
+                                             std::make_tuple(3, "large")};
 
-const auto kTestTasksList = std::tuple_cat(
-    ppc::util::AddFuncTask<KaurAMultyMatrixMPI, InType>(kTestParams, PPC_SETTINGS_kaur_a_multy_matrix),
-    ppc::util::AddFuncTask<KaurAMultyMatrixSEQ, InType>(kTestParams, PPC_SETTINGS_kaur_a_multy_matrix));
+const auto kTestTasksList =
+    std::tuple_cat(ppc::util::AddFuncTask<KaurAMultyMatrixMPI, InType>(kTestParams, PPC_SETTINGS_kaur_a_multy_matrix),
+                   ppc::util::AddFuncTask<KaurAMultyMatrixSEQ, InType>(kTestParams, PPC_SETTINGS_kaur_a_multy_matrix));
 
 const auto kGtestValues = ppc::util::ExpandToValues(kTestTasksList);
 

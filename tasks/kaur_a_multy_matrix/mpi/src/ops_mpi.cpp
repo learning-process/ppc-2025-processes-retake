@@ -82,10 +82,9 @@ std::pair<int, int> KaurAMultyMatrixMPI::SplitColumns(int total_cols, int rank, 
 }
 
 void KaurAMultyMatrixMPI::ProcessLocalColumn(const SparseMatrixCCS &at, const std::vector<double> &loc_val,
-                                              const std::vector<int> &loc_row_ind,
-                                              const std::vector<int> &loc_col_ptr, int col_index,
-                                              std::vector<double> &temp_row, std::vector<int> &row_marker,
-                                              std::vector<double> &res_val, std::vector<int> &res_row_ind) {
+                                             const std::vector<int> &loc_row_ind, const std::vector<int> &loc_col_ptr,
+                                             int col_index, std::vector<double> &temp_row, std::vector<int> &row_marker,
+                                             std::vector<double> &res_val, std::vector<int> &res_row_ind) {
   int col_start = loc_col_ptr[col_index];
   int col_end = loc_col_ptr[col_index + 1];
 
@@ -115,8 +114,8 @@ void KaurAMultyMatrixMPI::ProcessLocalColumn(const SparseMatrixCCS &at, const st
 }
 
 void KaurAMultyMatrixMPI::ExtractLocalColumns(const SparseMatrixCCS &b, int start_col, int end_col,
-                                               std::vector<double> &loc_val, std::vector<int> &loc_row_ind,
-                                               std::vector<int> &loc_col_ptr) {
+                                              std::vector<double> &loc_val, std::vector<int> &loc_row_ind,
+                                              std::vector<int> &loc_col_ptr) {
   loc_val.clear();
   loc_row_ind.clear();
   loc_col_ptr.clear();
@@ -137,10 +136,10 @@ void KaurAMultyMatrixMPI::ExtractLocalColumns(const SparseMatrixCCS &b, int star
 }
 
 void KaurAMultyMatrixMPI::MultiplyLocalMatrices(const SparseMatrixCCS &at, const std::vector<double> &loc_val,
-                                                 const std::vector<int> &loc_row_ind,
-                                                 const std::vector<int> &loc_col_ptr, int loc_cols,
-                                                 std::vector<double> &res_val, std::vector<int> &res_row_ind,
-                                                 std::vector<int> &res_col_ptr) {
+                                                const std::vector<int> &loc_row_ind,
+                                                const std::vector<int> &loc_col_ptr, int loc_cols,
+                                                std::vector<double> &res_val, std::vector<int> &res_row_ind,
+                                                std::vector<int> &res_col_ptr) {
   res_val.clear();
   res_row_ind.clear();
   res_col_ptr.clear();
@@ -156,8 +155,8 @@ void KaurAMultyMatrixMPI::MultiplyLocalMatrices(const SparseMatrixCCS &at, const
 }
 
 bool KaurAMultyMatrixMPI::ProcessRootRank(const SparseMatrixCCS &a, const SparseMatrixCCS &b,
-                                           std::vector<double> &loc_res_val, std::vector<int> &loc_res_row_ind,
-                                           std::vector<int> &loc_res_col_ptr, int size) {
+                                          std::vector<double> &loc_res_val, std::vector<int> &loc_res_row_ind,
+                                          std::vector<int> &loc_res_col_ptr, int size) {
   SparseMatrixCCS c;
   c.rows = a.rows;
   c.cols = b.cols;
@@ -218,8 +217,8 @@ bool KaurAMultyMatrixMPI::ProcessRootRank(const SparseMatrixCCS &a, const Sparse
 }
 
 bool KaurAMultyMatrixMPI::ProcessWorkerRank(const std::vector<double> &loc_res_val,
-                                             const std::vector<int> &loc_res_row_ind,
-                                             const std::vector<int> &loc_res_col_ptr, int loc_cols) {
+                                            const std::vector<int> &loc_res_row_ind,
+                                            const std::vector<int> &loc_res_col_ptr, int loc_cols) {
   int local_nnz = static_cast<int>(loc_res_val.size());
   int local_cols = loc_cols;
 

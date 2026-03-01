@@ -70,9 +70,8 @@ void KaurAMultyMatrixSEQ::TransposeMatrix(const SparseMatrixCCS &a, SparseMatrix
 
 namespace {
 
-void ProcessColumnSEQ(const SparseMatrixCCS &at, const SparseMatrixCCS &b, int col_index,
-                      std::vector<double> &temp_row, std::vector<int> &row_marker,
-                      std::vector<double> &res_val, std::vector<int> &res_row_ind) {
+void ProcessColumnSEQ(const SparseMatrixCCS &at, const SparseMatrixCCS &b, int col_index, std::vector<double> &temp_row,
+                      std::vector<int> &row_marker, std::vector<double> &res_val, std::vector<int> &res_row_ind) {
   for (int k = b.col_ptrs[col_index]; k < b.col_ptrs[col_index + 1]; k++) {
     int row_b = b.row_indices[k];
     double val_b = b.values[k];
@@ -100,8 +99,7 @@ void ProcessColumnSEQ(const SparseMatrixCCS &at, const SparseMatrixCCS &b, int c
 
 }  // namespace
 
-void KaurAMultyMatrixSEQ::MultiplyMatrices(const SparseMatrixCCS &a, const SparseMatrixCCS &b,
-                                            SparseMatrixCCS &c) {
+void KaurAMultyMatrixSEQ::MultiplyMatrices(const SparseMatrixCCS &a, const SparseMatrixCCS &b, SparseMatrixCCS &c) {
   SparseMatrixCCS at;
   TransposeMatrix(a, at);
 

@@ -95,8 +95,8 @@ TEST_P(KaurMultyMatrixPerfTest, RunPerfModes) {
   ExecuteTest(GetParam());
 }
 
-const auto kAllPerfTasks = ppc::util::MakeAllPerfTasks<InType, KaurAMultyMatrixMPI, KaurAMultyMatrixSEQ>(
-    PPC_SETTINGS_kaur_a_multy_matrix);
+const auto kAllPerfTasks =
+    ppc::util::MakeAllPerfTasks<InType, KaurAMultyMatrixMPI, KaurAMultyMatrixSEQ>(PPC_SETTINGS_kaur_a_multy_matrix);
 
 const auto kGtestValues = ppc::util::TupleToGTestValues(kAllPerfTasks);
 
