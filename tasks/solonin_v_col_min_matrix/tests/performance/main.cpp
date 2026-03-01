@@ -59,10 +59,14 @@ class SoloninVMinMatrixPerfTests : public ppc::util::BaseRunPerfTests<InType, Ou
     return true;
   }
 
-  InType GetTestInputData() final { return input_data_; }
+  InType GetTestInputData() final {
+    return input_data_;
+  }
 };
 
-TEST_P(SoloninVMinMatrixPerfTests, RunPerfModes) { ExecuteTest(GetParam()); }
+TEST_P(SoloninVMinMatrixPerfTests, RunPerfModes) {
+  ExecuteTest(GetParam());
+}
 
 const auto kAllPerfTasks = ppc::util::MakeAllPerfTasks<InType, SoloninVMinMatrixMPI, SoloninVMinMatrixSEQ>(
     PPC_SETTINGS_solonin_v_col_min_matrix);

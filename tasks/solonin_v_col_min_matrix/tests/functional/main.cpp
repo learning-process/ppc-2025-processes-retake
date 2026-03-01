@@ -66,7 +66,9 @@ class SoloninVMinMatrixFuncTests : public ppc::util::BaseRunFuncTests<InType, Ou
     return true;
   }
 
-  InType GetTestInputData() final { return input_data_; }
+  InType GetTestInputData() final {
+    return input_data_;
+  }
 
  private:
   InType input_data_ = 0;
@@ -75,19 +77,19 @@ class SoloninVMinMatrixFuncTests : public ppc::util::BaseRunFuncTests<InType, Ou
 
 namespace {
 
-TEST_P(SoloninVMinMatrixFuncTests, ComputesColumnMinimumsForDiverseSizes) { ExecuteTest(GetParam()); }
+TEST_P(SoloninVMinMatrixFuncTests, ComputesColumnMinimumsForDiverseSizes) {
+  ExecuteTest(GetParam());
+}
 
 const std::array<TestType, 11> kFunctionalParams = {
-    std::make_tuple(1, "tuple_unit"),   std::make_tuple(2, "tuple_even"),   std::make_tuple(3, "tuple_odd"),
-    std::make_tuple(5, "tuple_5"),      std::make_tuple(17, "tuple_prime"), std::make_tuple(64, "tuple_64"),
-    std::make_tuple(99, "tuple_99"),    std::make_tuple(100, "tuple_100"),  std::make_tuple(128, "tuple_128"),
+    std::make_tuple(1, "tuple_unit"),  std::make_tuple(2, "tuple_even"),   std::make_tuple(3, "tuple_odd"),
+    std::make_tuple(5, "tuple_5"),     std::make_tuple(17, "tuple_prime"), std::make_tuple(64, "tuple_64"),
+    std::make_tuple(99, "tuple_99"),   std::make_tuple(100, "tuple_100"),  std::make_tuple(128, "tuple_128"),
     std::make_tuple(256, "tuple_256"), std::make_tuple(512, "tuple_512")};
 
-const auto kTaskMatrix =
-    std::tuple_cat(ppc::util::AddFuncTask<SoloninVMinMatrixMPI, InType>(kFunctionalParams,
-                                                                        PPC_SETTINGS_solonin_v_col_min_matrix),
-                   ppc::util::AddFuncTask<SoloninVMinMatrixSEQ, InType>(kFunctionalParams,
-                                                                        PPC_SETTINGS_solonin_v_col_min_matrix));
+const auto kTaskMatrix = std::tuple_cat(
+    ppc::util::AddFuncTask<SoloninVMinMatrixMPI, InType>(kFunctionalParams, PPC_SETTINGS_solonin_v_col_min_matrix),
+    ppc::util::AddFuncTask<SoloninVMinMatrixSEQ, InType>(kFunctionalParams, PPC_SETTINGS_solonin_v_col_min_matrix));
 
 const auto kParameterizedValues = ppc::util::ExpandToValues(kTaskMatrix);
 const auto kFunctionalTestName = SoloninVMinMatrixFuncTests::PrintFuncTestName<SoloninVMinMatrixFuncTests>;

@@ -8,6 +8,7 @@ class SoloninVMinMatrixSEQ : public BaseTask {
     return ppc::task::TypeOfTask::kSEQ;
   }
   explicit SoloninVMinMatrixSEQ(const InType &in);
+
  private:
   bool ValidationImpl() override;
   bool PreProcessingImpl() override;

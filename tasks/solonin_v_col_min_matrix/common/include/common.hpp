@@ -1,10 +1,10 @@
 #pragma once
 
-#include "task/include/task.hpp"
-
 #include <string>
 #include <tuple>
 #include <vector>
+
+#include "task/include/task.hpp"
 
 namespace solonin_v_col_min_matrix {
 

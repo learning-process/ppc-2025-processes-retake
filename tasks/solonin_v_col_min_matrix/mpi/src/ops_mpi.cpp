@@ -30,7 +30,9 @@ SoloninVMinMatrixMPI::SoloninVMinMatrixMPI(const InType &in) {
   GetOutput().clear();
 }
 
-bool SoloninVMinMatrixMPI::ValidationImpl() { return (GetInput() > 0) && (GetOutput().empty()); }
+bool SoloninVMinMatrixMPI::ValidationImpl() {
+  return (GetInput() > 0) && (GetOutput().empty());
+}
 
 bool SoloninVMinMatrixMPI::PreProcessingImpl() {
   GetOutput().clear();

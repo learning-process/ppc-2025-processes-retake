@@ -26,7 +26,9 @@ SoloninVMinMatrixSEQ::SoloninVMinMatrixSEQ(const InType &in) {
   GetOutput().clear();
 }
 
-bool SoloninVMinMatrixSEQ::ValidationImpl() { return (GetInput() > 0) && (GetOutput().empty()); }
+bool SoloninVMinMatrixSEQ::ValidationImpl() {
+  return (GetInput() > 0) && (GetOutput().empty());
+}
 
 bool SoloninVMinMatrixSEQ::PreProcessingImpl() {
   GetOutput().clear();
