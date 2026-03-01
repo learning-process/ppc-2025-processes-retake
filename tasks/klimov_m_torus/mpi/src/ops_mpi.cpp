@@ -12,87 +12,87 @@
 
 namespace klimov_m_torus {
 
-TorusNetworkMpi::TorusNetworkMpi(const InType &in) {
+TorusMeshCommunicator::TorusMeshCommunicator(const InType &in) {
   SetTypeOfTask(GetStaticTypeOfTask());
   GetInput() = in;
   GetOutput() = {};
 }
 
-std::pair<int, int> TorusNetworkMpi::CalculateGridDimensions(int totalProcs) {
-  int rows = static_cast<int>(std::sqrt(static_cast<double>(totalProcs)));
-  while (rows > 1 && (totalProcs % rows != 0)) {
+std::pair<int, int> TorusMeshCommunicator::CalculateGridSize(int totalProcesses) {
+  int rows = static_cast<int>(std::sqrt(static_cast<double>(totalProcesses)));
+  while (rows > 1 && (totalProcesses % rows != 0)) {
     --rows;
   }
   if (rows <= 0) rows = 1;
-  int cols = totalProcs / rows;
+  int cols = totalProcesses / rows;
   if (cols <= 0) cols = 1;
   return {rows, cols};
 }
 
-int TorusNetworkMpi::RankFromCoordinates(int row, int col, int rows, int cols) {
-  int wrappedRow = ((row % rows) + rows) % rows;
-  int wrappedCol = ((col % cols) + cols) % cols;
-  return (wrappedRow * cols) + wrappedCol;
+int TorusMeshCommunicator::CombineCoordinates(int row, int col, int rows, int cols) {
+  int wrapped_row = ((row % rows) + rows) % rows;
+  int wrapped_col = ((col % cols) + cols) % cols;
+  return (wrapped_row * cols) + wrapped_col;
 }
 
-std::pair<int, int> TorusNetworkMpi::CoordinatesFromRank(int rank, int cols) {
+std::pair<int, int> TorusMeshCommunicator::SplitRank(int rank, int cols) {
   int r = rank / cols;
   int c = rank % cols;
   return {r, c};
 }
 
-std::vector<int> TorusNetworkMpi::BuildRoute(int rows, int cols, int from, int to) {
+std::vector<int> TorusMeshCommunicator::BuildMessageRoute(int rows, int cols, int from, int to) {
   std::vector<int> route;
   if (rows <= 0 || cols <= 0) {
     route.push_back(from);
     return route;
   }
 
-  auto [srcRow, srcCol] = CoordinatesFromRank(from, cols);
-  auto [dstRow, dstCol] = CoordinatesFromRank(to, cols);
+  auto [src_row, src_col] = SplitRank(from, cols);
+  auto [dst_row, dst_col] = SplitRank(to, cols);
 
-  int curRow = srcRow;
-  int curCol = srcCol;
+  int cur_row = src_row;
+  int cur_col = src_col;
   route.push_back(from);
 
-  int colDiff = dstCol - srcCol;
-  int rightSteps = (colDiff >= 0) ? colDiff : colDiff + cols;
-  int leftSteps = (colDiff <= 0) ? -colDiff : cols - colDiff;
-  int stepCol = (rightSteps <= leftSteps) ? 1 : -1;
-  int stepsCol = (rightSteps <= leftSteps) ? rightSteps : leftSteps;
+  int col_diff = dst_col - src_col;
+  int right_steps = (col_diff >= 0) ? col_diff : col_diff + cols;
+  int left_steps = (col_diff <= 0) ? -col_diff : cols - col_diff;
+  int col_step = (right_steps <= left_steps) ? 1 : -1;
+  int col_moves = (right_steps <= left_steps) ? right_steps : left_steps;
 
-  for (int i = 0; i < stepsCol; ++i) {
-    curCol += stepCol;
-    route.push_back(RankFromCoordinates(curRow, curCol, rows, cols));
+  for (int i = 0; i < col_moves; ++i) {
+    cur_col += col_step;
+    route.push_back(CombineCoordinates(cur_row, cur_col, rows, cols));
   }
 
-  int rowDiff = dstRow - srcRow;
-  int downSteps = (rowDiff >= 0) ? rowDiff : rowDiff + rows;
-  int upSteps = (rowDiff <= 0) ? -rowDiff : rows - rowDiff;
-  int stepRow = (downSteps <= upSteps) ? 1 : -1;
-  int stepsRow = (downSteps <= upSteps) ? downSteps : upSteps;
+  int row_diff = dst_row - src_row;
+  int down_steps = (row_diff >= 0) ? row_diff : row_diff + rows;
+  int up_steps = (row_diff <= 0) ? -row_diff : rows - row_diff;
+  int row_step = (down_steps <= up_steps) ? 1 : -1;
+  int row_moves = (down_steps <= up_steps) ? down_steps : up_steps;
 
-  for (int i = 0; i < stepsRow; ++i) {
-    curRow += stepRow;
-    route.push_back(RankFromCoordinates(curRow, curCol, rows, cols));
+  for (int i = 0; i < row_moves; ++i) {
+    cur_row += row_step;
+    route.push_back(CombineCoordinates(cur_row, cur_col, rows, cols));
   }
 
   return route;
 }
 
-bool TorusNetworkMpi::ValidationImpl() {
+bool TorusMeshCommunicator::ValidationImpl() {
   int initialized = 0;
   MPI_Initialized(&initialized);
   if (initialized == 0) return false;
 
-  MPI_Comm_rank(MPI_COMM_WORLD, &currentRank_);
-  MPI_Comm_size(MPI_COMM_WORLD, &worldSize_);
+  MPI_Comm_rank(MPI_COMM_WORLD, &current_rank_);
+  MPI_Comm_size(MPI_COMM_WORLD, &total_ranks_);
 
   int valid = 0;
-  if (currentRank_ == 0) {
+  if (current_rank_ == 0) {
     const auto &req = GetInput();
-    if (req.source >= 0 && req.dest >= 0 &&
-        req.source < worldSize_ && req.dest < worldSize_) {
+    if (req.sender >= 0 && req.receiver >= 0 &&
+        req.sender < total_ranks_ && req.receiver < total_ranks_) {
       valid = 1;
     }
   }
@@ -100,112 +100,114 @@ bool TorusNetworkMpi::ValidationImpl() {
   return valid != 0;
 }
 
-bool TorusNetworkMpi::PreProcessingImpl() {
-  MPI_Comm_rank(MPI_COMM_WORLD, &currentRank_);
-  MPI_Comm_size(MPI_COMM_WORLD, &worldSize_);
+bool TorusMeshCommunicator::PreProcessingImpl() {
+  MPI_Comm_rank(MPI_COMM_WORLD, &current_rank_);
+  MPI_Comm_size(MPI_COMM_WORLD, &total_ranks_);
 
-  auto [r, c] = CalculateGridDimensions(worldSize_);
-  gridRows_ = r;
-  gridCols_ = c;
+  auto [r, c] = CalculateGridSize(total_ranks_);
+  grid_rows_ = r;
+  grid_cols_ = c;
 
-  localInput_ = GetInput();
-  localOutput_ = OutType{};
+  local_request_ = GetInput();
+  local_response_ = OutType{};
   return true;
 }
 
-bool TorusNetworkMpi::RunImpl() {
+bool TorusMeshCommunicator::RunImpl() {
   int sender = 0, receiver = 0;
-  BroadcastSourceAndDestination(sender, receiver);
+  DistributeSenderReceiver(sender, receiver);
 
-  int dataSize = 0;
-  BroadcastDataSize(sender, dataSize);
+  int data_len = 0;
+  DistributeDataLength(sender, data_len);
 
-  std::vector<int> dataBuffer = PrepareDataBuffer(sender, dataSize);
-  std::vector<int> transmissionRoute = BuildRoute(gridRows_, gridCols_, sender, receiver);
+  std::vector<int> send_buffer = AssembleSendBuffer(sender, data_len);
+  std::vector<int> message_route = BuildMessageRoute(grid_rows_, grid_cols_, sender, receiver);
 
-  std::vector<int> receivedData;
-  ForwardData(sender, receiver, transmissionRoute, dataBuffer, receivedData);
+  std::vector<int> received_data;
+  RelayMessage(sender, receiver, message_route, send_buffer, received_data);
 
-  SaveResult(receiver, receivedData, transmissionRoute);
+  SaveFinalResult(receiver, received_data, message_route);
   return true;
 }
 
-void TorusNetworkMpi::BroadcastSourceAndDestination(int &src, int &dst) {
-  if (currentRank_ == 0) {
+void TorusMeshCommunicator::DistributeSenderReceiver(int &src, int &dst) {
+  if (current_rank_ == 0) {
     const auto &req = GetInput();
-    src = req.source;
-    dst = req.dest;
+    src = req.sender;
+    dst = req.receiver;
   }
   MPI_Bcast(&src, 1, MPI_INT, 0, MPI_COMM_WORLD);
   MPI_Bcast(&dst, 1, MPI_INT, 0, MPI_COMM_WORLD);
 }
 
-void TorusNetworkMpi::BroadcastDataSize(int src, int &dataSize) const {
-  if (currentRank_ == src) {
-    dataSize = static_cast<int>(localInput_.payload.size());
+void TorusMeshCommunicator::DistributeDataLength(int src, int &len) const {
+  if (current_rank_ == src) {
+    len = static_cast<int>(local_request_.data.size());
   }
-  MPI_Bcast(&dataSize, 1, MPI_INT, src, MPI_COMM_WORLD);
+  MPI_Bcast(&len, 1, MPI_INT, src, MPI_COMM_WORLD);
 }
 
-std::vector<int> TorusNetworkMpi::PrepareDataBuffer(int src, int dataSize) const {
-  std::vector<int> buffer(dataSize);
-  if (currentRank_ == src && dataSize > 0) {
-    std::copy(localInput_.payload.begin(), localInput_.payload.end(), buffer.begin());
+std::vector<int> TorusMeshCommunicator::AssembleSendBuffer(int src, int len) const {
+  std::vector<int> buffer(len);
+  if (current_rank_ == src && len > 0) {
+    std::copy(local_request_.data.begin(), local_request_.data.end(), buffer.begin());
   }
   return buffer;
 }
 
-void TorusNetworkMpi::ForwardData(int src, int dst, const std::vector<int> &route,
-                                   const std::vector<int> &buffer, std::vector<int> &received) const {
-  const int routeLen = static_cast<int>(route.size());
-  auto it = std::find(route.begin(), route.end(), currentRank_);
-  bool onRoute = (it != route.end());
-  int myIndex = onRoute ? static_cast<int>(std::distance(route.begin(), it)) : -1;
+void TorusMeshCommunicator::RelayMessage(int src, int dst, const std::vector<int> &route,
+                                         const std::vector<int> &buffer,
+                                         std::vector<int> &output) const {
+  const int route_len = static_cast<int>(route.size());
+  auto it = std::find(route.begin(), route.end(), current_rank_);
+  bool on_route = (it != route.end());
+  int my_pos = on_route ? static_cast<int>(std::distance(route.begin(), it)) : -1;
 
   if (src == dst) {
-    if (currentRank_ == src) {
-      received = buffer;
+    if (current_rank_ == src) {
+      output = buffer;
     }
-  } else if (currentRank_ == src) {
-    received = buffer;
-    if (routeLen > 1) {
-      int nextHop = route[1];
-      int sendSize = static_cast<int>(buffer.size());
-      MPI_Send(&sendSize, 1, MPI_INT, nextHop, 0, MPI_COMM_WORLD);
-      if (sendSize > 0) {
-        MPI_Send(received.data(), sendSize, MPI_INT, nextHop, 1, MPI_COMM_WORLD);
+  } else if (current_rank_ == src) {
+    output = buffer;
+    if (route_len > 1) {
+      int next_hop = route[1];
+      int send_len = static_cast<int>(buffer.size());
+      MPI_Send(&send_len, 1, MPI_INT, next_hop, 0, MPI_COMM_WORLD);
+      if (send_len > 0) {
+        MPI_Send(output.data(), send_len, MPI_INT, next_hop, 1, MPI_COMM_WORLD);
       }
     }
-  } else if (onRoute) {
-    int prevHop = route[myIndex - 1];
-    int recvSize = 0;
-    MPI_Recv(&recvSize, 1, MPI_INT, prevHop, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-    received.resize(recvSize);
-    if (recvSize > 0) {
-      MPI_Recv(received.data(), recvSize, MPI_INT, prevHop, 1, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+  } else if (on_route) {
+    int prev_hop = route[my_pos - 1];
+    int recv_len = 0;
+    MPI_Recv(&recv_len, 1, MPI_INT, prev_hop, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+    output.resize(recv_len);
+    if (recv_len > 0) {
+      MPI_Recv(output.data(), recv_len, MPI_INT, prev_hop, 1, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
     }
 
-    if (currentRank_ != dst && myIndex + 1 < routeLen) {
-      int nextHop = route[myIndex + 1];
-      MPI_Send(&recvSize, 1, MPI_INT, nextHop, 0, MPI_COMM_WORLD);
-      if (recvSize > 0) {
-        MPI_Send(received.data(), recvSize, MPI_INT, nextHop, 1, MPI_COMM_WORLD);
+    if (current_rank_ != dst && my_pos + 1 < route_len) {
+      int next_hop = route[my_pos + 1];
+      MPI_Send(&recv_len, 1, MPI_INT, next_hop, 0, MPI_COMM_WORLD);
+      if (recv_len > 0) {
+        MPI_Send(output.data(), recv_len, MPI_INT, next_hop, 1, MPI_COMM_WORLD);
       }
     }
   }
 }
 
-void TorusNetworkMpi::SaveResult(int dst, const std::vector<int> &received, const std::vector<int> &route) {
-  if (currentRank_ == dst) {
-    localOutput_.payload = received;
-    localOutput_.path = route;
-    GetOutput() = localOutput_;
+void TorusMeshCommunicator::SaveFinalResult(int dst, const std::vector<int> &output,
+                                            const std::vector<int> &route) {
+  if (current_rank_ == dst) {
+    local_response_.received_data = output;
+    local_response_.route = route;
+    GetOutput() = local_response_;
   } else {
     GetOutput() = OutType{};
   }
 }
 
-bool TorusNetworkMpi::PostProcessingImpl() {
+bool TorusMeshCommunicator::PostProcessingImpl() {
   return true;
 }
 

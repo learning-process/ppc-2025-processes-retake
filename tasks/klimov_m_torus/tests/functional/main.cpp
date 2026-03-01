@@ -13,10 +13,10 @@
 
 namespace klimov_m_torus {
 
-class TorusNetworkTest : public ppc::util::BaseRunFuncTests<InType, OutType, TestParam> {
+class TorusFunctionalTest : public ppc::util::BaseRunFuncTests<InType, OutType, TestParam> {
  public:
-  static std::string PrintTestParam(const TestParam &test_param) {
-    int size = std::get<0>(test_param);
+  static std::string PrintTestParam(const TestParam &param) {
+    int size = std::get<0>(param);
     return "size" + std::to_string(size);
   }
 
@@ -38,17 +38,17 @@ class TorusNetworkTest : public ppc::util::BaseRunFuncTests<InType, OutType, Tes
     source_ = 0;
     dest_ = (world_size_ > 1) ? (world_size_ - 1) : 0;
 
-    input_.source = source_;
-    input_.dest = dest_;
-    input_.payload.clear();
+    request_.sender = source_;
+    request_.receiver = dest_;
+    request_.data.clear();
     for (int i = 0; i < data_size; ++i) {
-      input_.payload.push_back(i + 1);
+      request_.data.push_back(i + 1);
     }
-    expected_payload_ = input_.payload;
+    expected_payload_ = request_.data;
   }
 
   InType GetTestInputData() override {
-    return input_;
+    return request_;
   }
 
   bool CheckTestOutputData(OutType &out) override {
@@ -60,25 +60,25 @@ class TorusNetworkTest : public ppc::util::BaseRunFuncTests<InType, OutType, Tes
 
  private:
   [[nodiscard]] bool CheckSequential(const OutType &out) const {
-    if (out.payload != expected_payload_) return false;
-    if (out.path.empty()) return false;
-    if (out.path.front() != source_) return false;
-    if (out.path.back() != dest_) return false;
+    if (out.received_data != expected_payload_) return false;
+    if (out.route.empty()) return false;
+    if (out.route.front() != source_) return false;
+    if (out.route.back() != dest_) return false;
     return true;
   }
 
   [[nodiscard]] bool CheckParallel(const OutType &out) const {
     if (rank_ != dest_) {
-      return out.payload.empty() && out.path.empty();
+      return out.received_data.empty() && out.route.empty();
     }
-    if (out.payload != expected_payload_) return false;
-    if (out.path.empty()) return false;
-    if (out.path.front() != source_) return false;
-    if (out.path.back() != dest_) return false;
+    if (out.received_data != expected_payload_) return false;
+    if (out.route.empty()) return false;
+    if (out.route.front() != source_) return false;
+    if (out.route.back() != dest_) return false;
     return true;
   }
 
-  InType input_{};
+  InType request_{};
   std::vector<int> expected_payload_;
   int world_size_{1};
   int rank_{0};
@@ -93,17 +93,17 @@ const std::array<TestParam, 5> kTestParams = {
 };
 
 const auto kTasksList =
-    std::tuple_cat(ppc::util::AddFuncTask<TorusNetworkMpi, InType>(kTestParams, "tasks/klimov_m_torus/settings.json"),
-                   ppc::util::AddFuncTask<TorusSequential, InType>(kTestParams, "tasks/klimov_m_torus/settings.json"));
+    std::tuple_cat(ppc::util::AddFuncTask<TorusMeshCommunicator, InType>(kTestParams, "tasks/klimov_m_torus/settings.json"),
+                   ppc::util::AddFuncTask<TorusReferenceImpl, InType>(kTestParams, "tasks/klimov_m_torus/settings.json"));
 
 const auto kValues = ppc::util::ExpandToValues(kTasksList);
-const auto kNamePrinter = TorusNetworkTest::PrintFuncTestName<TorusNetworkTest>;
+const auto kNamePrinter = TorusFunctionalTest::PrintFuncTestName<TorusFunctionalTest>;
 
-TEST_P(TorusNetworkTest, TorusDataTransfer) {
+TEST_P(TorusFunctionalTest, TorusDataTransfer) {
   ExecuteTest(GetParam());
 }
 
-INSTANTIATE_TEST_SUITE_P(TorusTests, TorusNetworkTest, kValues, kNamePrinter);
+INSTANTIATE_TEST_SUITE_P(TorusFunctionalTests, TorusFunctionalTest, kValues, kNamePrinter);
 
 }  // namespace
 }  // namespace klimov_m_torus

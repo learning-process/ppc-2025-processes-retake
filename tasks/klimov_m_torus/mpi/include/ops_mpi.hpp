@@ -8,13 +8,13 @@
 
 namespace klimov_m_torus {
 
-class TorusNetworkMpi : public BaseTask {
+class TorusMeshCommunicator : public BaseTask {
  public:
   static constexpr ppc::task::TypeOfTask GetStaticTypeOfTask() {
     return ppc::task::TypeOfTask::kMPI;
   }
 
-  explicit TorusNetworkMpi(const InType &in);
+  explicit TorusMeshCommunicator(const InType &in);
 
  private:
   bool ValidationImpl() override;
@@ -22,26 +22,26 @@ class TorusNetworkMpi : public BaseTask {
   bool RunImpl() override;
   bool PostProcessingImpl() override;
 
-  static std::pair<int, int> CalculateGridDimensions(int totalProcs);
-  static int RankFromCoordinates(int row, int col, int rows, int cols);
-  static std::pair<int, int> CoordinatesFromRank(int rank, int cols);
-  static std::vector<int> BuildRoute(int rows, int cols, int from, int to);
+  static std::pair<int, int> CalculateGridSize(int totalProcesses);
+  static int CombineCoordinates(int row, int col, int rows, int cols);
+  static std::pair<int, int> SplitRank(int rank, int cols);
+  static std::vector<int> BuildMessageRoute(int rows, int cols, int from, int to);
 
-  void BroadcastSourceAndDestination(int &src, int &dst);
-  void BroadcastDataSize(int src, int &dataSize) const;
-  std::vector<int> PrepareDataBuffer(int src, int dataSize) const;
-  void ForwardData(int src, int dst, const std::vector<int> &route,
-                   const std::vector<int> &buffer, std::vector<int> &received) const;
-  void SaveResult(int dst, const std::vector<int> &received, const std::vector<int> &route);
+  void DistributeSenderReceiver(int &src, int &dst);
+  void DistributeDataLength(int src, int &len) const;
+  std::vector<int> AssembleSendBuffer(int src, int len) const;
+  void RelayMessage(int src, int dst, const std::vector<int> &route,
+                    const std::vector<int> &buffer, std::vector<int> &output) const;
+  void SaveFinalResult(int dst, const std::vector<int> &output, const std::vector<int> &route);
 
-  InType localInput_{};
-  OutType localOutput_{};
+  InType local_request_{};
+  OutType local_response_{};
 
-  int currentRank_{0};
-  int worldSize_{0};
+  int current_rank_{0};
+  int total_ranks_{0};
 
-  int gridRows_{1};
-  int gridCols_{1};
+  int grid_rows_{1};
+  int grid_cols_{1};
 };
 
 }  // namespace klimov_m_torus

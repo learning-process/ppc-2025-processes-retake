@@ -8,14 +8,14 @@
 namespace klimov_m_torus {
 
 struct TransferRequest {
-  int source;             
-  int dest;           
-  std::vector<int> payload; 
+  int sender;                
+  int receiver;            
+  std::vector<int> data;     
 };
 
 struct TransferResult {
-  std::vector<int> payload; 
-  std::vector<int> path; 
+  std::vector<int> received_data;  
+  std::vector<int> route;        
 };
 
 using InType = TransferRequest;

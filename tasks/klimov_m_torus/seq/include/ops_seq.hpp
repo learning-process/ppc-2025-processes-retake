@@ -5,12 +5,12 @@
 
 namespace klimov_m_torus {
 
-class TorusSequential : public BaseTask {
+class TorusReferenceImpl : public BaseTask {
  public:
   static constexpr ppc::task::TypeOfTask GetStaticTypeOfTask() {
     return ppc::task::TypeOfTask::kSEQ;
   }
-  explicit TorusSequential(const InType &in);
+  explicit TorusReferenceImpl(const InType &in);
 
  private:
   bool ValidationImpl() override;
@@ -18,8 +18,8 @@ class TorusSequential : public BaseTask {
   bool RunImpl() override;
   bool PostProcessingImpl() override;
 
-  InType localInput_{};
-  OutType localOutput_{};
+  InType local_request_{};
+  OutType local_response_{};
 };
 
 }  // namespace klimov_m_torus
