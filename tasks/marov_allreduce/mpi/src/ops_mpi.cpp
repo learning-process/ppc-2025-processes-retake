@@ -13,7 +13,6 @@ MpiComm::MpiComm(int r, int s) : rank(r), size(s) {
 }
 
 void MpiComm::BuildTree() {
-  // Build binary tree
   for (int i = 0; i < size; i++) {
     int left = (2 * i) + 1;
     int right = (2 * i) + 2;
@@ -103,10 +102,8 @@ int MyAllreduce(const void* sendbuf, void* recvbuf, int count,
   int rank = comm->rank;
   size_t type_size = GetTypeSize(datatype);
 
-  // Copy input data
   std::memcpy(recvbuf, sendbuf, count * type_size);
 
-  // Phase 1: Reduction (gather to root)
   for (int child : comm->children[rank]) {
     std::vector<char> child_buffer(count * type_size);
 
@@ -132,17 +129,14 @@ int MyAllreduce(const void* sendbuf, void* recvbuf, int count,
     }
   }
 
-  // Send result to parent (if not root)
   if (rank != 0) {
     Send(recvbuf, count, datatype, comm->parent[rank], 0, comm);
   }
 
-  // Phase 2: Broadcast (send result to all)
   if (rank != 0) {
     Recv(recvbuf, count, datatype, comm->parent[rank], 1, comm, nullptr);
   }
 
-  // Send result to children
   for (int child : comm->children[rank]) {
     Send(recvbuf, count, datatype, child, 1, comm);
   }

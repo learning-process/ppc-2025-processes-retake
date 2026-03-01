@@ -3,7 +3,6 @@
 #include <cstddef>
 #include <vector>
 
-// MPI-style types for compatibility with MPI API
 using MpiDatatype = int;
 using MpiOp = int;
 
