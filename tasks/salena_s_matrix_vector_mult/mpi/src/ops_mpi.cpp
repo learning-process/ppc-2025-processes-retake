@@ -5,6 +5,8 @@
 #include <cstddef>
 #include <vector>
 
+#include "salena_s_matrix_vector_mult/common/include/common.hpp"
+
 namespace salena_s_matrix_vector_mult {
 
 TestTaskMPI::TestTaskMPI(const InType &in) {
