@@ -1,6 +1,7 @@
 #pragma once
 
 #include <mpi.h>
+
 #include <vector>
 
 #include "klimov_m_shell_odd_even_merge/common/include/common.hpp"
@@ -21,10 +22,11 @@ class ShellBatcherMPI : public BaseTask {
   bool PostProcessingImpl() override;
 };
 
-// Вспомогательные функции (объявлены внутри namespace)
 void ShellSortLocal(std::vector<int> &data);
-std::vector<int> MergeEvenLeft(std::vector<int> &left, std::vector<int> &right, int chunk, int rank, MPI_Comm comm);
-std::vector<int> MergeOddRight(std::vector<int> &left, std::vector<int> &right, int chunk, int rank, MPI_Comm comm);
+std::vector<int> MergeEvenLeft(const std::vector<int> &left, const std::vector<int> &right, int chunk, int rank,
+                               MPI_Comm comm);
+std::vector<int> MergeOddRight(const std::vector<int> &left, const std::vector<int> &right, int chunk, int rank,
+                               MPI_Comm comm);
 void ExchangeWithRight(int rank, std::vector<int> &chunk, int chunk_size, MPI_Comm comm);
 void ExchangeWithLeft(int rank, std::vector<int> &chunk, int chunk_size, MPI_Comm comm);
 void EvenStep(int rank, int procs, std::vector<int> &chunk, int chunk_size, MPI_Comm comm);

@@ -1,5 +1,7 @@
 #include "klimov_m_shell_odd_even_merge/seq/include/ops_seq.hpp"
 
+#include <cstddef>
+#include <utility>
 #include <vector>
 
 namespace klimov_m_shell_odd_even_merge {
@@ -9,12 +11,20 @@ ShellBatcherSEQ::ShellBatcherSEQ(const InputType &input) {
   GetInput() = input;
 }
 
-bool ShellBatcherSEQ::ValidationImpl() { return !GetInput().empty(); }
-bool ShellBatcherSEQ::PreProcessingImpl() { return true; }
-bool ShellBatcherSEQ::PostProcessingImpl() { return true; }
+bool ShellBatcherSEQ::ValidationImpl() {
+  return !GetInput().empty();
+}
+
+bool ShellBatcherSEQ::PreProcessingImpl() {
+  return true;
+}
+
+bool ShellBatcherSEQ::PostProcessingImpl() {
+  return true;
+}
 
 bool ShellBatcherSEQ::RunImpl() {
-  std::vector<int> data = GetInput();
+  auto data = GetInput();
   const size_t n = data.size();
 
   for (size_t gap = n / 2; gap > 0; gap /= 2) {
@@ -29,7 +39,7 @@ bool ShellBatcherSEQ::RunImpl() {
     }
   }
 
-  GetOutput() = data;
+  GetOutput() = std::move(data);
   return true;
 }
 
