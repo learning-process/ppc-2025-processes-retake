@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
+#include <utility>
 #include <vector>
 
 #include "denisov_a_quick_sort_simple_merging/common/include/common.hpp"
@@ -136,15 +137,12 @@ bool DenisovAQuickSortMergeMPI::PostProcessingImpl() {
   return sum_in == sum_out;
 }
 
-// NOLINTNEXTLINE(misc-no-recursion)
-void DenisovAQuickSortMergeMPI::QuickSort(std::vector<int> &data, int begin, int end) {
-  if (begin >= end) {
-    return;
-  }
+namespace {
 
-  int pivot = data[(begin + end) / 2];
-  int i = begin;
-  int j = end;
+inline int Partition(std::vector<int> &data, int left, int right) {
+  int pivot = data[(left + right) / 2];
+  int i = left;
+  int j = right;
 
   while (i <= j) {
     while (data[i] < pivot) {
@@ -160,9 +158,39 @@ void DenisovAQuickSortMergeMPI::QuickSort(std::vector<int> &data, int begin, int
       j--;
     }
   }
+  return i;
+}
 
-  QuickSort(data, begin, j);
-  QuickSort(data, i, end);
+inline void PushRange(std::vector<std::pair<int, int>> &stack, int l, int r) {
+  if (l < r) {
+    stack.emplace_back(l, r);
+  }
+}
+
+}  // namespace
+
+void DenisovAQuickSortMergeMPI::QuickSort(std::vector<int> &data, int begin, int end) {
+  std::vector<std::pair<int, int>> stack;
+  PushRange(stack, begin, end);
+
+  while (!stack.empty()) {
+    auto [l, r] = stack.back();
+    stack.pop_back();
+
+    int mid = Partition(data, l, r);
+
+    if (mid - 1 - l < r - mid) {
+      PushRange(stack, l, mid - 1);
+      l = mid;
+    } else {
+      PushRange(stack, mid, r);
+      r = mid - 1;
+    }
+
+    if (l < r) {
+      stack.emplace_back(l, r);
+    }
+  }
 }
 
 std::vector<int> DenisovAQuickSortMergeMPI::Merge(const std::vector<int> &left_block,
