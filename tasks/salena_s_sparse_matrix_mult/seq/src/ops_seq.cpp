@@ -1,6 +1,7 @@
 #include "salena_s_sparse_matrix_mult/seq/include/ops_seq.hpp"
-#include <vector>
+
 #include <algorithm>
+#include <vector>
 
 namespace salena_s_sparse_matrix_mult {
 
@@ -10,14 +11,14 @@ SparseMatrixMultSeq::SparseMatrixMultSeq(const InType &in) {
 }
 
 bool SparseMatrixMultSeq::ValidationImpl() {
-  const auto& A = GetInput().A;
-  const auto& B = GetInput().B;
+  const auto &A = GetInput().A;
+  const auto &B = GetInput().B;
   return (A.cols == B.rows) && (A.rows > 0) && (B.cols > 0);
 }
 
 bool SparseMatrixMultSeq::PreProcessingImpl() {
-  const auto& A = GetInput().A;
-  const auto& B = GetInput().B;
+  const auto &A = GetInput().A;
+  const auto &B = GetInput().B;
   GetOutput().rows = A.rows;
   GetOutput().cols = B.cols;
   GetOutput().row_ptr.assign(A.rows + 1, 0);
@@ -25,9 +26,9 @@ bool SparseMatrixMultSeq::PreProcessingImpl() {
 }
 
 bool SparseMatrixMultSeq::RunImpl() {
-  const auto& A = GetInput().A;
-  const auto& B = GetInput().B;
-  auto& C = GetOutput();
+  const auto &A = GetInput().A;
+  const auto &B = GetInput().B;
+  auto &C = GetOutput();
 
   C.row_ptr[0] = 0;
   std::vector<int> marker(B.cols, -1);

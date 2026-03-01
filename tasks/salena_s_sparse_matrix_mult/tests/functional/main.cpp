@@ -1,8 +1,9 @@
 #include <gtest/gtest.h>
-#include <vector>
-#include <tuple>
-#include <string>
+
 #include <random>
+#include <string>
+#include <tuple>
+#include <vector>
 
 #include "salena_s_sparse_matrix_mult/common/include/common.hpp"
 #include "salena_s_sparse_matrix_mult/mpi/include/ops_mpi.hpp"
@@ -62,8 +63,8 @@ class SparseMultFuncTests : public ppc::util::BaseRunFuncTests<InType, OutType, 
     expected.cols = input_data_.B.cols;
     expected.row_ptr.assign(expected.rows + 1, 0);
 
-    const auto& A = input_data_.A;
-    const auto& B = input_data_.B;
+    const auto &A = input_data_.A;
+    const auto &B = input_data_.B;
 
     std::vector<int> marker(B.cols, -1);
     std::vector<double> temp_values(B.cols, 0.0);
@@ -92,7 +93,7 @@ class SparseMultFuncTests : public ppc::util::BaseRunFuncTests<InType, OutType, 
 
       std::sort(current_row_cols.begin(), current_row_cols.end());
       for (int col : current_row_cols) {
-        if (temp_values[col] != 0.0) { 
+        if (temp_values[col] != 0.0) {
           expected.values.push_back(temp_values[col]);
           expected.col_indices.push_back(col);
           row_nz++;
@@ -101,11 +102,17 @@ class SparseMultFuncTests : public ppc::util::BaseRunFuncTests<InType, OutType, 
       expected.row_ptr[i + 1] = expected.row_ptr[i] + row_nz;
     }
 
-    if (expected.row_ptr != output_data.row_ptr) return false;
-    if (expected.col_indices != output_data.col_indices) return false;
-    
-    for(size_t i = 0; i < expected.values.size(); ++i) {
-        if (std::abs(expected.values[i] - output_data.values[i]) > 1e-4) return false;
+    if (expected.row_ptr != output_data.row_ptr) {
+      return false;
+    }
+    if (expected.col_indices != output_data.col_indices) {
+      return false;
+    }
+
+    for (size_t i = 0; i < expected.values.size(); ++i) {
+      if (std::abs(expected.values[i] - output_data.values[i]) > 1e-4) {
+        return false;
+      }
     }
 
     return true;
@@ -123,15 +130,13 @@ TEST_P(SparseMultFuncTests, RunMult) {
   ExecuteTest(GetParam());
 }
 
-const std::array<TestType, 3> kTestParam = {
-    std::make_tuple(10, 10, 10, 0.2, "10x10_low"),
-    std::make_tuple(20, 30, 20, 0.1, "20x30_med"),
-    std::make_tuple(50, 50, 50, 0.05, "50x50_low")
-};
+const std::array<TestType, 3> kTestParam = {std::make_tuple(10, 10, 10, 0.2, "10x10_low"),
+                                            std::make_tuple(20, 30, 20, 0.1, "20x30_med"),
+                                            std::make_tuple(50, 50, 50, 0.05, "50x50_low")};
 
-const auto kTestTasksList =
-    std::tuple_cat(ppc::util::AddFuncTask<SparseMatrixMultMPI, InType>(kTestParam, PPC_SETTINGS_salena_s_sparse_matrix_mult),
-                   ppc::util::AddFuncTask<SparseMatrixMultSeq, InType>(kTestParam, PPC_SETTINGS_salena_s_sparse_matrix_mult));
+const auto kTestTasksList = std::tuple_cat(
+    ppc::util::AddFuncTask<SparseMatrixMultMPI, InType>(kTestParam, PPC_SETTINGS_salena_s_sparse_matrix_mult),
+    ppc::util::AddFuncTask<SparseMatrixMultSeq, InType>(kTestParam, PPC_SETTINGS_salena_s_sparse_matrix_mult));
 
 const auto kGtestValues = ppc::util::ExpandToValues(kTestTasksList);
 const auto kPerfTestName = SparseMultFuncTests::PrintFuncTestName<SparseMultFuncTests>;

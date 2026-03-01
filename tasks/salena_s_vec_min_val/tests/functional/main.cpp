@@ -1,4 +1,5 @@
 #include <gtest/gtest.h>
+
 #include <algorithm>
 #include <random>
 #include <string>
@@ -31,7 +32,9 @@ class VectorMinFuncTests : public ppc::util::BaseRunFuncTests<InType, OutType, T
     for (int i = 0; i < size; ++i) {
       input_data_[i] = dist(gen);
     }
-    if (size > 0) input_data_[size / 2] = -20000;
+    if (size > 0) {
+      input_data_[size / 2] = -20000;
+    }
   }
 
   bool CheckTestOutputData(OutType &output_data) final {
@@ -51,11 +54,8 @@ TEST_P(VectorMinFuncTests, FindMin) {
   ExecuteTest(GetParam());
 }
 
-const std::array<TestType, 3> kTestParam = {
-    std::make_tuple(10, "10"),
-    std::make_tuple(100, "100"),
-    std::make_tuple(1005, "1005")
-};
+const std::array<TestType, 3> kTestParam = {std::make_tuple(10, "10"), std::make_tuple(100, "100"),
+                                            std::make_tuple(1005, "1005")};
 
 const auto kTestTasksList =
     std::tuple_cat(ppc::util::AddFuncTask<TestTaskMPI, InType>(kTestParam, PPC_SETTINGS_salena_s_vec_min_val),

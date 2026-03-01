@@ -1,4 +1,5 @@
 #include <gtest/gtest.h>
+
 #include <algorithm>
 #include <random>
 #include <string>
@@ -50,7 +51,9 @@ class MatVecMultFuncTests : public ppc::util::BaseRunFuncTests<InType, OutType, 
       }
     }
 
-    if (output_data.size() != expected_res.size()) return false;
+    if (output_data.size() != expected_res.size()) {
+      return false;
+    }
     for (size_t i = 0; i < expected_res.size(); ++i) {
       // Сравниваем с точностью до 1e-4, так как это double
       if (std::abs(expected_res[i] - output_data[i]) > 1e-4) {
@@ -72,11 +75,8 @@ TEST_P(MatVecMultFuncTests, MultMatVec) {
   ExecuteTest(GetParam());
 }
 
-const std::array<TestType, 3> kTestParam = {
-    std::make_tuple(10, 10, "10x10"),
-    std::make_tuple(50, 50, "50x50"),
-    std::make_tuple(100, 55, "100x55")
-};
+const std::array<TestType, 3> kTestParam = {std::make_tuple(10, 10, "10x10"), std::make_tuple(50, 50, "50x50"),
+                                            std::make_tuple(100, 55, "100x55")};
 
 const auto kTestTasksList =
     std::tuple_cat(ppc::util::AddFuncTask<TestTaskMPI, InType>(kTestParam, PPC_SETTINGS_salena_s_matrix_vector_mult),

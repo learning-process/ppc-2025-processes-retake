@@ -29,11 +29,11 @@ bool TestTaskSEQ::PreProcessingImpl() {
 }
 
 bool TestTaskSEQ::RunImpl() {
-  const auto& matrix = GetInput().matrix;
-  const auto& vec = GetInput().vec;
+  const auto &matrix = GetInput().matrix;
+  const auto &vec = GetInput().vec;
   int rows = GetInput().rows;
   int cols = GetInput().cols;
-  auto& result = GetOutput();
+  auto &result = GetOutput();
 
   for (int i = 0; i < rows; ++i) {
     for (int j = 0; j < cols; ++j) {

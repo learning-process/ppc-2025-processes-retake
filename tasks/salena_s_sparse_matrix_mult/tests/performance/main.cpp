@@ -1,7 +1,8 @@
 #include <gtest/gtest.h>
-#include <vector>
-#include <tuple>
+
 #include <random>
+#include <tuple>
+#include <vector>
 
 #include "salena_s_sparse_matrix_mult/common/include/common.hpp"
 #include "salena_s_sparse_matrix_mult/mpi/include/ops_mpi.hpp"
@@ -58,8 +59,8 @@ TEST_P(SparseMultPerfTests, RunPerfModes) {
   ExecuteTest(GetParam());
 }
 
-const auto kAllPerfTasks =
-    ppc::util::MakeAllPerfTasks<InType, SparseMatrixMultMPI, SparseMatrixMultSeq>(PPC_SETTINGS_salena_s_sparse_matrix_mult);
+const auto kAllPerfTasks = ppc::util::MakeAllPerfTasks<InType, SparseMatrixMultMPI, SparseMatrixMultSeq>(
+    PPC_SETTINGS_salena_s_sparse_matrix_mult);
 
 const auto kGtestValues = ppc::util::TupleToGTestValues(kAllPerfTasks);
 const auto kPerfTestName = SparseMultPerfTests::CustomPerfTestName;

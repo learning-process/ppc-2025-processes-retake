@@ -1,5 +1,6 @@
 #pragma once
 #include <vector>
+
 #include "task/include/task.hpp"
 
 namespace salena_s_sparse_matrix_mult {

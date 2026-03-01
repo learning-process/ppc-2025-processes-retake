@@ -1,4 +1,5 @@
 #include "salena_s_vec_min_val/seq/include/ops_seq.hpp"
+
 #include <algorithm>
 #include <limits>
 

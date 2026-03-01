@@ -1,7 +1,9 @@
 #include "salena_s_sparse_matrix_mult/mpi/include/ops_mpi.hpp"
+
 #include <mpi.h>
-#include <vector>
+
 #include <algorithm>
+#include <vector>
 
 namespace salena_s_sparse_matrix_mult {
 
@@ -14,8 +16,8 @@ bool SparseMatrixMultMPI::ValidationImpl() {
   int rank;
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
   if (rank == 0) {
-    const auto& A = GetInput().A;
-    const auto& B = GetInput().B;
+    const auto &A = GetInput().A;
+    const auto &B = GetInput().B;
     return (A.cols == B.rows) && (A.rows > 0) && (B.cols > 0);
   }
   return true;
@@ -53,7 +55,9 @@ bool SparseMatrixMultMPI::RunImpl() {
   MPI_Bcast(&b_cols, 1, MPI_INT, 0, MPI_COMM_WORLD);
   MPI_Bcast(&b_nnz, 1, MPI_INT, 0, MPI_COMM_WORLD);
 
-  if (a_rows == 0) return false;
+  if (a_rows == 0) {
+    return false;
+  }
 
   SparseMatrixCRS B_local;
   B_local.rows = b_rows;
@@ -75,7 +79,7 @@ bool SparseMatrixMultMPI::RunImpl() {
   int delta_rows = a_rows / size;
   int rem_rows = a_rows % size;
   int local_rows = delta_rows + (rank < rem_rows ? 1 : 0);
-  
+
   std::vector<int> send_counts(size, 0);
   std::vector<int> displs(size, 0);
   int cur_displ = 0;
@@ -86,8 +90,11 @@ bool SparseMatrixMultMPI::RunImpl() {
   }
 
   std::vector<int> a_row_ptr_full;
-  if (rank == 0) a_row_ptr_full = GetInput().A.row_ptr;
-  else a_row_ptr_full.resize(a_rows + 1);
+  if (rank == 0) {
+    a_row_ptr_full = GetInput().A.row_ptr;
+  } else {
+    a_row_ptr_full.resize(a_rows + 1);
+  }
 
   MPI_Bcast(a_row_ptr_full.data(), a_rows + 1, MPI_INT, 0, MPI_COMM_WORLD);
 
@@ -100,11 +107,11 @@ bool SparseMatrixMultMPI::RunImpl() {
   std::vector<int> a_send_counts(size, 0);
   std::vector<int> a_displs(size, 0);
   if (rank == 0) {
-    for(int i = 0; i < size; ++i) {
-        int s_row = displs[i];
-        int e_row = s_row + send_counts[i];
-        a_send_counts[i] = a_row_ptr_full[e_row] - a_row_ptr_full[s_row];
-        a_displs[i] = a_row_ptr_full[s_row];
+    for (int i = 0; i < size; ++i) {
+      int s_row = displs[i];
+      int e_row = s_row + send_counts[i];
+      a_send_counts[i] = a_row_ptr_full[e_row] - a_row_ptr_full[s_row];
+      a_displs[i] = a_row_ptr_full[s_row];
     }
   }
 
@@ -125,7 +132,7 @@ bool SparseMatrixMultMPI::RunImpl() {
   for (int i = 0; i < local_rows; ++i) {
     int row_nz = 0;
     std::vector<int> current_row_cols;
-    
+
     int local_row_start = a_row_ptr_full[my_start_row + i] - my_start_idx;
     int local_row_end = a_row_ptr_full[my_start_row + i + 1] - my_start_idx;
 
@@ -159,14 +166,17 @@ bool SparseMatrixMultMPI::RunImpl() {
   }
 
   std::vector<int> local_nnz_per_row(local_rows);
-  for(int i = 0; i < local_rows; i++) local_nnz_per_row[i] = local_c_row_ptr[i+1] - local_c_row_ptr[i];
+  for (int i = 0; i < local_rows; i++) {
+    local_nnz_per_row[i] = local_c_row_ptr[i + 1] - local_c_row_ptr[i];
+  }
 
   std::vector<int> global_nnz_per_row;
-  if (rank == 0) global_nnz_per_row.resize(a_rows);
+  if (rank == 0) {
+    global_nnz_per_row.resize(a_rows);
+  }
 
-  MPI_Gatherv(local_nnz_per_row.data(), local_rows, MPI_INT, 
-              rank == 0 ? global_nnz_per_row.data() : nullptr, send_counts.data(), displs.data(), MPI_INT, 
-              0, MPI_COMM_WORLD);
+  MPI_Gatherv(local_nnz_per_row.data(), local_rows, MPI_INT, rank == 0 ? global_nnz_per_row.data() : nullptr,
+              send_counts.data(), displs.data(), MPI_INT, 0, MPI_COMM_WORLD);
 
   int my_total_nnz = local_c_vals.size();
   std::vector<int> c_nnz_counts(size);
@@ -175,26 +185,24 @@ bool SparseMatrixMultMPI::RunImpl() {
   std::vector<int> c_nnz_displs(size, 0);
   int total_c_nnz = 0;
   if (rank == 0) {
-    for(int i = 0; i < size; i++) {
-        c_nnz_displs[i] = total_c_nnz;
-        total_c_nnz += c_nnz_counts[i];
+    for (int i = 0; i < size; i++) {
+      c_nnz_displs[i] = total_c_nnz;
+      total_c_nnz += c_nnz_counts[i];
     }
     GetOutput().values.resize(total_c_nnz);
     GetOutput().col_indices.resize(total_c_nnz);
   }
 
-  MPI_Gatherv(local_c_vals.data(), my_total_nnz, MPI_DOUBLE,
-              rank == 0 ? GetOutput().values.data() : nullptr, c_nnz_counts.data(), c_nnz_displs.data(), MPI_DOUBLE,
-              0, MPI_COMM_WORLD);
-              
-  MPI_Gatherv(local_c_cols.data(), my_total_nnz, MPI_INT,
-              rank == 0 ? GetOutput().col_indices.data() : nullptr, c_nnz_counts.data(), c_nnz_displs.data(), MPI_INT,
-              0, MPI_COMM_WORLD);
+  MPI_Gatherv(local_c_vals.data(), my_total_nnz, MPI_DOUBLE, rank == 0 ? GetOutput().values.data() : nullptr,
+              c_nnz_counts.data(), c_nnz_displs.data(), MPI_DOUBLE, 0, MPI_COMM_WORLD);
+
+  MPI_Gatherv(local_c_cols.data(), my_total_nnz, MPI_INT, rank == 0 ? GetOutput().col_indices.data() : nullptr,
+              c_nnz_counts.data(), c_nnz_displs.data(), MPI_INT, 0, MPI_COMM_WORLD);
 
   if (rank == 0) {
     GetOutput().row_ptr[0] = 0;
-    for(int i = 0; i < a_rows; i++) {
-        GetOutput().row_ptr[i+1] = GetOutput().row_ptr[i] + global_nnz_per_row[i];
+    for (int i = 0; i < a_rows; i++) {
+      GetOutput().row_ptr[i + 1] = GetOutput().row_ptr[i] + global_nnz_per_row[i];
     }
   }
 

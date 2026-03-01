@@ -1,4 +1,5 @@
 #include <gtest/gtest.h>
+
 #include <algorithm>
 #include <random>
 #include <vector>
@@ -11,7 +12,7 @@
 namespace salena_s_vec_min_val {
 
 class VectorMinPerfTests : public ppc::util::BaseRunPerfTests<InType, OutType> {
-  const int kCount_ = 1000000; // 1 миллион элементов
+  const int kCount_ = 1000000;  // 1 миллион элементов
   InType input_data_{};
 
   void SetUp() override {

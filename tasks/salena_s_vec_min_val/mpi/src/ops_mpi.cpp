@@ -1,5 +1,7 @@
 #include "salena_s_vec_min_val/mpi/include/ops_mpi.hpp"
+
 #include <mpi.h>
+
 #include <algorithm>
 #include <limits>
 #include <vector>
@@ -37,7 +39,9 @@ bool TestTaskMPI::RunImpl() {
   }
   MPI_Bcast(&total_elements, 1, MPI_INT, 0, MPI_COMM_WORLD);
 
-  if (total_elements == 0) return false;
+  if (total_elements == 0) {
+    return false;
+  }
 
   std::vector<int> sendcounts(size);
   std::vector<int> displs(size);
@@ -52,8 +56,8 @@ bool TestTaskMPI::RunImpl() {
   }
 
   std::vector<int> local_data(sendcounts[rank]);
-  MPI_Scatterv(rank == 0 ? GetInput().data() : nullptr, sendcounts.data(), displs.data(), MPI_INT,
-               local_data.data(), sendcounts[rank], MPI_INT, 0, MPI_COMM_WORLD);
+  MPI_Scatterv(rank == 0 ? GetInput().data() : nullptr, sendcounts.data(), displs.data(), MPI_INT, local_data.data(),
+               sendcounts[rank], MPI_INT, 0, MPI_COMM_WORLD);
 
   int local_min = std::numeric_limits<int>::max();
   for (int val : local_data) {
@@ -74,4 +78,4 @@ bool TestTaskMPI::PostProcessingImpl() {
   return true;
 }
 
-}  // namespace salena_s_vec_min_valcc
+}  // namespace salena_s_vec_min_val

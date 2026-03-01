@@ -7,9 +7,11 @@ cmake_minimum_required(VERSION ${CMAKE_VERSION}) # this file comes with cmake
 # existing directory in our source tree, calling file(MAKE_DIRECTORY) on it
 # would cause a fatal error, even though it would be a no-op.
 if(NOT EXISTS "C:/Users/vadim/Desktop/ppc-2025-processes-retake/3rdparty/json")
-  file(MAKE_DIRECTORY "C:/Users/vadim/Desktop/ppc-2025-processes-retake/3rdparty/json")
+  file(MAKE_DIRECTORY
+       "C:/Users/vadim/Desktop/ppc-2025-processes-retake/3rdparty/json")
 endif()
-file(MAKE_DIRECTORY
+file(
+  MAKE_DIRECTORY
   "C:/Users/vadim/Desktop/ppc-2025-processes-retake/ppc_json/build"
   "C:/Users/vadim/Desktop/ppc-2025-processes-retake/ppc_json/install"
   "C:/Users/vadim/Desktop/ppc-2025-processes-retake/ppc_json/tmp"
@@ -20,8 +22,14 @@ file(MAKE_DIRECTORY
 
 set(configSubDirs Debug;Release;MinSizeRel;RelWithDebInfo)
 foreach(subDir IN LISTS configSubDirs)
-    file(MAKE_DIRECTORY "C:/Users/vadim/Desktop/ppc-2025-processes-retake/ppc_json/src/ppc_json-stamp/${subDir}")
+  file(
+    MAKE_DIRECTORY
+    "C:/Users/vadim/Desktop/ppc-2025-processes-retake/ppc_json/src/ppc_json-stamp/${subDir}"
+  )
 endforeach()
 if(cfgdir)
-  file(MAKE_DIRECTORY "C:/Users/vadim/Desktop/ppc-2025-processes-retake/ppc_json/src/ppc_json-stamp${cfgdir}") # cfgdir has leading slash
+  file(
+    MAKE_DIRECTORY
+    "C:/Users/vadim/Desktop/ppc-2025-processes-retake/ppc_json/src/ppc_json-stamp${cfgdir}"
+  ) # cfgdir has leading slash
 endif()

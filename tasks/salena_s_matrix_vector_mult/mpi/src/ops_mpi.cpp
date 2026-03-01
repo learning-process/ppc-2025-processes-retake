@@ -1,5 +1,7 @@
 #include "salena_s_matrix_vector_mult/mpi/include/ops_mpi.hpp"
+
 #include <mpi.h>
+
 #include <algorithm>
 
 namespace salena_s_matrix_vector_mult {
@@ -60,14 +62,14 @@ bool TestTaskMPI::RunImpl() {
 
   int delta_cols = cols / size;
   int rem_cols = cols % size;
-  
+
   std::vector<int> send_counts(size);
   std::vector<int> displs(size);
-  
+
   int current_displ = 0;
   for (int i = 0; i < size; ++i) {
     int c = delta_cols + (i < rem_cols ? 1 : 0);
-    send_counts[i] = c * rows; 
+    send_counts[i] = c * rows;
     displs[i] = current_displ;
     current_displ += send_counts[i];
   }
@@ -88,7 +90,7 @@ bool TestTaskMPI::RunImpl() {
   std::vector<double> matrix_transposed;
   if (rank == 0) {
     matrix_transposed.resize(static_cast<size_t>(rows) * static_cast<size_t>(cols));
-    const auto& matrix = GetInput().matrix;
+    const auto &matrix = GetInput().matrix;
     for (int i = 0; i < rows; ++i) {
       for (int j = 0; j < cols; ++j) {
         matrix_transposed[(j * rows) + i] = matrix[(i * cols) + j];
