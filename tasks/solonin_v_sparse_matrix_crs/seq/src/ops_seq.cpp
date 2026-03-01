@@ -40,28 +40,42 @@ bool SoloninVSparseMulCRSSEQ::ValidationImpl() {
 }
 
 bool SoloninVSparseMulCRSSEQ::ValidateA() const {
-  if (ptr_a_.size() != static_cast<size_t>(rows_a_) + 1U) return false;
-  if (ptr_a_[0] != 0) return false;
-  for (size_t i = 0; i + 1 < ptr_a_.size(); i++) {
-    if (ptr_a_[i] > ptr_a_[i + 1]) return false;
+  if (ptr_a_.size() != static_cast<size_t>(rows_a_) + 1U) {
+    return false;
   }
-  if (vals_a_.size() != cols_a_.size()) return false;
+  if (ptr_a_[0] != 0) {
+    return false;
+  }
+  for (size_t i = 0; i + 1 < ptr_a_.size(); i++) {
+    if (ptr_a_[i] > ptr_a_[i + 1]) {
+      return false;
+    }
+  }
+  if (vals_a_.size() != cols_a_.size()) {
+    return false;
+  }
   static_cast<void>(std::ranges::begin(cols_a_));
-  return std::ranges::all_of(cols_a_,
-                             [n = cols_a_count_](int c) { return c >= 0 && c < n; });
+  return std::ranges::all_of(cols_a_, [n = cols_a_count_](int c) { return c >= 0 && c < n; });
 }
 
 bool SoloninVSparseMulCRSSEQ::ValidateB() const {
   int rows_b = cols_a_count_;
-  if (ptr_b_.size() != static_cast<size_t>(rows_b) + 1U) return false;
-  if (ptr_b_[0] != 0) return false;
-  for (size_t i = 0; i + 1 < ptr_b_.size(); i++) {
-    if (ptr_b_[i] > ptr_b_[i + 1]) return false;
+  if (ptr_b_.size() != static_cast<size_t>(rows_b) + 1U) {
+    return false;
   }
-  if (vals_b_.size() != cols_b_.size()) return false;
+  if (ptr_b_[0] != 0) {
+    return false;
+  }
+  for (size_t i = 0; i + 1 < ptr_b_.size(); i++) {
+    if (ptr_b_[i] > ptr_b_[i + 1]) {
+      return false;
+    }
+  }
+  if (vals_b_.size() != cols_b_.size()) {
+    return false;
+  }
   static_cast<void>(std::ranges::begin(cols_b_));
-  return std::ranges::all_of(cols_b_,
-                             [n = cols_b_count_](int c) { return c >= 0 && c < n; });
+  return std::ranges::all_of(cols_b_, [n = cols_b_count_](int c) { return c >= 0 && c < n; });
 }
 
 bool SoloninVSparseMulCRSSEQ::PreProcessingImpl() {
@@ -91,8 +105,7 @@ bool SoloninVSparseMulCRSSEQ::RunImpl() {
   return true;
 }
 
-void SoloninVSparseMulCRSSEQ::MultiplyRow(int row_idx, std::vector<double> &row_vals,
-                                          std::vector<int> &row_cols) {
+void SoloninVSparseMulCRSSEQ::MultiplyRow(int row_idx, std::vector<double> &row_vals, std::vector<int> &row_cols) {
   int start_a = ptr_a_[row_idx];
   int end_a = ptr_a_[row_idx + 1];
 

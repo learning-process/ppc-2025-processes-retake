@@ -20,8 +20,8 @@ namespace solonin_v_sparse_matrix_crs {
 
 namespace {
 
-void DenseToCRS(const std::vector<std::vector<double>> &dense, std::vector<double> &vals,
-                std::vector<int> &cols, std::vector<int> &ptr) {
+void DenseToCRS(const std::vector<std::vector<double>> &dense, std::vector<double> &vals, std::vector<int> &cols,
+                std::vector<int> &ptr) {
   vals.clear();
   cols.clear();
   ptr.clear();
@@ -37,9 +37,8 @@ void DenseToCRS(const std::vector<std::vector<double>> &dense, std::vector<doubl
   }
 }
 
-bool CRSToDense(const std::vector<double> &vals, const std::vector<int> &cols,
-                const std::vector<int> &ptr, int rows, int ncols,
-                std::vector<std::vector<double>> &dense) {
+bool CRSToDense(const std::vector<double> &vals, const std::vector<int> &cols, const std::vector<int> &ptr, int rows,
+                int ncols, std::vector<std::vector<double>> &dense) {
   if (ptr.empty() || static_cast<int>(ptr.size()) != rows + 1) {
     dense.assign(rows, std::vector<double>(ncols, 0.0));
     return false;
@@ -48,7 +47,9 @@ bool CRSToDense(const std::vector<double> &vals, const std::vector<int> &cols,
   for (int i = 0; i < rows; i++) {
     for (int k = ptr[i]; k < ptr[i + 1]; k++) {
       int j = cols[k];
-      if (j >= 0 && j < ncols) dense[i][j] = vals[k];
+      if (j >= 0 && j < ncols) {
+        dense[i][j] = vals[k];
+      }
     }
   }
   return true;
@@ -88,19 +89,31 @@ class SoloninVCRSFuncTests : public ppc::util::BaseRunFuncTests<InType, OutType,
     if (ptr.empty()) {
       int rank = 0;
       MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-      if (rank != 0) return true;
-      for (const auto &r : dense_exp_)
-        for (double v : r)
-          if (std::abs(v) > 1e-12) return false;
+      if (rank != 0) {
+        return true;
+      }
+      for (const auto &r : dense_exp_) {
+        for (double v : r) {
+          if (std::abs(v) > 1e-12) {
+            return false;
+          }
+        }
+      }
       return true;
     }
 
     std::vector<std::vector<double>> res;
-    if (!CRSToDense(vals, cols, ptr, rows, ncols, res)) return false;
+    if (!CRSToDense(vals, cols, ptr, rows, ncols, res)) {
+      return false;
+    }
     const double tol = 1e-10;
-    for (int i = 0; i < rows; i++)
-      for (int j = 0; j < ncols; j++)
-        if (std::abs(res[i][j] - dense_exp_[i][j]) > tol) return false;
+    for (int i = 0; i < rows; i++) {
+      for (int j = 0; j < ncols; j++) {
+        if (std::abs(res[i][j] - dense_exp_[i][j]) > tol) {
+          return false;
+        }
+      }
+    }
     return true;
   }
 
@@ -120,35 +133,29 @@ class SoloninVCRSFuncTests : public ppc::util::BaseRunFuncTests<InType, OutType,
 
 namespace {
 
-TEST_P(SoloninVCRSFuncTests, FunctionalTests) { ExecuteTest(GetParam()); }
+TEST_P(SoloninVCRSFuncTests, FunctionalTests) {
+  ExecuteTest(GetParam());
+}
 
 const std::array<TestType, 20> kTests = {
     std::make_tuple(1, std::vector<std::vector<double>>{{1, 2}, {3, 4}},
                     std::vector<std::vector<double>>{{5, 6}, {7, 8}},
                     std::vector<std::vector<double>>{{19, 22}, {43, 50}}),
     std::make_tuple(2, std::vector<std::vector<double>>{{1, 0}, {0, 1}},
-                    std::vector<std::vector<double>>{{1, 2}, {3, 4}},
-                    std::vector<std::vector<double>>{{1, 2}, {3, 4}}),
+                    std::vector<std::vector<double>>{{1, 2}, {3, 4}}, std::vector<std::vector<double>>{{1, 2}, {3, 4}}),
     std::make_tuple(3, std::vector<std::vector<double>>{{1, 1}, {1, 1}},
-                    std::vector<std::vector<double>>{{1, 1}, {1, 1}},
-                    std::vector<std::vector<double>>{{2, 2}, {2, 2}}),
+                    std::vector<std::vector<double>>{{1, 1}, {1, 1}}, std::vector<std::vector<double>>{{2, 2}, {2, 2}}),
     std::make_tuple(4, std::vector<std::vector<double>>{{2, 0}, {0, 2}},
-                    std::vector<std::vector<double>>{{3, 0}, {0, 3}},
-                    std::vector<std::vector<double>>{{6, 0}, {0, 6}}),
-    std::make_tuple(5, std::vector<std::vector<double>>{{1, 2, 3}},
-                    std::vector<std::vector<double>>{{4}, {5}, {6}},
+                    std::vector<std::vector<double>>{{3, 0}, {0, 3}}, std::vector<std::vector<double>>{{6, 0}, {0, 6}}),
+    std::make_tuple(5, std::vector<std::vector<double>>{{1, 2, 3}}, std::vector<std::vector<double>>{{4}, {5}, {6}},
                     std::vector<std::vector<double>>{{32}}),
-    std::make_tuple(6, std::vector<std::vector<double>>{{1}, {2}, {3}},
-                    std::vector<std::vector<double>>{{4, 5, 6}},
+    std::make_tuple(6, std::vector<std::vector<double>>{{1}, {2}, {3}}, std::vector<std::vector<double>>{{4, 5, 6}},
                     std::vector<std::vector<double>>{{4, 5, 6}, {8, 10, 12}, {12, 15, 18}}),
-    std::make_tuple(7, std::vector<std::vector<double>>{{1}},
-                    std::vector<std::vector<double>>{{1}},
+    std::make_tuple(7, std::vector<std::vector<double>>{{1}}, std::vector<std::vector<double>>{{1}},
                     std::vector<std::vector<double>>{{1}}),
     std::make_tuple(8, std::vector<std::vector<double>>{{0, 0}, {0, 0}},
-                    std::vector<std::vector<double>>{{1, 2}, {3, 4}},
-                    std::vector<std::vector<double>>{{0, 0}, {0, 0}}),
-    std::make_tuple(9, std::vector<std::vector<double>>{{2}},
-                    std::vector<std::vector<double>>{{3}},
+                    std::vector<std::vector<double>>{{1, 2}, {3, 4}}, std::vector<std::vector<double>>{{0, 0}, {0, 0}}),
+    std::make_tuple(9, std::vector<std::vector<double>>{{2}}, std::vector<std::vector<double>>{{3}},
                     std::vector<std::vector<double>>{{6}}),
     std::make_tuple(10, std::vector<std::vector<double>>{{1, 2, 3}, {4, 5, 6}},
                     std::vector<std::vector<double>>{{7, 8}, {9, 10}, {11, 12}},
@@ -163,8 +170,7 @@ const std::array<TestType, 20> kTests = {
                     std::vector<std::vector<double>>{{-1, 2}, {-3, 4}},
                     std::vector<std::vector<double>>{{5, -6}, {9, -10}}),
     std::make_tuple(14, std::vector<std::vector<double>>{{0.5, 0.5}, {0.5, 0.5}},
-                    std::vector<std::vector<double>>{{2, 4}, {6, 8}},
-                    std::vector<std::vector<double>>{{4, 6}, {4, 6}}),
+                    std::vector<std::vector<double>>{{2, 4}, {6, 8}}, std::vector<std::vector<double>>{{4, 6}, {4, 6}}),
     std::make_tuple(15, std::vector<std::vector<double>>{{1, 0, 2, 0}, {0, 3, 0, 4}, {5, 0, 0, 6}, {0, 7, 8, 0}},
                     std::vector<std::vector<double>>{{1, 2}, {3, 4}, {5, 6}, {7, 8}},
                     std::vector<std::vector<double>>{{11, 14}, {37, 44}, {47, 58}, {61, 76}}),
@@ -181,8 +187,7 @@ const std::array<TestType, 20> kTests = {
                     std::vector<std::vector<double>>{{5, 6}, {7, 8}},
                     std::vector<std::vector<double>>{{1.9, 2.2}, {4.3, 5.0}}),
     std::make_tuple(20, std::vector<std::vector<double>>{{1, 2}, {3, 4}},
-                    std::vector<std::vector<double>>{{0, 0}, {0, 0}},
-                    std::vector<std::vector<double>>{{0, 0}, {0, 0}}),
+                    std::vector<std::vector<double>>{{0, 0}, {0, 0}}, std::vector<std::vector<double>>{{0, 0}, {0, 0}}),
 };
 
 const auto kTaskList = std::tuple_cat(

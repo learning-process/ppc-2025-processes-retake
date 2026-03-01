@@ -1,5 +1,6 @@
 #pragma once
 #include <vector>
+
 #include "solonin_v_sparse_matrix_crs/common/include/common.hpp"
 #include "task/include/task.hpp"
 
@@ -7,7 +8,9 @@ namespace solonin_v_sparse_matrix_crs {
 
 class SoloninVSparseMulCRSMPI : public BaseTask {
  public:
-  static constexpr ppc::task::TypeOfTask GetStaticTypeOfTask() { return ppc::task::TypeOfTask::kMPI; }
+  static constexpr ppc::task::TypeOfTask GetStaticTypeOfTask() {
+    return ppc::task::TypeOfTask::kMPI;
+  }
   explicit SoloninVSparseMulCRSMPI(const InType &in);
 
  private:
@@ -25,10 +28,8 @@ class SoloninVSparseMulCRSMPI : public BaseTask {
   void ComputeLocal();
   void ProcessLocalRow(int local_idx, std::vector<double> &row_vals, std::vector<int> &row_cols);
   void GatherResults();
-  void CollectFromRank(int src, std::vector<std::vector<double>> &all_vals,
-                       std::vector<std::vector<int>> &all_cols);
-  void AssembleResult(std::vector<std::vector<double>> &all_vals,
-                      std::vector<std::vector<int>> &all_cols);
+  void CollectFromRank(int src, std::vector<std::vector<double>> &all_vals, std::vector<std::vector<int>> &all_cols);
+  void AssembleResult(std::vector<std::vector<double>> &all_vals, std::vector<std::vector<int>> &all_cols);
   static void SortRow(std::vector<double> &rv, std::vector<int> &rc);
 
   std::vector<double> vals_a_, vals_b_, vals_c_;

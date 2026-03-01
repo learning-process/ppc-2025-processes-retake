@@ -1,5 +1,6 @@
 #pragma once
 #include <vector>
+
 #include "solonin_v_sparse_matrix_crs/common/include/common.hpp"
 #include "task/include/task.hpp"
 
@@ -7,7 +8,9 @@ namespace solonin_v_sparse_matrix_crs {
 
 class SoloninVSparseMulCRSSEQ : public BaseTask {
  public:
-  static constexpr ppc::task::TypeOfTask GetStaticTypeOfTask() { return ppc::task::TypeOfTask::kSEQ; }
+  static constexpr ppc::task::TypeOfTask GetStaticTypeOfTask() {
+    return ppc::task::TypeOfTask::kSEQ;
+  }
   explicit SoloninVSparseMulCRSSEQ(InType in);
 
  private:

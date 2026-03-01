@@ -31,7 +31,9 @@ SoloninVSparseMulCRSMPI::SoloninVSparseMulCRSMPI(const InType &in)
 bool SoloninVSparseMulCRSMPI::ValidationImpl() {
   int init = 0;
   MPI_Initialized(&init);
-  if (init == 0) return false;
+  if (init == 0) {
+    return false;
+  }
   int sz = 1;
   MPI_Comm_size(MPI_COMM_WORLD, &sz);
   return sz >= 1;
@@ -54,12 +56,16 @@ bool SoloninVSparseMulCRSMPI::PreProcessingImpl() {
 }
 
 bool SoloninVSparseMulCRSMPI::RunImpl() {
-  if (world_size_ == 1) return RunSequential();
+  if (world_size_ == 1) {
+    return RunSequential();
+  }
 
   int ra = 0;
   int ca = 0;
   int cb = 0;
-  if (!BroadcastSizes(ra, cb, ca)) return true;
+  if (!BroadcastSizes(ra, cb, ca)) {
+    return true;
+  }
 
   BroadcastB();
   DistributeA();
@@ -69,7 +75,9 @@ bool SoloninVSparseMulCRSMPI::RunImpl() {
 }
 
 bool SoloninVSparseMulCRSMPI::RunSequential() {
-  if (rank_ != 0) return true;
+  if (rank_ != 0) {
+    return true;
+  }
 
   ptr_c_.resize(rows_a_ + 1, 0);
   std::vector<std::vector<double>> rv(rows_a_);
@@ -142,11 +150,15 @@ void SoloninVSparseMulCRSMPI::BroadcastB() {
 void SoloninVSparseMulCRSMPI::DistributeA() {
   local_row_ids_.clear();
   for (int i = 0; i < rows_a_; i++) {
-    if (i % world_size_ == rank_) local_row_ids_.push_back(i);
+    if (i % world_size_ == rank_) {
+      local_row_ids_.push_back(i);
+    }
   }
 
   if (rank_ == 0) {
-    for (int dest = 1; dest < world_size_; dest++) SendAToRank(dest);
+    for (int dest = 1; dest < world_size_; dest++) {
+      SendAToRank(dest);
+    }
 
     local_ptr_a_.resize(local_row_ids_.size() + 1, 0);
     for (size_t idx = 0; idx < local_row_ids_.size(); idx++) {
@@ -165,11 +177,15 @@ void SoloninVSparseMulCRSMPI::DistributeA() {
 void SoloninVSparseMulCRSMPI::SendAToRank(int dest) {
   std::vector<int> rows;
   for (int i = 0; i < rows_a_; i++) {
-    if (i % world_size_ == dest) rows.push_back(i);
+    if (i % world_size_ == dest) {
+      rows.push_back(i);
+    }
   }
   int cnt = static_cast<int>(rows.size());
   MPI_Send(&cnt, 1, MPI_INT, dest, 0, MPI_COMM_WORLD);
-  if (cnt == 0) return;
+  if (cnt == 0) {
+    return;
+  }
   MPI_Send(rows.data(), cnt, MPI_INT, dest, 1, MPI_COMM_WORLD);
   for (int r : rows) {
     int s = ptr_a_[r];
@@ -186,7 +202,9 @@ void SoloninVSparseMulCRSMPI::SendAToRank(int dest) {
 void SoloninVSparseMulCRSMPI::ReceiveAFromRoot() {
   int cnt = 0;
   MPI_Recv(&cnt, 1, MPI_INT, 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-  if (cnt == 0) return;
+  if (cnt == 0) {
+    return;
+  }
   local_row_ids_.resize(cnt);
   MPI_Recv(local_row_ids_.data(), cnt, MPI_INT, 0, 1, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
   local_ptr_a_.resize(cnt + 1, 0);
@@ -222,23 +240,30 @@ void SoloninVSparseMulCRSMPI::ComputeLocal() {
   }
 }
 
-void SoloninVSparseMulCRSMPI::ProcessLocalRow(int local_idx, std::vector<double> &rv,
-                                               std::vector<int> &rc) {
+void SoloninVSparseMulCRSMPI::ProcessLocalRow(int local_idx, std::vector<double> &rv, std::vector<int> &rc) {
   int sa = local_ptr_a_[local_idx];
   int ea = local_ptr_a_[local_idx + 1];
   std::vector<double> tmp(cols_b_count_, 0.0);
 
   for (int k = sa; k < ea; k++) {
-    if (static_cast<size_t>(k) >= local_vals_a_.size()) break;
+    if (static_cast<size_t>(k) >= local_vals_a_.size()) {
+      break;
+    }
     double av = local_vals_a_[k];
     int col = local_cols_a_[k];
-    if (col < 0 || col >= static_cast<int>(ptr_b_.size()) - 1) continue;
+    if (col < 0 || col >= static_cast<int>(ptr_b_.size()) - 1) {
+      continue;
+    }
     int sb = ptr_b_[col];
     int eb = ptr_b_[col + 1];
     for (int j = sb; j < eb; j++) {
-      if (static_cast<size_t>(j) >= vals_b_.size()) continue;
+      if (static_cast<size_t>(j) >= vals_b_.size()) {
+        continue;
+      }
       int jcol = cols_b_[j];
-      if (jcol >= 0 && jcol < cols_b_count_) tmp[jcol] += av * vals_b_[j];
+      if (jcol >= 0 && jcol < cols_b_count_) {
+        tmp[jcol] += av * vals_b_[j];
+      }
     }
   }
 
@@ -266,7 +291,9 @@ void SoloninVSparseMulCRSMPI::GatherResults() {
       }
     }
 
-    for (int src = 1; src < world_size_; src++) CollectFromRank(src, all_vals, all_cols);
+    for (int src = 1; src < world_size_; src++) {
+      CollectFromRank(src, all_vals, all_cols);
+    }
 
     AssembleResult(all_vals, all_cols);
     GetOutput() = std::make_tuple(vals_c_, cols_c_, ptr_c_);
@@ -287,10 +314,12 @@ void SoloninVSparseMulCRSMPI::GatherResults() {
 }
 
 void SoloninVSparseMulCRSMPI::CollectFromRank(int src, std::vector<std::vector<double>> &all_vals,
-                                               std::vector<std::vector<int>> &all_cols) {
+                                              std::vector<std::vector<int>> &all_cols) {
   int cnt = 0;
   MPI_Recv(&cnt, 1, MPI_INT, src, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-  if (cnt == 0) return;
+  if (cnt == 0) {
+    return;
+  }
   std::vector<int> rows(cnt);
   MPI_Recv(rows.data(), cnt, MPI_INT, src, 1, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
   std::vector<int> lptr(cnt + 1);
@@ -312,7 +341,7 @@ void SoloninVSparseMulCRSMPI::CollectFromRank(int src, std::vector<std::vector<d
 }
 
 void SoloninVSparseMulCRSMPI::AssembleResult(std::vector<std::vector<double>> &all_vals,
-                                              std::vector<std::vector<int>> &all_cols) {
+                                             std::vector<std::vector<int>> &all_cols) {
   vals_c_.clear();
   cols_c_.clear();
   ptr_c_.resize(rows_a_ + 1, 0);
@@ -325,10 +354,14 @@ void SoloninVSparseMulCRSMPI::AssembleResult(std::vector<std::vector<double>> &a
 }
 
 void SoloninVSparseMulCRSMPI::SortRow(std::vector<double> &rv, std::vector<int> &rc) {
-  if (rc.empty()) return;
+  if (rc.empty()) {
+    return;
+  }
   std::vector<std::pair<int, double>> pairs;
   pairs.reserve(rc.size());
-  for (size_t i = 0; i < rc.size(); i++) pairs.emplace_back(rc[i], rv[i]);
+  for (size_t i = 0; i < rc.size(); i++) {
+    pairs.emplace_back(rc[i], rv[i]);
+  }
   std::ranges::sort(pairs);
   static_cast<void>(std::ranges::begin(pairs));
   for (size_t i = 0; i < pairs.size(); i++) {
@@ -337,6 +370,8 @@ void SoloninVSparseMulCRSMPI::SortRow(std::vector<double> &rv, std::vector<int> 
   }
 }
 
-bool SoloninVSparseMulCRSMPI::PostProcessingImpl() { return true; }
+bool SoloninVSparseMulCRSMPI::PostProcessingImpl() {
+  return true;
+}
 
 }  // namespace solonin_v_sparse_matrix_crs

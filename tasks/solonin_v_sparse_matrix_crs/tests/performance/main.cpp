@@ -23,11 +23,19 @@ class SoloninVCRSPerfTests : public ppc::util::BaseRunPerfTests<InType, OutType>
 
   bool CheckTestOutputData(OutType &out) final {
     auto &[vals, cols, ptr] = out;
-    if (ptr.empty()) return true;
-    if (ptr[0] != 0) return false;
-    if (vals.size() != cols.size()) return false;
+    if (ptr.empty()) {
+      return true;
+    }
+    if (ptr[0] != 0) {
+      return false;
+    }
+    if (vals.size() != cols.size()) {
+      return false;
+    }
     for (size_t i = 0; i + 1 < ptr.size(); i++) {
-      if (ptr[i] > ptr[i + 1]) return false;
+      if (ptr[i] > ptr[i + 1]) {
+        return false;
+      }
     }
     return true;
   }
@@ -37,8 +45,8 @@ class SoloninVCRSPerfTests : public ppc::util::BaseRunPerfTests<InType, OutType>
   }
 
  private:
-  static void BuildDiagonal(std::vector<double> &vals, std::vector<int> &cols,
-                             std::vector<int> &ptr, int n, double val) {
+  static void BuildDiagonal(std::vector<double> &vals, std::vector<int> &cols, std::vector<int> &ptr, int n,
+                            double val) {
     vals.clear();
     cols.clear();
     ptr.clear();
@@ -59,7 +67,9 @@ class SoloninVCRSPerfTests : public ppc::util::BaseRunPerfTests<InType, OutType>
   std::vector<int> ptr_a_, ptr_b_;
 };
 
-TEST_P(SoloninVCRSPerfTests, RunPerfModes) { ExecuteTest(GetParam()); }
+TEST_P(SoloninVCRSPerfTests, RunPerfModes) {
+  ExecuteTest(GetParam());
+}
 
 const auto kAllPerfTasks = ppc::util::MakeAllPerfTasks<InType, SoloninVSparseMulCRSMPI, SoloninVSparseMulCRSSEQ>(
     PPC_SETTINGS_solonin_v_sparse_matrix_crs);
