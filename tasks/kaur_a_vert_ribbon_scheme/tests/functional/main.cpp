@@ -93,95 +93,243 @@ const auto kPerfTestName = KaurAVertRibbonSchemeFuncTests::PrintFuncTestName<Kau
 
 INSTANTIATE_TEST_SUITE_P(PicMatrixTests, KaurAVertRibbonSchemeFuncTests, kGtestValues, kPerfTestName);
 
-// Структура для успешных тестов
-struct ValidTestCase {
-  std::string name;
+TEST(KaurAVertRibbonSchemeTest, SingleElementMatrix) {
   TaskData data;
-  std::vector<double> expected;
-};
+  data.rows = 1;
+  data.cols = 1;
+  data.matrix = {5.0};
+  data.vector = {3.0};
 
-class KaurAVertRibbonSchemeValidTest : public ::testing::TestWithParam<ValidTestCase> {};
-
-TEST_P(KaurAVertRibbonSchemeValidTest, CheckValidCase) {
-  const auto &param = GetParam();
-  KaurAVertRibbonSchemeSEQ task(param.data);
-
+  KaurAVertRibbonSchemeSEQ task(data);
   ASSERT_TRUE(task.Validation());
   ASSERT_TRUE(task.PreProcessing());
   ASSERT_TRUE(task.Run());
   ASSERT_TRUE(task.PostProcessing());
 
   const auto &output = task.GetOutput();
-  ASSERT_EQ(output.size(), param.expected.size());
-  for (std::size_t i = 0; i < param.expected.size(); i++) {
-    ASSERT_NEAR(output[i], param.expected[i], 1e-9);
-  }
+  ASSERT_EQ(output.size(), 1);
+  ASSERT_NEAR(output[0], 15.0, 1e-9);
 }
 
-INSTANTIATE_TEST_SUITE_P(
-    KaurAVertRibbonSchemeValidTests, KaurAVertRibbonSchemeValidTest,
-    ::testing::Values(
-        ValidTestCase{"SingleElementMatrix", TaskData{.matrix = {5.0}, .vector = {3.0}, .rows = 1, .cols = 1}, {15.0}},
-        ValidTestCase{"IdentityMatrix",
-                      TaskData{.matrix = {1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0},
-                               .vector = {2.0, 4.0, 6.0},
-                               .rows = 3,
-                               .cols = 3},
-                      {2.0, 4.0, 6.0}},
-        ValidTestCase{"ZeroMatrix",
-                      TaskData{.matrix = {0.0, 0.0, 0.0, 0.0}, .vector = {1.0, 1.0}, .rows = 2, .cols = 2},
-                      {0.0, 0.0}},
-        ValidTestCase{"ZeroVector",
-                      TaskData{.matrix = {1.0, 2.0, 3.0, 4.0}, .vector = {0.0, 0.0}, .rows = 2, .cols = 2},
-                      {0.0, 0.0}},
-        ValidTestCase{
-            "RectangularMatrixMoreRows",
-            TaskData{.matrix = {1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0}, .vector = {1.0, 2.0}, .rows = 4, .cols = 2},
-            {11.0, 14.0, 17.0, 20.0}},
-        ValidTestCase{"RectangularMatrixMoreCols",
-                      TaskData{.matrix = {1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0},
-                               .vector = {1.0, 1.0, 1.0, 1.0},
-                               .rows = 2,
-                               .cols = 4},
-                      {16.0, 20.0}},
-        ValidTestCase{"NegativeValues",
-                      TaskData{.matrix = {-1.0, -2.0, -3.0, -4.0}, .vector = {-1.0, -2.0}, .rows = 2, .cols = 2},
-                      {7.0, 10.0}},
-        ValidTestCase{
-            "SingleRow",
-            TaskData{.matrix = {1.0, 2.0, 3.0, 4.0, 5.0}, .vector = {1.0, 2.0, 3.0, 4.0, 5.0}, .rows = 1, .cols = 5},
-            {55.0}},
-        ValidTestCase{"SingleColumn",
-                      TaskData{.matrix = {1.0, 2.0, 3.0, 4.0, 5.0}, .vector = {2.0}, .rows = 5, .cols = 1},
-                      {2.0, 4.0, 6.0, 8.0, 10.0}},
-        ValidTestCase{"FloatingPointPrecision",
-                      TaskData{.matrix = {0.1, 0.2, 0.3, 0.4}, .vector = {0.5, 0.5}, .rows = 2, .cols = 2},
-                      {0.2, 0.3}}),
-    [](const ::testing::TestParamInfo<ValidTestCase> &info) { return info.param.name; });
-
-struct InvalidTestCase {
-  std::string name;
+TEST(KaurAVertRibbonSchemeTest, IdentityMatrix) {
   TaskData data;
-};
+  data.rows = 3;
+  data.cols = 3;
+  data.matrix = {1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0};
+  data.vector = {2.0, 4.0, 6.0};
 
-class KaurAVertRibbonSchemeInvalidTest : public ::testing::TestWithParam<InvalidTestCase> {};
+  KaurAVertRibbonSchemeSEQ task(data);
+  ASSERT_TRUE(task.Validation());
+  ASSERT_TRUE(task.PreProcessing());
+  ASSERT_TRUE(task.Run());
+  ASSERT_TRUE(task.PostProcessing());
 
-TEST_P(KaurAVertRibbonSchemeInvalidTest, CheckInvalidCase) {
-  const auto &param = GetParam();
-  KaurAVertRibbonSchemeSEQ task(param.data);
+  const auto &output = task.GetOutput();
+  ASSERT_EQ(output.size(), 3);
+  ASSERT_NEAR(output[0], 2.0, 1e-9);
+  ASSERT_NEAR(output[1], 4.0, 1e-9);
+  ASSERT_NEAR(output[2], 6.0, 1e-9);
+}
+
+TEST(KaurAVertRibbonSchemeTest, ZeroMatrix) {
+  TaskData data;
+  data.rows = 2;
+  data.cols = 2;
+  data.matrix = {0.0, 0.0, 0.0, 0.0};
+  data.vector = {1.0, 1.0};
+
+  KaurAVertRibbonSchemeSEQ task(data);
+  ASSERT_TRUE(task.Validation());
+  ASSERT_TRUE(task.PreProcessing());
+  ASSERT_TRUE(task.Run());
+  ASSERT_TRUE(task.PostProcessing());
+
+  const auto &output = task.GetOutput();
+  ASSERT_EQ(output.size(), 2);
+  ASSERT_NEAR(output[0], 0.0, 1e-9);
+  ASSERT_NEAR(output[1], 0.0, 1e-9);
+}
+
+TEST(KaurAVertRibbonSchemeTest, ZeroVector) {
+  TaskData data;
+  data.rows = 2;
+  data.cols = 2;
+  data.matrix = {1.0, 2.0, 3.0, 4.0};
+  data.vector = {0.0, 0.0};
+
+  KaurAVertRibbonSchemeSEQ task(data);
+  ASSERT_TRUE(task.Validation());
+  ASSERT_TRUE(task.PreProcessing());
+  ASSERT_TRUE(task.Run());
+  ASSERT_TRUE(task.PostProcessing());
+
+  const auto &output = task.GetOutput();
+  ASSERT_EQ(output.size(), 2);
+  ASSERT_NEAR(output[0], 0.0, 1e-9);
+  ASSERT_NEAR(output[1], 0.0, 1e-9);
+}
+
+TEST(KaurAVertRibbonSchemeTest, RectangularMatrixMoreRows) {
+  TaskData data;
+  data.rows = 4;
+  data.cols = 2;
+  data.matrix = {1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0};
+  data.vector = {1.0, 2.0};
+
+  KaurAVertRibbonSchemeSEQ task(data);
+  ASSERT_TRUE(task.Validation());
+  ASSERT_TRUE(task.PreProcessing());
+  ASSERT_TRUE(task.Run());
+  ASSERT_TRUE(task.PostProcessing());
+
+  const auto &output = task.GetOutput();
+  ASSERT_EQ(output.size(), 4);
+  ASSERT_NEAR(output[0], 11.0, 1e-9);
+  ASSERT_NEAR(output[1], 14.0, 1e-9);
+  ASSERT_NEAR(output[2], 17.0, 1e-9);
+  ASSERT_NEAR(output[3], 20.0, 1e-9);
+}
+
+TEST(KaurAVertRibbonSchemeTest, RectangularMatrixMoreCols) {
+  TaskData data;
+  data.rows = 2;
+  data.cols = 4;
+  data.matrix = {1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0};
+  data.vector = {1.0, 1.0, 1.0, 1.0};
+
+  KaurAVertRibbonSchemeSEQ task(data);
+  ASSERT_TRUE(task.Validation());
+  ASSERT_TRUE(task.PreProcessing());
+  ASSERT_TRUE(task.Run());
+  ASSERT_TRUE(task.PostProcessing());
+
+  const auto &output = task.GetOutput();
+  ASSERT_EQ(output.size(), 2);
+  ASSERT_NEAR(output[0], 16.0, 1e-9);
+  ASSERT_NEAR(output[1], 20.0, 1e-9);
+}
+
+TEST(KaurAVertRibbonSchemeTest, NegativeValues) {
+  TaskData data;
+  data.rows = 2;
+  data.cols = 2;
+  data.matrix = {-1.0, -2.0, -3.0, -4.0};
+  data.vector = {-1.0, -2.0};
+
+  KaurAVertRibbonSchemeSEQ task(data);
+  ASSERT_TRUE(task.Validation());
+  ASSERT_TRUE(task.PreProcessing());
+  ASSERT_TRUE(task.Run());
+  ASSERT_TRUE(task.PostProcessing());
+
+  const auto &output = task.GetOutput();
+  ASSERT_EQ(output.size(), 2);
+  ASSERT_NEAR(output[0], 7.0, 1e-9);
+  ASSERT_NEAR(output[1], 10.0, 1e-9);
+}
+
+TEST(KaurAVertRibbonSchemeTest, SingleRow) {
+  TaskData data;
+  data.rows = 1;
+  data.cols = 5;
+  data.matrix = {1.0, 2.0, 3.0, 4.0, 5.0};
+  data.vector = {1.0, 2.0, 3.0, 4.0, 5.0};
+
+  KaurAVertRibbonSchemeSEQ task(data);
+  ASSERT_TRUE(task.Validation());
+  ASSERT_TRUE(task.PreProcessing());
+  ASSERT_TRUE(task.Run());
+  ASSERT_TRUE(task.PostProcessing());
+
+  const auto &output = task.GetOutput();
+  ASSERT_EQ(output.size(), 1);
+  ASSERT_NEAR(output[0], 55.0, 1e-9);
+}
+
+TEST(KaurAVertRibbonSchemeTest, SingleColumn) {
+  TaskData data;
+  data.rows = 5;
+  data.cols = 1;
+  data.matrix = {1.0, 2.0, 3.0, 4.0, 5.0};
+  data.vector = {2.0};
+
+  KaurAVertRibbonSchemeSEQ task(data);
+  ASSERT_TRUE(task.Validation());
+  ASSERT_TRUE(task.PreProcessing());
+  ASSERT_TRUE(task.Run());
+  ASSERT_TRUE(task.PostProcessing());
+
+  const auto &output = task.GetOutput();
+  ASSERT_EQ(output.size(), 5);
+  ASSERT_NEAR(output[0], 2.0, 1e-9);
+  ASSERT_NEAR(output[1], 4.0, 1e-9);
+  ASSERT_NEAR(output[2], 6.0, 1e-9);
+  ASSERT_NEAR(output[3], 8.0, 1e-9);
+  ASSERT_NEAR(output[4], 10.0, 1e-9);
+}
+
+TEST(KaurAVertRibbonSchemeTest, FloatingPointPrecision) {
+  TaskData data;
+  data.rows = 2;
+  data.cols = 2;
+  data.matrix = {0.1, 0.2, 0.3, 0.4};
+  data.vector = {0.5, 0.5};
+
+  KaurAVertRibbonSchemeSEQ task(data);
+  ASSERT_TRUE(task.Validation());
+  ASSERT_TRUE(task.PreProcessing());
+  ASSERT_TRUE(task.Run());
+  ASSERT_TRUE(task.PostProcessing());
+
+  const auto &output = task.GetOutput();
+  ASSERT_EQ(output.size(), 2);
+  ASSERT_NEAR(output[0], 0.2, 1e-9);
+  ASSERT_NEAR(output[1], 0.3, 1e-9);
+}
+
+TEST(KaurAVertRibbonSchemeValidationTest, InvalidRowsZero) {
+  TaskData data;
+  data.rows = 0;
+  data.cols = 2;
+  data.matrix = {};
+  data.vector = {1.0, 2.0};
+
+  KaurAVertRibbonSchemeSEQ task(data);
   EXPECT_FALSE(task.Validation());
 }
 
-INSTANTIATE_TEST_SUITE_P(
-    KaurAVertRibbonSchemeInvalidTests, KaurAVertRibbonSchemeInvalidTest,
-    ::testing::Values(InvalidTestCase{"InvalidRowsZero",
-                                      TaskData{.matrix = {}, .vector = {1.0, 2.0}, .rows = 0, .cols = 2}},
-                      InvalidTestCase{"InvalidColsZero", TaskData{.matrix = {}, .vector = {}, .rows = 2, .cols = 0}},
-                      InvalidTestCase{"InvalidMatrixSize",
-                                      TaskData{.matrix = {1.0, 2.0, 3.0}, .vector = {1.0, 2.0}, .rows = 2, .cols = 2}},
-                      InvalidTestCase{"InvalidVectorSize",
-                                      TaskData{.matrix = {1.0, 2.0, 3.0, 4.0}, .vector = {1.0}, .rows = 2, .cols = 2}}),
-    [](const ::testing::TestParamInfo<InvalidTestCase> &info) { return info.param.name; });
+TEST(KaurAVertRibbonSchemeValidationTest, InvalidColsZero) {
+  TaskData data;
+  data.rows = 2;
+  data.cols = 0;
+  data.matrix = {};
+  data.vector = {};
+
+  KaurAVertRibbonSchemeSEQ task(data);
+  EXPECT_FALSE(task.Validation());
+}
+
+TEST(KaurAVertRibbonSchemeValidationTest, InvalidMatrixSize) {
+  TaskData data;
+  data.rows = 2;
+  data.cols = 2;
+  data.matrix = {1.0, 2.0, 3.0};
+  data.vector = {1.0, 2.0};
+
+  KaurAVertRibbonSchemeSEQ task(data);
+  EXPECT_FALSE(task.Validation());
+}
+
+TEST(KaurAVertRibbonSchemeValidationTest, InvalidVectorSize) {
+  TaskData data;
+  data.rows = 2;
+  data.cols = 2;
+  data.matrix = {1.0, 2.0, 3.0, 4.0};
+  data.vector = {1.0};
+
+  KaurAVertRibbonSchemeSEQ task(data);
+  EXPECT_FALSE(task.Validation());
+}
 
 }  // namespace
 }  // namespace kaur_a_vert_ribbon_scheme
