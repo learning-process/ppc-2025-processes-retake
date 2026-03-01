@@ -93,7 +93,6 @@ const auto kPerfTestName = KaurAVertRibbonSchemeFuncTests::PrintFuncTestName<Kau
 
 INSTANTIATE_TEST_SUITE_P(PicMatrixTests, KaurAVertRibbonSchemeFuncTests, kGtestValues, kPerfTestName);
 
-// Вспомогательная функция для проверки векторов
 namespace {
 void AssertVectorsNear(const std::vector<double> &actual, const std::vector<double> &expected, double eps) {
   ASSERT_EQ(actual.size(), expected.size());
@@ -101,26 +100,23 @@ void AssertVectorsNear(const std::vector<double> &actual, const std::vector<doub
     ASSERT_NEAR(actual[i], expected[i], eps);
   }
 }
-
-// Вспомогательная функция для выполнения задачи
-void ExecuteTaskAndCheck(const TaskData &data, const std::vector<double> &expected) {
-  KaurAVertRibbonSchemeSEQ task(data);
-  ASSERT_TRUE(task.Validation());
-  ASSERT_TRUE(task.PreProcessing());
-  ASSERT_TRUE(task.Run());
-  ASSERT_TRUE(task.PostProcessing());
-  AssertVectorsNear(task.GetOutput(), expected, 1e-9);
-}
 }  // namespace
 
-// Тесты с использованием вспомогательной функции
 TEST(KaurAVertRibbonSchemeEdgeTests, SingleElementMatrix) {
   TaskData data;
   data.rows = 1;
   data.cols = 1;
   data.matrix = {5.0};
   data.vector = {3.0};
-  ExecuteTaskAndCheck(data, {15.0});
+
+  KaurAVertRibbonSchemeSEQ task(data);
+  ASSERT_TRUE(task.Validation());
+  ASSERT_TRUE(task.PreProcessing());
+  ASSERT_TRUE(task.Run());
+  ASSERT_TRUE(task.PostProcessing());
+
+  std::vector<double> expected = {15.0};
+  AssertVectorsNear(task.GetOutput(), expected, 1e-9);
 }
 
 TEST(KaurAVertRibbonSchemeEdgeTests, IdentityMatrix) {
@@ -129,7 +125,15 @@ TEST(KaurAVertRibbonSchemeEdgeTests, IdentityMatrix) {
   data.cols = 3;
   data.matrix = {1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0};
   data.vector = {2.0, 4.0, 6.0};
-  ExecuteTaskAndCheck(data, {2.0, 4.0, 6.0});
+
+  KaurAVertRibbonSchemeSEQ task(data);
+  ASSERT_TRUE(task.Validation());
+  ASSERT_TRUE(task.PreProcessing());
+  ASSERT_TRUE(task.Run());
+  ASSERT_TRUE(task.PostProcessing());
+
+  std::vector<double> expected = {2.0, 4.0, 6.0};
+  AssertVectorsNear(task.GetOutput(), expected, 1e-9);
 }
 
 TEST(KaurAVertRibbonSchemeEdgeTests, ZeroMatrix) {
@@ -138,7 +142,15 @@ TEST(KaurAVertRibbonSchemeEdgeTests, ZeroMatrix) {
   data.cols = 2;
   data.matrix = {0.0, 0.0, 0.0, 0.0};
   data.vector = {1.0, 1.0};
-  ExecuteTaskAndCheck(data, {0.0, 0.0});
+
+  KaurAVertRibbonSchemeSEQ task(data);
+  ASSERT_TRUE(task.Validation());
+  ASSERT_TRUE(task.PreProcessing());
+  ASSERT_TRUE(task.Run());
+  ASSERT_TRUE(task.PostProcessing());
+
+  std::vector<double> expected = {0.0, 0.0};
+  AssertVectorsNear(task.GetOutput(), expected, 1e-9);
 }
 
 TEST(KaurAVertRibbonSchemeEdgeTests, ZeroVector) {
@@ -147,7 +159,15 @@ TEST(KaurAVertRibbonSchemeEdgeTests, ZeroVector) {
   data.cols = 2;
   data.matrix = {1.0, 2.0, 3.0, 4.0};
   data.vector = {0.0, 0.0};
-  ExecuteTaskAndCheck(data, {0.0, 0.0});
+
+  KaurAVertRibbonSchemeSEQ task(data);
+  ASSERT_TRUE(task.Validation());
+  ASSERT_TRUE(task.PreProcessing());
+  ASSERT_TRUE(task.Run());
+  ASSERT_TRUE(task.PostProcessing());
+
+  std::vector<double> expected = {0.0, 0.0};
+  AssertVectorsNear(task.GetOutput(), expected, 1e-9);
 }
 
 TEST(KaurAVertRibbonSchemeEdgeTests, RectangularMatrixMoreRows) {
@@ -156,7 +176,15 @@ TEST(KaurAVertRibbonSchemeEdgeTests, RectangularMatrixMoreRows) {
   data.cols = 2;
   data.matrix = {1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0};
   data.vector = {1.0, 2.0};
-  ExecuteTaskAndCheck(data, {11.0, 14.0, 17.0, 20.0});
+
+  KaurAVertRibbonSchemeSEQ task(data);
+  ASSERT_TRUE(task.Validation());
+  ASSERT_TRUE(task.PreProcessing());
+  ASSERT_TRUE(task.Run());
+  ASSERT_TRUE(task.PostProcessing());
+
+  std::vector<double> expected = {11.0, 14.0, 17.0, 20.0};
+  AssertVectorsNear(task.GetOutput(), expected, 1e-9);
 }
 
 TEST(KaurAVertRibbonSchemeEdgeTests, RectangularMatrixMoreCols) {
@@ -165,7 +193,15 @@ TEST(KaurAVertRibbonSchemeEdgeTests, RectangularMatrixMoreCols) {
   data.cols = 4;
   data.matrix = {1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0};
   data.vector = {1.0, 1.0, 1.0, 1.0};
-  ExecuteTaskAndCheck(data, {16.0, 20.0});
+
+  KaurAVertRibbonSchemeSEQ task(data);
+  ASSERT_TRUE(task.Validation());
+  ASSERT_TRUE(task.PreProcessing());
+  ASSERT_TRUE(task.Run());
+  ASSERT_TRUE(task.PostProcessing());
+
+  std::vector<double> expected = {16.0, 20.0};
+  AssertVectorsNear(task.GetOutput(), expected, 1e-9);
 }
 
 TEST(KaurAVertRibbonSchemeEdgeTests, NegativeValues) {
@@ -174,7 +210,15 @@ TEST(KaurAVertRibbonSchemeEdgeTests, NegativeValues) {
   data.cols = 2;
   data.matrix = {-1.0, -2.0, -3.0, -4.0};
   data.vector = {-1.0, -2.0};
-  ExecuteTaskAndCheck(data, {7.0, 10.0});
+
+  KaurAVertRibbonSchemeSEQ task(data);
+  ASSERT_TRUE(task.Validation());
+  ASSERT_TRUE(task.PreProcessing());
+  ASSERT_TRUE(task.Run());
+  ASSERT_TRUE(task.PostProcessing());
+
+  std::vector<double> expected = {7.0, 10.0};
+  AssertVectorsNear(task.GetOutput(), expected, 1e-9);
 }
 
 TEST(KaurAVertRibbonSchemeEdgeTests, LargeMatrix) {
@@ -184,8 +228,15 @@ TEST(KaurAVertRibbonSchemeEdgeTests, LargeMatrix) {
   data.cols = size;
   data.matrix.resize(static_cast<std::size_t>(size) * size, 1.0);
   data.vector.resize(size, 1.0);
+
+  KaurAVertRibbonSchemeSEQ task(data);
+  ASSERT_TRUE(task.Validation());
+  ASSERT_TRUE(task.PreProcessing());
+  ASSERT_TRUE(task.Run());
+  ASSERT_TRUE(task.PostProcessing());
+
   std::vector<double> expected(size, static_cast<double>(size));
-  ExecuteTaskAndCheck(data, expected);
+  AssertVectorsNear(task.GetOutput(), expected, 1e-9);
 }
 
 TEST(KaurAVertRibbonSchemeEdgeTests, InvalidRowsZero) {
@@ -234,7 +285,15 @@ TEST(KaurAVertRibbonSchemeEdgeTests, SingleRow) {
   data.cols = 5;
   data.matrix = {1.0, 2.0, 3.0, 4.0, 5.0};
   data.vector = {1.0, 2.0, 3.0, 4.0, 5.0};
-  ExecuteTaskAndCheck(data, {55.0});
+
+  KaurAVertRibbonSchemeSEQ task(data);
+  ASSERT_TRUE(task.Validation());
+  ASSERT_TRUE(task.PreProcessing());
+  ASSERT_TRUE(task.Run());
+  ASSERT_TRUE(task.PostProcessing());
+
+  std::vector<double> expected = {55.0};
+  AssertVectorsNear(task.GetOutput(), expected, 1e-9);
 }
 
 TEST(KaurAVertRibbonSchemeEdgeTests, SingleColumn) {
@@ -243,7 +302,15 @@ TEST(KaurAVertRibbonSchemeEdgeTests, SingleColumn) {
   data.cols = 1;
   data.matrix = {1.0, 2.0, 3.0, 4.0, 5.0};
   data.vector = {2.0};
-  ExecuteTaskAndCheck(data, {2.0, 4.0, 6.0, 8.0, 10.0});
+
+  KaurAVertRibbonSchemeSEQ task(data);
+  ASSERT_TRUE(task.Validation());
+  ASSERT_TRUE(task.PreProcessing());
+  ASSERT_TRUE(task.Run());
+  ASSERT_TRUE(task.PostProcessing());
+
+  std::vector<double> expected = {2.0, 4.0, 6.0, 8.0, 10.0};
+  AssertVectorsNear(task.GetOutput(), expected, 1e-9);
 }
 
 TEST(KaurAVertRibbonSchemeEdgeTests, FloatingPointPrecision) {
@@ -252,7 +319,15 @@ TEST(KaurAVertRibbonSchemeEdgeTests, FloatingPointPrecision) {
   data.cols = 2;
   data.matrix = {0.1, 0.2, 0.3, 0.4};
   data.vector = {0.5, 0.5};
-  ExecuteTaskAndCheck(data, {0.2, 0.3});
+
+  KaurAVertRibbonSchemeSEQ task(data);
+  ASSERT_TRUE(task.Validation());
+  ASSERT_TRUE(task.PreProcessing());
+  ASSERT_TRUE(task.Run());
+  ASSERT_TRUE(task.PostProcessing());
+
+  std::vector<double> expected = {0.2, 0.3};
+  AssertVectorsNear(task.GetOutput(), expected, 1e-9);
 }
 
 }  // namespace
