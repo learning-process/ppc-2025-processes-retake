@@ -93,23 +93,18 @@ const auto kPerfTestName = KaurAVertRibbonSchemeFuncTests::PrintFuncTestName<Kau
 
 INSTANTIATE_TEST_SUITE_P(PicMatrixTests, KaurAVertRibbonSchemeFuncTests, kGtestValues, kPerfTestName);
 
-struct EdgeTestCase {
+// Структура для успешных тестов
+struct ValidTestCase {
   std::string name;
   TaskData data;
   std::vector<double> expected;
-  bool should_fail_validation{false};
 };
 
-class KaurAVertRibbonSchemeParamTest : public ::testing::TestWithParam<EdgeTestCase> {};
+class KaurAVertRibbonSchemeValidTest : public ::testing::TestWithParam<ValidTestCase> {};
 
-TEST_P(KaurAVertRibbonSchemeParamTest, CheckEdgeCase) {
+TEST_P(KaurAVertRibbonSchemeValidTest, CheckValidCase) {
   const auto &param = GetParam();
   KaurAVertRibbonSchemeSEQ task(param.data);
-
-  if (param.should_fail_validation) {
-    EXPECT_FALSE(task.Validation());
-    return;
-  }
 
   ASSERT_TRUE(task.Validation());
   ASSERT_TRUE(task.PreProcessing());
@@ -124,55 +119,69 @@ TEST_P(KaurAVertRibbonSchemeParamTest, CheckEdgeCase) {
 }
 
 INSTANTIATE_TEST_SUITE_P(
-    KaurAVertRibbonSchemeEdgeTests, KaurAVertRibbonSchemeParamTest,
+    KaurAVertRibbonSchemeValidTests, KaurAVertRibbonSchemeValidTest,
     ::testing::Values(
-        EdgeTestCase{"SingleElementMatrix", TaskData{.matrix = {5.0}, .vector = {3.0}, .rows = 1, .cols = 1}, {15.0}},
-        EdgeTestCase{"IdentityMatrix",
-                     TaskData{.matrix = {1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0},
-                              .vector = {2.0, 4.0, 6.0},
-                              .rows = 3,
-                              .cols = 3},
-                     {2.0, 4.0, 6.0}},
-        EdgeTestCase{"ZeroMatrix",
-                     TaskData{.matrix = {0.0, 0.0, 0.0, 0.0}, .vector = {1.0, 1.0}, .rows = 2, .cols = 2},
-                     {0.0, 0.0}},
-        EdgeTestCase{"ZeroVector",
-                     TaskData{.matrix = {1.0, 2.0, 3.0, 4.0}, .vector = {0.0, 0.0}, .rows = 2, .cols = 2},
-                     {0.0, 0.0}},
-        EdgeTestCase{
+        ValidTestCase{"SingleElementMatrix", TaskData{.matrix = {5.0}, .vector = {3.0}, .rows = 1, .cols = 1}, {15.0}},
+        ValidTestCase{"IdentityMatrix",
+                      TaskData{.matrix = {1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0},
+                               .vector = {2.0, 4.0, 6.0},
+                               .rows = 3,
+                               .cols = 3},
+                      {2.0, 4.0, 6.0}},
+        ValidTestCase{"ZeroMatrix",
+                      TaskData{.matrix = {0.0, 0.0, 0.0, 0.0}, .vector = {1.0, 1.0}, .rows = 2, .cols = 2},
+                      {0.0, 0.0}},
+        ValidTestCase{"ZeroVector",
+                      TaskData{.matrix = {1.0, 2.0, 3.0, 4.0}, .vector = {0.0, 0.0}, .rows = 2, .cols = 2},
+                      {0.0, 0.0}},
+        ValidTestCase{
             "RectangularMatrixMoreRows",
             TaskData{.matrix = {1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0}, .vector = {1.0, 2.0}, .rows = 4, .cols = 2},
             {11.0, 14.0, 17.0, 20.0}},
-        EdgeTestCase{"RectangularMatrixMoreCols",
-                     TaskData{.matrix = {1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0},
-                              .vector = {1.0, 1.0, 1.0, 1.0},
-                              .rows = 2,
-                              .cols = 4},
-                     {16.0, 20.0}},
-        EdgeTestCase{"NegativeValues",
-                     TaskData{.matrix = {-1.0, -2.0, -3.0, -4.0}, .vector = {-1.0, -2.0}, .rows = 2, .cols = 2},
-                     {7.0, 10.0}},
-        EdgeTestCase{
+        ValidTestCase{"RectangularMatrixMoreCols",
+                      TaskData{.matrix = {1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0},
+                               .vector = {1.0, 1.0, 1.0, 1.0},
+                               .rows = 2,
+                               .cols = 4},
+                      {16.0, 20.0}},
+        ValidTestCase{"NegativeValues",
+                      TaskData{.matrix = {-1.0, -2.0, -3.0, -4.0}, .vector = {-1.0, -2.0}, .rows = 2, .cols = 2},
+                      {7.0, 10.0}},
+        ValidTestCase{
             "SingleRow",
             TaskData{.matrix = {1.0, 2.0, 3.0, 4.0, 5.0}, .vector = {1.0, 2.0, 3.0, 4.0, 5.0}, .rows = 1, .cols = 5},
             {55.0}},
-        EdgeTestCase{"SingleColumn",
-                     TaskData{.matrix = {1.0, 2.0, 3.0, 4.0, 5.0}, .vector = {2.0}, .rows = 5, .cols = 1},
-                     {2.0, 4.0, 6.0, 8.0, 10.0}},
-        EdgeTestCase{"FloatingPointPrecision",
-                     TaskData{.matrix = {0.1, 0.2, 0.3, 0.4}, .vector = {0.5, 0.5}, .rows = 2, .cols = 2},
-                     {0.2, 0.3}},
-        EdgeTestCase{"InvalidRowsZero", TaskData{.matrix = {}, .vector = {1.0, 2.0}, .rows = 0, .cols = 2}, {}, true},
-        EdgeTestCase{"InvalidColsZero", TaskData{.matrix = {}, .vector = {}, .rows = 2, .cols = 0}, {}, true},
-        EdgeTestCase{"InvalidMatrixSize",
-                     TaskData{.matrix = {1.0, 2.0, 3.0}, .vector = {1.0, 2.0}, .rows = 2, .cols = 2},
-                     {},
-                     true},
-        EdgeTestCase{"InvalidVectorSize",
-                     TaskData{.matrix = {1.0, 2.0, 3.0, 4.0}, .vector = {1.0}, .rows = 2, .cols = 2},
-                     {},
-                     true}),
-    [](const ::testing::TestParamInfo<EdgeTestCase> &info) { return info.param.name; });
+        ValidTestCase{"SingleColumn",
+                      TaskData{.matrix = {1.0, 2.0, 3.0, 4.0, 5.0}, .vector = {2.0}, .rows = 5, .cols = 1},
+                      {2.0, 4.0, 6.0, 8.0, 10.0}},
+        ValidTestCase{"FloatingPointPrecision",
+                      TaskData{.matrix = {0.1, 0.2, 0.3, 0.4}, .vector = {0.5, 0.5}, .rows = 2, .cols = 2},
+                      {0.2, 0.3}}),
+    [](const ::testing::TestParamInfo<ValidTestCase> &info) { return info.param.name; });
+
+struct InvalidTestCase {
+  std::string name;
+  TaskData data;
+};
+
+class KaurAVertRibbonSchemeInvalidTest : public ::testing::TestWithParam<InvalidTestCase> {};
+
+TEST_P(KaurAVertRibbonSchemeInvalidTest, CheckInvalidCase) {
+  const auto &param = GetParam();
+  KaurAVertRibbonSchemeSEQ task(param.data);
+  EXPECT_FALSE(task.Validation());
+}
+
+INSTANTIATE_TEST_SUITE_P(
+    KaurAVertRibbonSchemeInvalidTests, KaurAVertRibbonSchemeInvalidTest,
+    ::testing::Values(InvalidTestCase{"InvalidRowsZero",
+                                      TaskData{.matrix = {}, .vector = {1.0, 2.0}, .rows = 0, .cols = 2}},
+                      InvalidTestCase{"InvalidColsZero", TaskData{.matrix = {}, .vector = {}, .rows = 2, .cols = 0}},
+                      InvalidTestCase{"InvalidMatrixSize",
+                                      TaskData{.matrix = {1.0, 2.0, 3.0}, .vector = {1.0, 2.0}, .rows = 2, .cols = 2}},
+                      InvalidTestCase{"InvalidVectorSize",
+                                      TaskData{.matrix = {1.0, 2.0, 3.0, 4.0}, .vector = {1.0}, .rows = 2, .cols = 2}}),
+    [](const ::testing::TestParamInfo<InvalidTestCase> &info) { return info.param.name; });
 
 }  // namespace
 }  // namespace kaur_a_vert_ribbon_scheme
