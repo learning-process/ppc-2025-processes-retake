@@ -1,13 +1,13 @@
 #pragma once
 #include "solonin_v_col_min_matrix/common/include/common.hpp"
 #include "task/include/task.hpp"
-
 namespace solonin_v_col_min_matrix {
 class SoloninVMinMatrixMPI : public BaseTask {
  public:
-  static constexpr ppc::task::TypeOfTask GetStaticTypeOfTask() { return ppc::task::TypeOfTask::kMPI; }
+  static constexpr ppc::task::TypeOfTask GetStaticTypeOfTask() {
+    return ppc::task::TypeOfTask::kMPI;
+  }
   explicit SoloninVMinMatrixMPI(const InType &in);
-
  private:
   bool ValidationImpl() override;
   bool PreProcessingImpl() override;
