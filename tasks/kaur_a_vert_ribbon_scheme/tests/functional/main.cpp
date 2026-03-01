@@ -93,253 +93,186 @@ const auto kPerfTestName = KaurAVertRibbonSchemeFuncTests::PrintFuncTestName<Kau
 
 INSTANTIATE_TEST_SUITE_P(PicMatrixTests, KaurAVertRibbonSchemeFuncTests, kGtestValues, kPerfTestName);
 
-}  // namespace
-
-class KaurAVertRibbonSchemeEdgeCasesTests : public ::testing::Test {
- protected:
-  static bool CompareVectors(const std::vector<double> &a, const std::vector<double> &b) {
-    if (a.size() != b.size()) {
+static bool VectorsNear(const std::vector<double> &a, const std::vector<double> &b, double eps) {
+  if (a.size() != b.size()) {
+    return false;
+  }
+  for (std::size_t i = 0; i < a.size(); ++i) {
+    if (std::abs(a[i] - b[i]) > eps) {
       return false;
     }
-    for (std::size_t i = 0; i < a.size(); i++) {
-      if (std::abs(a[i] - b[i]) > 1e-9) {
-        return false;
-      }
-    }
-    return true;
   }
-};
+  return true;
+}
 
-TEST_F(KaurAVertRibbonSchemeEdgeCasesTests, SingleElementMatrix) {
+static bool RunAndCheck(const TaskData &data, const std::vector<double> &expected) {
+  KaurAVertRibbonSchemeSEQ task(data);
+  if (!task.Validation()) {
+    return false;
+  }
+  if (!task.PreProcessing()) {
+    return false;
+  }
+  if (!task.Run()) {
+    return false;
+  }
+  if (!task.PostProcessing()) {
+    return false;
+  }
+  return VectorsNear(task.GetOutput(), expected, 1e-9);
+}
+
+TEST(KaurAVertRibbonSchemeTest, SingleElementMatrix) {
   TaskData data;
   data.rows = 1;
   data.cols = 1;
   data.matrix = {5.0};
   data.vector = {3.0};
-
-  KaurAVertRibbonSchemeSEQ task(data);
-  ASSERT_TRUE(task.Validation());
-  ASSERT_TRUE(task.PreProcessing());
-  ASSERT_TRUE(task.Run());
-  ASSERT_TRUE(task.PostProcessing());
-
   std::vector<double> expected = {15.0};
-  ASSERT_TRUE(CompareVectors(task.GetOutput(), expected));
+  ASSERT_TRUE(RunAndCheck(data, expected));
 }
 
-TEST_F(KaurAVertRibbonSchemeEdgeCasesTests, IdentityMatrix) {
+TEST(KaurAVertRibbonSchemeTest, IdentityMatrix) {
   TaskData data;
   data.rows = 3;
   data.cols = 3;
   data.matrix = {1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0};
   data.vector = {2.0, 4.0, 6.0};
-
-  KaurAVertRibbonSchemeSEQ task(data);
-  ASSERT_TRUE(task.Validation());
-  ASSERT_TRUE(task.PreProcessing());
-  ASSERT_TRUE(task.Run());
-  ASSERT_TRUE(task.PostProcessing());
-
   std::vector<double> expected = {2.0, 4.0, 6.0};
-  ASSERT_TRUE(CompareVectors(task.GetOutput(), expected));
+  ASSERT_TRUE(RunAndCheck(data, expected));
 }
 
-TEST_F(KaurAVertRibbonSchemeEdgeCasesTests, ZeroMatrix) {
+TEST(KaurAVertRibbonSchemeTest, ZeroMatrix) {
   TaskData data;
   data.rows = 2;
   data.cols = 2;
   data.matrix = {0.0, 0.0, 0.0, 0.0};
   data.vector = {1.0, 1.0};
-
-  KaurAVertRibbonSchemeSEQ task(data);
-  ASSERT_TRUE(task.Validation());
-  ASSERT_TRUE(task.PreProcessing());
-  ASSERT_TRUE(task.Run());
-  ASSERT_TRUE(task.PostProcessing());
-
   std::vector<double> expected = {0.0, 0.0};
-  ASSERT_TRUE(CompareVectors(task.GetOutput(), expected));
+  ASSERT_TRUE(RunAndCheck(data, expected));
 }
 
-TEST_F(KaurAVertRibbonSchemeEdgeCasesTests, ZeroVector) {
+TEST(KaurAVertRibbonSchemeTest, ZeroVector) {
   TaskData data;
   data.rows = 2;
   data.cols = 2;
   data.matrix = {1.0, 2.0, 3.0, 4.0};
   data.vector = {0.0, 0.0};
-
-  KaurAVertRibbonSchemeSEQ task(data);
-  ASSERT_TRUE(task.Validation());
-  ASSERT_TRUE(task.PreProcessing());
-  ASSERT_TRUE(task.Run());
-  ASSERT_TRUE(task.PostProcessing());
-
   std::vector<double> expected = {0.0, 0.0};
-  ASSERT_TRUE(CompareVectors(task.GetOutput(), expected));
+  ASSERT_TRUE(RunAndCheck(data, expected));
 }
 
-TEST_F(KaurAVertRibbonSchemeEdgeCasesTests, RectangularMatrixMoreRows) {
+TEST(KaurAVertRibbonSchemeTest, RectangularMatrixMoreRows) {
   TaskData data;
   data.rows = 4;
   data.cols = 2;
   data.matrix = {1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0};
   data.vector = {1.0, 2.0};
-
-  KaurAVertRibbonSchemeSEQ task(data);
-  ASSERT_TRUE(task.Validation());
-  ASSERT_TRUE(task.PreProcessing());
-  ASSERT_TRUE(task.Run());
-  ASSERT_TRUE(task.PostProcessing());
-
   std::vector<double> expected = {11.0, 14.0, 17.0, 20.0};
-  ASSERT_TRUE(CompareVectors(task.GetOutput(), expected));
+  ASSERT_TRUE(RunAndCheck(data, expected));
 }
 
-TEST_F(KaurAVertRibbonSchemeEdgeCasesTests, RectangularMatrixMoreCols) {
+TEST(KaurAVertRibbonSchemeTest, RectangularMatrixMoreCols) {
   TaskData data;
   data.rows = 2;
   data.cols = 4;
   data.matrix = {1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0};
   data.vector = {1.0, 1.0, 1.0, 1.0};
-
-  KaurAVertRibbonSchemeSEQ task(data);
-  ASSERT_TRUE(task.Validation());
-  ASSERT_TRUE(task.PreProcessing());
-  ASSERT_TRUE(task.Run());
-  ASSERT_TRUE(task.PostProcessing());
-
   std::vector<double> expected = {16.0, 20.0};
-  ASSERT_TRUE(CompareVectors(task.GetOutput(), expected));
+  ASSERT_TRUE(RunAndCheck(data, expected));
 }
 
-TEST_F(KaurAVertRibbonSchemeEdgeCasesTests, NegativeValues) {
+TEST(KaurAVertRibbonSchemeTest, NegativeValues) {
   TaskData data;
   data.rows = 2;
   data.cols = 2;
   data.matrix = {-1.0, -2.0, -3.0, -4.0};
   data.vector = {-1.0, -2.0};
-
-  KaurAVertRibbonSchemeSEQ task(data);
-  ASSERT_TRUE(task.Validation());
-  ASSERT_TRUE(task.PreProcessing());
-  ASSERT_TRUE(task.Run());
-  ASSERT_TRUE(task.PostProcessing());
-
   std::vector<double> expected = {7.0, 10.0};
-  ASSERT_TRUE(CompareVectors(task.GetOutput(), expected));
+  ASSERT_TRUE(RunAndCheck(data, expected));
 }
 
-TEST_F(KaurAVertRibbonSchemeEdgeCasesTests, LargeMatrix) {
+TEST(KaurAVertRibbonSchemeTest, LargeMatrix) {
   const int size = 100;
   TaskData data;
   data.rows = size;
   data.cols = size;
   data.matrix.resize(static_cast<std::size_t>(size) * size, 1.0);
   data.vector.resize(size, 1.0);
-
-  KaurAVertRibbonSchemeSEQ task(data);
-  ASSERT_TRUE(task.Validation());
-  ASSERT_TRUE(task.PreProcessing());
-  ASSERT_TRUE(task.Run());
-  ASSERT_TRUE(task.PostProcessing());
-
   std::vector<double> expected(size, static_cast<double>(size));
-  ASSERT_TRUE(CompareVectors(task.GetOutput(), expected));
+  ASSERT_TRUE(RunAndCheck(data, expected));
 }
 
-TEST_F(KaurAVertRibbonSchemeEdgeCasesTests, InvalidRowsZero) {
-  TaskData data;
-  data.rows = 0;
-  data.cols = 2;
-  data.matrix = {};
-  data.vector = {1.0, 2.0};
-
-  KaurAVertRibbonSchemeSEQ task(data);
-  ASSERT_FALSE(task.Validation());
-}
-
-TEST_F(KaurAVertRibbonSchemeEdgeCasesTests, InvalidColsZero) {
-  TaskData data;
-  data.rows = 2;
-  data.cols = 0;
-  data.matrix = {};
-  data.vector = {};
-
-  KaurAVertRibbonSchemeSEQ task(data);
-  ASSERT_FALSE(task.Validation());
-}
-
-TEST_F(KaurAVertRibbonSchemeEdgeCasesTests, InvalidMatrixSize) {
-  TaskData data;
-  data.rows = 2;
-  data.cols = 2;
-  data.matrix = {1.0, 2.0, 3.0};
-  data.vector = {1.0, 2.0};
-
-  KaurAVertRibbonSchemeSEQ task(data);
-  ASSERT_FALSE(task.Validation());
-}
-
-TEST_F(KaurAVertRibbonSchemeEdgeCasesTests, InvalidVectorSize) {
-  TaskData data;
-  data.rows = 2;
-  data.cols = 2;
-  data.matrix = {1.0, 2.0, 3.0, 4.0};
-  data.vector = {1.0};
-
-  KaurAVertRibbonSchemeSEQ task(data);
-  ASSERT_FALSE(task.Validation());
-}
-
-TEST_F(KaurAVertRibbonSchemeEdgeCasesTests, SingleRow) {
+TEST(KaurAVertRibbonSchemeTest, SingleRow) {
   TaskData data;
   data.rows = 1;
   data.cols = 5;
   data.matrix = {1.0, 2.0, 3.0, 4.0, 5.0};
   data.vector = {1.0, 2.0, 3.0, 4.0, 5.0};
-
-  KaurAVertRibbonSchemeSEQ task(data);
-  ASSERT_TRUE(task.Validation());
-  ASSERT_TRUE(task.PreProcessing());
-  ASSERT_TRUE(task.Run());
-  ASSERT_TRUE(task.PostProcessing());
-
   std::vector<double> expected = {55.0};
-  ASSERT_TRUE(CompareVectors(task.GetOutput(), expected));
+  ASSERT_TRUE(RunAndCheck(data, expected));
 }
 
-TEST_F(KaurAVertRibbonSchemeEdgeCasesTests, SingleColumn) {
+TEST(KaurAVertRibbonSchemeTest, SingleColumn) {
   TaskData data;
   data.rows = 5;
   data.cols = 1;
   data.matrix = {1.0, 2.0, 3.0, 4.0, 5.0};
   data.vector = {2.0};
-
-  KaurAVertRibbonSchemeSEQ task(data);
-  ASSERT_TRUE(task.Validation());
-  ASSERT_TRUE(task.PreProcessing());
-  ASSERT_TRUE(task.Run());
-  ASSERT_TRUE(task.PostProcessing());
-
   std::vector<double> expected = {2.0, 4.0, 6.0, 8.0, 10.0};
-  ASSERT_TRUE(CompareVectors(task.GetOutput(), expected));
+  ASSERT_TRUE(RunAndCheck(data, expected));
 }
 
-TEST_F(KaurAVertRibbonSchemeEdgeCasesTests, FloatingPointPrecision) {
+TEST(KaurAVertRibbonSchemeTest, FloatingPointPrecision) {
   TaskData data;
   data.rows = 2;
   data.cols = 2;
   data.matrix = {0.1, 0.2, 0.3, 0.4};
   data.vector = {0.5, 0.5};
-
-  KaurAVertRibbonSchemeSEQ task(data);
-  ASSERT_TRUE(task.Validation());
-  ASSERT_TRUE(task.PreProcessing());
-  ASSERT_TRUE(task.Run());
-  ASSERT_TRUE(task.PostProcessing());
-
   std::vector<double> expected = {0.2, 0.3};
-  ASSERT_TRUE(CompareVectors(task.GetOutput(), expected));
+  ASSERT_TRUE(RunAndCheck(data, expected));
 }
 
+static bool ValidationFails(const TaskData &data) {
+  KaurAVertRibbonSchemeSEQ task(data);
+  return !task.Validation();
+}
+
+TEST(KaurAVertRibbonSchemeValidationTest, InvalidRowsZero) {
+  TaskData data;
+  data.rows = 0;
+  data.cols = 2;
+  data.matrix = {};
+  data.vector = {1.0, 2.0};
+  ASSERT_TRUE(ValidationFails(data));
+}
+
+TEST(KaurAVertRibbonSchemeValidationTest, InvalidColsZero) {
+  TaskData data;
+  data.rows = 2;
+  data.cols = 0;
+  data.matrix = {};
+  data.vector = {};
+  ASSERT_TRUE(ValidationFails(data));
+}
+
+TEST(KaurAVertRibbonSchemeValidationTest, InvalidMatrixSize) {
+  TaskData data;
+  data.rows = 2;
+  data.cols = 2;
+  data.matrix = {1.0, 2.0, 3.0};
+  data.vector = {1.0, 2.0};
+  ASSERT_TRUE(ValidationFails(data));
+}
+
+TEST(KaurAVertRibbonSchemeValidationTest, InvalidVectorSize) {
+  TaskData data;
+  data.rows = 2;
+  data.cols = 2;
+  data.matrix = {1.0, 2.0, 3.0, 4.0};
+  data.vector = {1.0};
+  ASSERT_TRUE(ValidationFails(data));
+}
+
+}  // namespace
 }  // namespace kaur_a_vert_ribbon_scheme
