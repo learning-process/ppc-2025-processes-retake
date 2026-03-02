@@ -15,14 +15,12 @@
 namespace luchnikov_e_gener_transm_from_all_to_one_gather {
 
 class LuchnikovETransmFrAllToOneGatherFuncTests
-    : public ::testing::TestWithParam<std::tuple<std::string, std::string, TestType>> {
+    : public ::testing::TestWithParam<std::tuple<std::string, std::string, int, int, MPI_Datatype, std::string>> {
  protected:
   void SetUp() override {
-    TestType params = std::get<2>(GetParam());
-
-    const auto &count = std::get<0>(params);
-    const auto &root = std::get<1>(params);
-    const auto &datatype = std::get<2>(params);
+    const auto &count = std::get<2>(GetParam());
+    const auto &root = std::get<3>(GetParam());
+    const auto &datatype = std::get<4>(GetParam());
 
     int type_size = 0;
     if (datatype == MPI_INT) {
@@ -74,9 +72,8 @@ class LuchnikovETransmFrAllToOneGatherFuncTests
 
   bool CheckOutputData(OutType &output_data) {
     const auto &input = input_data_;
-    const auto &params = std::get<2>(GetParam());
-    const std::string test_name = std::get<1>(GetParam());
-    bool is_mpi = test_name.find("MPI") != std::string::npos;
+    const std::string task_type = std::get<1>(GetParam());
+    bool is_mpi = (task_type == "MPI");
 
     int world_size = 1;
     int rank = 0;
@@ -99,6 +96,7 @@ class LuchnikovETransmFrAllToOneGatherFuncTests
       return false;
     }
 
+    // Проверяем корректность собранных данных
     if (rank == input.root) {
       if (input.datatype == MPI_INT) {
         const int *out_ptr = reinterpret_cast<const int *>(output_data.data());
@@ -117,15 +115,10 @@ class LuchnikovETransmFrAllToOneGatherFuncTests
     return true;
   }
 
-  GatherInput GetInputData() {
-    return input_data_;
-  }
-
   void ExecuteTest() {
-    const auto &params = GetParam();
-    const std::string task_type = std::get<1>(params);
+    const std::string task_type = std::get<1>(GetParam());
 
-    if (task_type.find("MPI") != std::string::npos) {
+    if (task_type == "MPI") {
       LuchnikovETransmFrAllToOneGatherMPI task(input_data_);
       ASSERT_TRUE(task.Validation());
       ASSERT_TRUE(task.PreProcessing());
@@ -156,31 +149,47 @@ TEST_P(LuchnikovETransmFrAllToOneGatherFuncTests, GatherCheck) {
   ExecuteTest();
 }
 
-const std::array<TestType, 6> kTestParam = {std::make_tuple(1, 0, MPI_INT, "SingleElementIntRoot0"),
-                                            std::make_tuple(3, 0, MPI_INT, "SmallIntRoot0"),
-                                            std::make_tuple(4, 0, MPI_FLOAT, "SmallFloatRoot0"),
-                                            std::make_tuple(3, 0, MPI_DOUBLE, "SmallDoubleRoot0"),
-                                            std::make_tuple(2, 1, MPI_INT, "IntRoot1"),
-                                            std::make_tuple(2, 2, MPI_INT, "IntRoot2")};
+// Создаем параметры для тестов
+std::vector<std::tuple<std::string, std::string, int, int, MPI_Datatype, std::string>> CreateTestParams() {
+  std::vector<std::tuple<std::string, std::string, int, int, MPI_Datatype, std::string>> params;
 
-std::vector<std::tuple<std::string, std::string, TestType>> CreateTestParams() {
-  std::vector<std::tuple<std::string, std::string, TestType>> params;
+  std::string task_name = "luchnikov_e_gener_transm_from_all_to_one_gather";
 
-  for (const auto &test_case : kTestParam) {
-    params.push_back(std::make_tuple("luchnikov_e_gener_transm_from_all_to_one_gather", "MPI", test_case));
+  // Тест 1: count=1, root=0, int
+  params.push_back(std::make_tuple(task_name, "MPI", 1, 0, MPI_INT, "SingleElementIntRoot0"));
+  params.push_back(std::make_tuple(task_name, "SEQ", 1, 0, MPI_INT, "SingleElementIntRoot0"));
 
-    params.push_back(std::make_tuple("luchnikov_e_gener_transm_from_all_to_one_gather", "SEQ", test_case));
-  }
+  // Тест 2: count=3, root=0, int
+  params.push_back(std::make_tuple(task_name, "MPI", 3, 0, MPI_INT, "SmallIntRoot0"));
+  params.push_back(std::make_tuple(task_name, "SEQ", 3, 0, MPI_INT, "SmallIntRoot0"));
+
+  // Тест 3: count=4, root=0, float
+  params.push_back(std::make_tuple(task_name, "MPI", 4, 0, MPI_FLOAT, "SmallFloatRoot0"));
+  params.push_back(std::make_tuple(task_name, "SEQ", 4, 0, MPI_FLOAT, "SmallFloatRoot0"));
+
+  // Тест 4: count=3, root=0, double
+  params.push_back(std::make_tuple(task_name, "MPI", 3, 0, MPI_DOUBLE, "SmallDoubleRoot0"));
+  params.push_back(std::make_tuple(task_name, "SEQ", 3, 0, MPI_DOUBLE, "SmallDoubleRoot0"));
+
+  // Тест 5: count=2, root=1, int
+  params.push_back(std::make_tuple(task_name, "MPI", 2, 1, MPI_INT, "IntRoot1"));
+  params.push_back(std::make_tuple(task_name, "SEQ", 2, 1, MPI_INT, "IntRoot1"));
+
+  // Тест 6: count=2, root=2, int
+  params.push_back(std::make_tuple(task_name, "MPI", 2, 2, MPI_INT, "IntRoot2"));
+  params.push_back(std::make_tuple(task_name, "SEQ", 2, 2, MPI_INT, "IntRoot2"));
 
   return params;
 }
 
+std::string PrintTestParam(const testing::TestParamInfo<LuchnikovETransmFrAllToOneGatherFuncTests::ParamType> &info) {
+  std::string task_type = std::get<1>(info.param);
+  std::string test_name = std::get<5>(info.param);
+  return task_type + "_" + test_name;
+}
+
 INSTANTIATE_TEST_SUITE_P(GatherTests, LuchnikovETransmFrAllToOneGatherFuncTests,
-                         ::testing::ValuesIn(CreateTestParams()),
-                         [](const testing::TestParamInfo<LuchnikovETransmFrAllToOneGatherFuncTests::ParamType> &info) {
-                           std::string name = std::get<1>(info.param) + "_" + std::get<3>(std::get<2>(info.param));
-                           return name;
-                         });
+                         ::testing::ValuesIn(CreateTestParams()), PrintTestParam);
 
 TEST(LuchnikovETransmFrAllToOneGatherMPITest, BasicMPIGather) {
   int rank = 0;
@@ -340,9 +349,10 @@ TEST(LuchnikovETransmFrAllToOneGatherMPITest, NonPowerOfTwoSize) {
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
   MPI_Comm_size(MPI_COMM_WORLD, &world_size);
 
+  // Проверяем, что размер не является степенью двойки
   bool is_power_of_two = (world_size > 0) && ((world_size & (world_size - 1)) == 0);
 
-  if (!is_power_of_two && world_size > 3) {
+  if (!is_power_of_two && world_size > 2) {
     int count = 3;
     std::vector<char> data(static_cast<size_t>(count) * sizeof(int));
     auto *d_ptr = reinterpret_cast<int *>(data.data());

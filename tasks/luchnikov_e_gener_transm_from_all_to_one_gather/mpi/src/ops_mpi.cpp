@@ -5,8 +5,6 @@
 #include <algorithm>
 #include <cstddef>
 #include <cstring>
-#include <memory>
-#include <utility>
 #include <vector>
 
 #include "luchnikov_e_gener_transm_from_all_to_one_gather/common/include/common.hpp"
@@ -29,14 +27,6 @@ int GetTypeSize(MPI_Datatype datatype) {
 
 bool IsPowerOfTwo(int x) {
   return (x > 0) && ((x & (x - 1)) == 0);
-}
-
-int NextPowerOfTwo(int x) {
-  int power = 1;
-  while (power < x) {
-    power <<= 1;
-  }
-  return power;
 }
 }  // namespace
 
