@@ -22,8 +22,8 @@ class SoloninVScatterPerfTests : public ppc::util::BaseRunPerfTests<InType, OutT
 
   void SetUp() override {
     buf_.resize(static_cast<size_t>(kSendCount) * kMaxProcs);
-    for (int i = 0; i < static_cast<int>(buf_.size()); i++) {
-      buf_[i] = i;
+    for (size_t i = 0; i < buf_.size(); i++) {
+      buf_[i] = static_cast<int>(i);
     }
   }
 

@@ -3,7 +3,6 @@
 
 #include <array>
 #include <cstddef>
-#include <numeric>
 #include <string>
 #include <tuple>
 #include <vector>
@@ -84,8 +83,8 @@ namespace {
 // Build test data: total = send_count * num_procs elements, values = 0..total-1
 std::vector<int> MakeData(int send_count, int num_procs) {
   std::vector<int> v(static_cast<size_t>(send_count) * num_procs);
-  for (int i = 0; i < static_cast<int>(v.size()); i++) {
-    v[i] = i;
+  for (size_t i = 0; i < v.size(); i++) {
+    v[i] = static_cast<int>(i);
   }
   return v;
 }
