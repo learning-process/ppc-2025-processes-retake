@@ -85,7 +85,7 @@ class LuchnilkovEMaxValInColOfMatRunFuncTestsProcesses : public ppc::util::BaseR
     return matrix;
   }
 
-  OutType CalculateColumnMaxima(const InType &matrix) {
+  OutType static CalculateColumnMaxima(const InType &matrix) {
     if (matrix.empty()) {
       return {};
     }
