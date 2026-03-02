@@ -30,8 +30,8 @@ class TorusMeshCommunicator : public BaseTask {
   void DistributeSenderReceiver(int &src, int &dst);
   void DistributeDataLength(int src, int &len) const;
   std::vector<int> AssembleSendBuffer(int src, int len) const;
-  void RelayMessage(int src, int dst, const std::vector<int> &route,
-                    const std::vector<int> &buffer, std::vector<int> &output) const;
+  void RelayMessage(int src, int dst, const std::vector<int> &route, const std::vector<int> &buffer,
+                    std::vector<int> &output) const;
   void SaveFinalResult(int dst, const std::vector<int> &output, const std::vector<int> &route);
 
   InType local_request_{};

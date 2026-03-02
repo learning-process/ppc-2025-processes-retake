@@ -33,9 +33,11 @@ class TorusPerformanceTest : public ppc::util::BaseRunPerfTests<InType, OutType>
   }
 
   void PrepareTestData() {
-    if (data_ready_) return;
+    if (data_ready_) {
+      return;
+    }
 
-    const int data_size = 10000000;  
+    const int data_size = 10000000;
 
     test_data_.sender = 0;
     if (is_seq_mode_) {
@@ -64,15 +66,23 @@ class TorusPerformanceTest : public ppc::util::BaseRunPerfTests<InType, OutType>
       if (rank_ != test_data_.receiver) {
         return out.received_data.empty() && out.route.empty();
       }
-      if (out.received_data.size() != test_data_.data.size()) return false;
-      if (out.received_data.empty()) return true;
+      if (out.received_data.size() != test_data_.data.size()) {
+        return false;
+      }
+      if (out.received_data.empty()) {
+        return true;
+      }
       return (out.received_data.front() == test_data_.data.front() &&
               out.received_data.back() == test_data_.data.back());
     }
 
     if (rank_ == 0) {
-      if (out.received_data.size() != test_data_.data.size()) return false;
-      if (out.received_data.empty()) return true;
+      if (out.received_data.size() != test_data_.data.size()) {
+        return false;
+      }
+      if (out.received_data.empty()) {
+        return true;
+      }
       return (out.received_data.front() == test_data_.data.front() &&
               out.received_data.back() == test_data_.data.back());
     }
@@ -82,8 +92,8 @@ class TorusPerformanceTest : public ppc::util::BaseRunPerfTests<InType, OutType>
 
 namespace {
 
-const auto kPerfTasksTuples =
-    ppc::util::MakeAllPerfTasks<InType, TorusMeshCommunicator, TorusReferenceImpl>("tasks/klimov_m_torus/settings.json");
+const auto kPerfTasksTuples = ppc::util::MakeAllPerfTasks<InType, TorusMeshCommunicator, TorusReferenceImpl>(
+    "tasks/klimov_m_torus/settings.json");
 
 const auto kPerfValues = ppc::util::TupleToGTestValues(kPerfTasksTuples);
 const auto kPerfNamePrinter = TorusPerformanceTest::CustomPerfTestName;

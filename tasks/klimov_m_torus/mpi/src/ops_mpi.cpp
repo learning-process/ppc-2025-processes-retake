@@ -23,9 +23,13 @@ std::pair<int, int> TorusMeshCommunicator::CalculateGridSize(int totalProcesses)
   while (rows > 1 && (totalProcesses % rows != 0)) {
     --rows;
   }
-  if (rows <= 0) rows = 1;
+  if (rows <= 0) {
+    rows = 1;
+  }
   int cols = totalProcesses / rows;
-  if (cols <= 0) cols = 1;
+  if (cols <= 0) {
+    cols = 1;
+  }
   return {rows, cols};
 }
 
@@ -83,7 +87,9 @@ std::vector<int> TorusMeshCommunicator::BuildMessageRoute(int rows, int cols, in
 bool TorusMeshCommunicator::ValidationImpl() {
   int initialized = 0;
   MPI_Initialized(&initialized);
-  if (initialized == 0) return false;
+  if (initialized == 0) {
+    return false;
+  }
 
   MPI_Comm_rank(MPI_COMM_WORLD, &current_rank_);
   MPI_Comm_size(MPI_COMM_WORLD, &total_ranks_);
@@ -91,8 +97,7 @@ bool TorusMeshCommunicator::ValidationImpl() {
   int valid = 0;
   if (current_rank_ == 0) {
     const auto &req = GetInput();
-    if (req.sender >= 0 && req.receiver >= 0 &&
-        req.sender < total_ranks_ && req.receiver < total_ranks_) {
+    if (req.sender >= 0 && req.receiver >= 0 && req.sender < total_ranks_ && req.receiver < total_ranks_) {
       valid = 1;
     }
   }
@@ -156,8 +161,7 @@ std::vector<int> TorusMeshCommunicator::AssembleSendBuffer(int src, int len) con
 }
 
 void TorusMeshCommunicator::RelayMessage(int src, int dst, const std::vector<int> &route,
-                                         const std::vector<int> &buffer,
-                                         std::vector<int> &output) const {
+                                         const std::vector<int> &buffer, std::vector<int> &output) const {
   const int route_len = static_cast<int>(route.size());
   auto it = std::find(route.begin(), route.end(), current_rank_);
   bool on_route = (it != route.end());
@@ -196,8 +200,7 @@ void TorusMeshCommunicator::RelayMessage(int src, int dst, const std::vector<int
   }
 }
 
-void TorusMeshCommunicator::SaveFinalResult(int dst, const std::vector<int> &output,
-                                            const std::vector<int> &route) {
+void TorusMeshCommunicator::SaveFinalResult(int dst, const std::vector<int> &output, const std::vector<int> &route) {
   if (current_rank_ == dst) {
     local_response_.received_data = output;
     local_response_.route = route;

@@ -60,10 +60,18 @@ class TorusFunctionalTest : public ppc::util::BaseRunFuncTests<InType, OutType, 
 
  private:
   [[nodiscard]] bool CheckSequential(const OutType &out) const {
-    if (out.received_data != expected_payload_) return false;
-    if (out.route.empty()) return false;
-    if (out.route.front() != source_) return false;
-    if (out.route.back() != dest_) return false;
+    if (out.received_data != expected_payload_) {
+      return false;
+    }
+    if (out.route.empty()) {
+      return false;
+    }
+    if (out.route.front() != source_) {
+      return false;
+    }
+    if (out.route.back() != dest_) {
+      return false;
+    }
     return true;
   }
 
@@ -71,10 +79,18 @@ class TorusFunctionalTest : public ppc::util::BaseRunFuncTests<InType, OutType, 
     if (rank_ != dest_) {
       return out.received_data.empty() && out.route.empty();
     }
-    if (out.received_data != expected_payload_) return false;
-    if (out.route.empty()) return false;
-    if (out.route.front() != source_) return false;
-    if (out.route.back() != dest_) return false;
+    if (out.received_data != expected_payload_) {
+      return false;
+    }
+    if (out.route.empty()) {
+      return false;
+    }
+    if (out.route.front() != source_) {
+      return false;
+    }
+    if (out.route.back() != dest_) {
+      return false;
+    }
     return true;
   }
 
@@ -92,9 +108,9 @@ const std::array<TestParam, 5> kTestParams = {
     std::make_tuple(1), std::make_tuple(4), std::make_tuple(8), std::make_tuple(16), std::make_tuple(32),
 };
 
-const auto kTasksList =
-    std::tuple_cat(ppc::util::AddFuncTask<TorusMeshCommunicator, InType>(kTestParams, "tasks/klimov_m_torus/settings.json"),
-                   ppc::util::AddFuncTask<TorusReferenceImpl, InType>(kTestParams, "tasks/klimov_m_torus/settings.json"));
+const auto kTasksList = std::tuple_cat(
+    ppc::util::AddFuncTask<TorusMeshCommunicator, InType>(kTestParams, "tasks/klimov_m_torus/settings.json"),
+    ppc::util::AddFuncTask<TorusReferenceImpl, InType>(kTestParams, "tasks/klimov_m_torus/settings.json"));
 
 const auto kValues = ppc::util::ExpandToValues(kTasksList);
 const auto kNamePrinter = TorusFunctionalTest::PrintFuncTestName<TorusFunctionalTest>;
