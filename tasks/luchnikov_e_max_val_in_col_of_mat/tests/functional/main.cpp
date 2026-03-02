@@ -92,7 +92,7 @@ class LuchnilkovEMaxValInColOfMatRunFuncTestsProcesses : public ppc::util::BaseR
     return FindMaxInColumns(matrix);
   }
 
-  OutType FindMaxInColumns(const InType &matrix) {
+  OutType static FindMaxInColumns(const InType &matrix) {
     size_t cols = matrix[0].size();
     OutType result(cols);
 
