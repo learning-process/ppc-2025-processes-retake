@@ -1,7 +1,7 @@
 InheritParentConfig: true
 Checks: >
   -modernize-loop-convert,
-  -cppcoreguidelines-avoid-goto,
+  -cppcoreguidelines-avoid-goto, 
   -cppcoreguidelines-avoid-non-const-global-variables,
   -misc-use-anonymous-namespace,
   -modernize-use-std-print,
