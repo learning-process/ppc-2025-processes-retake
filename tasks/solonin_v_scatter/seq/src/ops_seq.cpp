@@ -1,6 +1,7 @@
 #include "solonin_v_scatter/seq/include/ops_seq.hpp"
 
 #include <tuple>
+#include <utility>
 #include <vector>
 
 #include "solonin_v_scatter/common/include/common.hpp"
