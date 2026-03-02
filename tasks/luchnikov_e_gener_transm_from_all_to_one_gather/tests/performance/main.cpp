@@ -24,26 +24,32 @@ class LuchnikovEGenerTransformFromAllToOneGatherPerfTestProcesses
   }
 
  private:
-  const int kCount_ = 100;
+  const int kCount_ = InType{100};
   InType input_data_{};
 };
 
 namespace {
 
-TEST_P(LuchnikovEGenerTransformFromAllToOneGatherPerfTestProcesses, RunPerfModes) {
+TEST_P(LuchnikovEGenerTransformFromAllToOneGatherPerfTestProcesses,
+       RunPerfModes) {
   ExecuteTest(GetParam());
 }
 
-const auto kAllPerfTasks = ppc::util::MakeAllPerfTasks<InType, LuchnikovEGenerTransformFromAllToOneGatherMPI,
-                                                       LuchnikovEGenerTransformFromAllToOneGatherSEQ>(
-    PPC_SETTINGS_luchnikov_e_gener_transm_from_all_to_one_gather);
+const auto kAllPerfTasks =
+    ppc::util::MakeAllPerfTasks<
+        InType, LuchnikovEGenerTransformFromAllToOneGatherMPI,
+        LuchnikovEGenerTransformFromAllToOneGatherSEQ>(
+        PPC_SETTINGS_luchnikov_e_gener_transm_from_all_to_one_gather);
 
 const auto kGtestValues = ppc::util::TupleToGTestValues(kAllPerfTasks);
 
-const auto kPerfTestName = LuchnikovEGenerTransformFromAllToOneGatherPerfTestProcesses::CustomPerfTestName;
+const auto kPerfTestName =
+    LuchnikovEGenerTransformFromAllToOneGatherPerfTestProcesses::
+        CustomPerfTestName;
 
-INSTANTIATE_TEST_SUITE_P(RunModeTests, LuchnikovEGenerTransformFromAllToOneGatherPerfTestProcesses, kGtestValues,
-                         kPerfTestName);
+INSTANTIATE_TEST_SUITE_P(RunModeTests,
+                         LuchnikovEGenerTransformFromAllToOneGatherPerfTestProcesses,
+                         kGtestValues, kPerfTestName);
 
 }  // namespace
 
