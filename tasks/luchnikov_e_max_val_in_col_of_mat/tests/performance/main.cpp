@@ -1,5 +1,6 @@
 #include <gtest/gtest.h>
 
+#include <algorithm>
 #include <cstddef>
 #include <limits>
 #include <vector>
@@ -77,6 +78,8 @@ class LuchnilkovEMaxValInColOfMatRunPerfTestProcesses : public ppc::util::BaseRu
   }
 };
 
+namespace {
+
 TEST_P(LuchnilkovEMaxValInColOfMatRunPerfTestProcesses, RunPerfModes) {
   ExecuteTest(GetParam());
 }
@@ -89,5 +92,7 @@ const auto kGtestValues = ppc::util::TupleToGTestValues(kAllPerfTasks);
 const auto kPerfTestName = LuchnilkovEMaxValInColOfMatRunPerfTestProcesses::CustomPerfTestName;
 
 INSTANTIATE_TEST_SUITE_P(RunModeTests, LuchnilkovEMaxValInColOfMatRunPerfTestProcesses, kGtestValues, kPerfTestName);
+
+}  // namespace
 
 }  // namespace luchnikov_e_max_val_in_col_of_mat

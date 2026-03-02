@@ -5,7 +5,6 @@
 #include <cstddef>
 #include <functional>
 #include <limits>
-#include <stdexcept>
 #include <string>
 #include <tuple>
 #include <unordered_map>
@@ -47,7 +46,7 @@ class LuchnilkovEMaxValInColOfMatRunFuncTestsProcesses : public ppc::util::BaseR
   InType input_data_;
   OutType expected_output_;
 
-  std::pair<int, std::string> ExtractTestParams() {
+  static std::pair<int, std::string> ExtractTestParams() {
     TestType params = std::get<static_cast<size_t>(ppc::util::GTestParamIndex::kTestParams)>(GetParam());
     return {std::get<0>(params), std::get<1>(params)};
   }
@@ -57,8 +56,8 @@ class LuchnilkovEMaxValInColOfMatRunFuncTestsProcesses : public ppc::util::BaseR
   static ElementGenerator SelectMatrixGenerator(const std::string &test_type, int size) {
     static const std::unordered_map<std::string, ElementGenerator> kGenerators = {
         {"random1", [](int i, int j) { return (i * 17 + j * 13) % 100; }},
-        {"ascending", [size](int i, int j) { return i * size + j + 1; }},
-        {"descending", [size](int i, int j) { return size * size - (i * size + j); }},
+        {"ascending", [size](int i, int j) { return (i * size) + j + 1; }},
+        {"descending", [size](int i, int j) { return (size * size) - ((i * size) + j); }},
         {"constant", [](int, int) { return 42; }},
         {"diagonal", [](int i, int j) { return (i == j) ? 1000 : 1; }},
         {"negative", [](int i, int j) { return -(((i * 17 + j * 13) % 100) + 1); }},
@@ -75,7 +74,7 @@ class LuchnilkovEMaxValInColOfMatRunFuncTestsProcesses : public ppc::util::BaseR
     return it->second;
   }
 
-  InType GenerateTestMatrix(int size, const std::string &test_type) {
+  static InType GenerateTestMatrix(int size, const std::string &test_type) {
     auto generator = SelectMatrixGenerator(test_type, size);
     InType matrix(size, std::vector<int>(size));
     for (int i = 0; i < size; ++i) {
@@ -86,14 +85,14 @@ class LuchnilkovEMaxValInColOfMatRunFuncTestsProcesses : public ppc::util::BaseR
     return matrix;
   }
 
-  OutType CalculateColumnMaxima(const InType &matrix) {
+  OutType CalculateColumnMaxima(const InType &matrix) const {
     if (matrix.empty()) {
       return {};
     }
     return FindMaxInColumns(matrix);
   }
 
-  OutType FindMaxInColumns(const InType &matrix) {
+  static OutType FindMaxInColumns(const InType &matrix) {
     size_t cols = matrix[0].size();
     OutType result(cols);
 

@@ -7,9 +7,6 @@
 #include <limits>
 #include <vector>
 
-#include "luchnikov_e_max_val_in_col_of_mat/common/include/common.hpp"
-#include "util/include/util.hpp"
-
 namespace luchnikov_e_max_val_in_col_of_mat {
 
 LuchnilkovEMaxValInColOfMatMpi::LuchnilkovEMaxValInColOfMatMpi(const InType &in) : matrix_(in) {
@@ -94,7 +91,7 @@ bool LuchnilkovEMaxValInColOfMatMpi::RunImpl() {
 
   for (int i = 0; i < local_rows; ++i) {
     for (int j = 0; j < num_cols; ++j) {
-      const int value = local_data[i * num_cols + j];
+      const int value = local_data[(i * num_cols) + j];
       local_max[j] = std::max(value, local_max[j]);
     }
   }
