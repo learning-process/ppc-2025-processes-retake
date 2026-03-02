@@ -1,6 +1,7 @@
 #include <gtest/gtest.h>
 
 #include <algorithm>
+#include <cstddef>
 #include <random>
 #include <string>
 #include <tuple>
@@ -26,14 +27,14 @@ class VectorMinFuncTests : public ppc::util::BaseRunFuncTests<InType, OutType, T
   void SetUp() override {
     TestType params = std::get<static_cast<std::size_t>(ppc::util::GTestParamIndex::kTestParams)>(GetParam());
     int size = std::get<0>(params);
-    input_data_.resize(size);
+    input_data_.resize(static_cast<std::size_t>(size));
     std::mt19937 gen(42);
     std::uniform_int_distribution<int> dist(-10000, 10000);
     for (int i = 0; i < size; ++i) {
-      input_data_[i] = dist(gen);
+      input_data_[static_cast<std::size_t>(i)] = dist(gen);
     }
     if (size > 0) {
-      input_data_[size / 2] = -20000;
+      input_data_[static_cast<std::size_t>(size / 2)] = -20000;
     }
   }
 
@@ -47,7 +48,7 @@ class VectorMinFuncTests : public ppc::util::BaseRunFuncTests<InType, OutType, T
   }
 
  private:
-  InType input_data_;
+  InType input_data_{};
 };
 
 TEST_P(VectorMinFuncTests, FindMin) {

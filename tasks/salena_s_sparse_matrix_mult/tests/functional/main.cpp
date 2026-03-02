@@ -1,5 +1,8 @@
 #include <gtest/gtest.h>
 
+#include <algorithm>
+#include <cmath>
+#include <cstddef>
 #include <random>
 #include <string>
 #include <tuple>
@@ -14,8 +17,9 @@ namespace salena_s_sparse_matrix_mult {
 
 using TestType = std::tuple<int, int, int, double, std::string>;
 
-//  static
-static SparseMatrixCRS GenSparse(int rows, int cols, double density) {
+namespace {
+
+SparseMatrixCRS GenSparse(int rows, int cols, double density) {
   SparseMatrixCRS mat;
   mat.rows = rows;
   mat.cols = cols;
@@ -39,6 +43,53 @@ static SparseMatrixCRS GenSparse(int rows, int cols, double density) {
   return mat;
 }
 
+SparseMatrixCRS MultSparse(const SparseMatrixCRS &A, const SparseMatrixCRS &B) {
+  SparseMatrixCRS expected;
+  expected.rows = A.rows;
+  expected.cols = B.cols;
+  expected.row_ptr.assign(static_cast<std::size_t>(expected.rows + 1), 0);
+
+  std::vector<int> marker(static_cast<std::size_t>(B.cols), -1);
+  std::vector<double> temp_values(static_cast<std::size_t>(B.cols), 0.0);
+
+  for (int i = 0; i < A.rows; ++i) {
+    int row_nz = 0;
+    std::vector<int> current_row_cols;
+
+    for (int j = A.row_ptr[static_cast<std::size_t>(i)]; j < A.row_ptr[static_cast<std::size_t>(i + 1)]; ++j) {
+      int a_col = A.col_indices[static_cast<std::size_t>(j)];
+      double a_val = A.values[static_cast<std::size_t>(j)];
+
+      for (int k = B.row_ptr[static_cast<std::size_t>(a_col)]; k < B.row_ptr[static_cast<std::size_t>(a_col + 1)];
+           ++k) {
+        int b_col = B.col_indices[static_cast<std::size_t>(k)];
+        double b_val = B.values[static_cast<std::size_t>(k)];
+
+        if (marker[static_cast<std::size_t>(b_col)] != i) {
+          marker[static_cast<std::size_t>(b_col)] = i;
+          current_row_cols.push_back(b_col);
+          temp_values[static_cast<std::size_t>(b_col)] = a_val * b_val;
+        } else {
+          temp_values[static_cast<std::size_t>(b_col)] += a_val * b_val;
+        }
+      }
+    }
+
+    std::sort(current_row_cols.begin(), current_row_cols.end());
+    for (int col : current_row_cols) {
+      if (temp_values[static_cast<std::size_t>(col)] != 0.0) {
+        expected.values.push_back(temp_values[static_cast<std::size_t>(col)]);
+        expected.col_indices.push_back(col);
+        row_nz++;
+      }
+    }
+    expected.row_ptr[static_cast<std::size_t>(i + 1)] = expected.row_ptr[static_cast<std::size_t>(i)] + row_nz;
+  }
+  return expected;
+}
+
+}  // namespace
+
 class SparseMultFuncTests : public ppc::util::BaseRunFuncTests<InType, OutType, TestType> {
  public:
   static std::string PrintTestParam(const TestType &test_param) {
@@ -58,49 +109,7 @@ class SparseMultFuncTests : public ppc::util::BaseRunFuncTests<InType, OutType, 
   }
 
   bool CheckTestOutputData(OutType &output_data) final {
-    SparseMatrixCRS expected;
-    expected.rows = input_data_.A.rows;
-    expected.cols = input_data_.B.cols;
-    expected.row_ptr.assign(expected.rows + 1, 0);
-
-    const auto &A = input_data_.A;
-    const auto &B = input_data_.B;
-
-    std::vector<int> marker(B.cols, -1);
-    std::vector<double> temp_values(B.cols, 0.0);
-
-    for (int i = 0; i < A.rows; ++i) {
-      int row_nz = 0;
-      std::vector<int> current_row_cols;
-
-      for (int j = A.row_ptr[i]; j < A.row_ptr[i + 1]; ++j) {
-        int a_col = A.col_indices[j];
-        double a_val = A.values[j];
-
-        for (int k = B.row_ptr[a_col]; k < B.row_ptr[a_col + 1]; ++k) {
-          int b_col = B.col_indices[k];
-          double b_val = B.values[k];
-
-          if (marker[b_col] != i) {
-            marker[b_col] = i;
-            current_row_cols.push_back(b_col);
-            temp_values[b_col] = a_val * b_val;
-          } else {
-            temp_values[b_col] += a_val * b_val;
-          }
-        }
-      }
-
-      std::sort(current_row_cols.begin(), current_row_cols.end());
-      for (int col : current_row_cols) {
-        if (temp_values[col] != 0.0) {
-          expected.values.push_back(temp_values[col]);
-          expected.col_indices.push_back(col);
-          row_nz++;
-        }
-      }
-      expected.row_ptr[i + 1] = expected.row_ptr[i] + row_nz;
-    }
+    SparseMatrixCRS expected = MultSparse(input_data_.A, input_data_.B);
 
     if (expected.row_ptr != output_data.row_ptr) {
       return false;
@@ -109,7 +118,7 @@ class SparseMultFuncTests : public ppc::util::BaseRunFuncTests<InType, OutType, 
       return false;
     }
 
-    for (size_t i = 0; i < expected.values.size(); ++i) {
+    for (std::size_t i = 0; i < expected.values.size(); ++i) {
       if (std::abs(expected.values[i] - output_data.values[i]) > 1e-4) {
         return false;
       }

@@ -1,1 +1,7 @@
-add_subdirectory(salena_s_mat_vec_vertical)
+ppc_create_task(
+    salena_s_matrix_vector_mult
+    common
+    mpi
+    seq
+    tests
+)

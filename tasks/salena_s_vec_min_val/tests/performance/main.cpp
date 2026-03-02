@@ -1,6 +1,7 @@
 #include <gtest/gtest.h>
 
 #include <algorithm>
+#include <cstddef>
 #include <random>
 #include <vector>
 
@@ -12,15 +13,13 @@
 namespace salena_s_vec_min_val {
 
 class VectorMinPerfTests : public ppc::util::BaseRunPerfTests<InType, OutType> {
-  const int kCount_ = 1000000;  // 1 миллион элементов
-  InType input_data_{};
-
+ protected:
   void SetUp() override {
-    input_data_.resize(kCount_);
+    input_data_.resize(static_cast<std::size_t>(kCount_));
     std::mt19937 gen(42);
     std::uniform_int_distribution<int> dist(-1000, 1000);
     for (int i = 0; i < kCount_; ++i) {
-      input_data_[i] = dist(gen);
+      input_data_[static_cast<std::size_t>(i)] = dist(gen);
     }
   }
 
@@ -32,6 +31,10 @@ class VectorMinPerfTests : public ppc::util::BaseRunPerfTests<InType, OutType> {
   InType GetTestInputData() final {
     return input_data_;
   }
+
+ private:
+  const int kCount_ = 1000000;
+  InType input_data_{};
 };
 
 TEST_P(VectorMinPerfTests, RunPerfModes) {

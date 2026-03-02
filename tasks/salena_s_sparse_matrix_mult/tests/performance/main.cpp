@@ -1,7 +1,7 @@
 #include <gtest/gtest.h>
 
+#include <cstddef>
 #include <random>
-#include <tuple>
 #include <vector>
 
 #include "salena_s_sparse_matrix_mult/common/include/common.hpp"
@@ -11,8 +11,8 @@
 
 namespace salena_s_sparse_matrix_mult {
 
-//  static
-static SparseMatrixCRS GenSparsePerf(int rows, int cols, double density) {
+namespace {
+SparseMatrixCRS GenSparsePerf(int rows, int cols, double density) {
   SparseMatrixCRS mat;
   mat.rows = rows;
   mat.cols = cols;
@@ -35,6 +35,7 @@ static SparseMatrixCRS GenSparsePerf(int rows, int cols, double density) {
   }
   return mat;
 }
+}  // namespace
 
 class SparseMultPerfTests : public ppc::util::BaseRunPerfTests<InType, OutType> {
  protected:

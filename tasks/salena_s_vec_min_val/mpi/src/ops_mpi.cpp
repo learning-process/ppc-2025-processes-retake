@@ -15,7 +15,7 @@ TestTaskMPI::TestTaskMPI(const InType &in) {
 }
 
 bool TestTaskMPI::ValidationImpl() {
-  int rank;
+  int rank = 0;
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
   if (rank == 0) {
     return !GetInput().empty();
@@ -29,13 +29,14 @@ bool TestTaskMPI::PreProcessingImpl() {
 }
 
 bool TestTaskMPI::RunImpl() {
-  int rank, size;
+  int rank = 0;
+  int size = 0;
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
   MPI_Comm_size(MPI_COMM_WORLD, &size);
 
   int total_elements = 0;
   if (rank == 0) {
-    total_elements = GetInput().size();
+    total_elements = static_cast<int>(GetInput().size());
   }
   MPI_Bcast(&total_elements, 1, MPI_INT, 0, MPI_COMM_WORLD);
 
