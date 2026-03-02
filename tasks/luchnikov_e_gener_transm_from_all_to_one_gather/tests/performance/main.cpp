@@ -24,6 +24,22 @@ size_t GetTypeSizeSeq(MPI_Datatype datatype) {
   }
   return 0;
 }
+
+std::vector<std::tuple<std::string, std::string, int>> CreatePerfTestParams() {
+  std::vector<std::tuple<std::string, std::string, int>> params;
+
+  std::string task_name = "luchnikov_e_gener_transm_from_all_to_one_gather";
+
+  params.push_back(std::make_tuple(task_name, "MPI", 0));
+
+  params.push_back(std::make_tuple(task_name, "SEQ", 0));
+
+  return params;
+}
+
+std::string PrintPerfTestParam(const testing::TestParamInfo<std::tuple<std::string, std::string, int>> &info) {
+  return std::get<1>(info.param);
+}
 }  // namespace
 
 class LuchnikovETransmFrAllToOneGatherPerfTests
@@ -71,7 +87,6 @@ class LuchnikovETransmFrAllToOneGatherPerfTests
       return false;
     }
 
-    // Проверка корректности данных
     if (rank == input.root && input.datatype == MPI_INT) {
       const int *out_ptr = reinterpret_cast<const int *>(output_data.data());
       for (int i = 0; i < world_size; ++i) {
@@ -118,26 +133,6 @@ class LuchnikovETransmFrAllToOneGatherPerfTests
 
 TEST_P(LuchnikovETransmFrAllToOneGatherPerfTests, RunPerfModes) {
   ExecuteTest();
-}
-
-// Создаем параметры для перформанс тестов
-std::vector<std::tuple<std::string, std::string, int>> CreatePerfTestParams() {
-  std::vector<std::tuple<std::string, std::string, int>> params;
-
-  std::string task_name = "luchnikov_e_gener_transm_from_all_to_one_gather";
-
-  // MPI тест
-  params.push_back(std::make_tuple(task_name, "MPI", 0));
-
-  // SEQ тест
-  params.push_back(std::make_tuple(task_name, "SEQ", 0));
-
-  return params;
-}
-
-std::string PrintPerfTestParam(
-    const testing::TestParamInfo<LuchnikovETransmFrAllToOneGatherPerfTests::ParamType> &info) {
-  return std::get<1>(info.param);
 }
 
 INSTANTIATE_TEST_SUITE_P(RunModeTests, LuchnikovETransmFrAllToOneGatherPerfTests,

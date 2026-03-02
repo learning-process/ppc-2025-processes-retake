@@ -14,6 +14,48 @@
 
 namespace luchnikov_e_gener_transm_from_all_to_one_gather {
 
+namespace {
+// Объявляем функции в анонимном пространстве имен
+std::vector<std::tuple<std::string, std::string, int, int, MPI_Datatype, std::string>> CreateTestParams() {
+  std::vector<std::tuple<std::string, std::string, int, int, MPI_Datatype, std::string>> params;
+
+  std::string task_name = "luchnikov_e_gener_transm_from_all_to_one_gather";
+
+  // Тест 1: count=1, root=0, int
+  params.push_back(std::make_tuple(task_name, "MPI", 1, 0, MPI_INT, "SingleElementIntRoot0"));
+  params.push_back(std::make_tuple(task_name, "SEQ", 1, 0, MPI_INT, "SingleElementIntRoot0"));
+
+  // Тест 2: count=3, root=0, int
+  params.push_back(std::make_tuple(task_name, "MPI", 3, 0, MPI_INT, "SmallIntRoot0"));
+  params.push_back(std::make_tuple(task_name, "SEQ", 3, 0, MPI_INT, "SmallIntRoot0"));
+
+  // Тест 3: count=4, root=0, float
+  params.push_back(std::make_tuple(task_name, "MPI", 4, 0, MPI_FLOAT, "SmallFloatRoot0"));
+  params.push_back(std::make_tuple(task_name, "SEQ", 4, 0, MPI_FLOAT, "SmallFloatRoot0"));
+
+  // Тест 4: count=3, root=0, double
+  params.push_back(std::make_tuple(task_name, "MPI", 3, 0, MPI_DOUBLE, "SmallDoubleRoot0"));
+  params.push_back(std::make_tuple(task_name, "SEQ", 3, 0, MPI_DOUBLE, "SmallDoubleRoot0"));
+
+  // Тест 5: count=2, root=1, int
+  params.push_back(std::make_tuple(task_name, "MPI", 2, 1, MPI_INT, "IntRoot1"));
+  params.push_back(std::make_tuple(task_name, "SEQ", 2, 1, MPI_INT, "IntRoot1"));
+
+  // Тест 6: count=2, root=2, int
+  params.push_back(std::make_tuple(task_name, "MPI", 2, 2, MPI_INT, "IntRoot2"));
+  params.push_back(std::make_tuple(task_name, "SEQ", 2, 2, MPI_INT, "IntRoot2"));
+
+  return params;
+}
+
+std::string PrintTestParam(
+    const testing::TestParamInfo<std::tuple<std::string, std::string, int, int, MPI_Datatype, std::string>> &info) {
+  std::string task_type = std::get<1>(info.param);
+  std::string test_name = std::get<5>(info.param);
+  return task_type + "_" + test_name;
+}
+}  // namespace
+
 class LuchnikovETransmFrAllToOneGatherFuncTests
     : public ::testing::TestWithParam<std::tuple<std::string, std::string, int, int, MPI_Datatype, std::string>> {
  protected:
@@ -147,45 +189,6 @@ namespace {
 
 TEST_P(LuchnikovETransmFrAllToOneGatherFuncTests, GatherCheck) {
   ExecuteTest();
-}
-
-// Создаем параметры для тестов
-std::vector<std::tuple<std::string, std::string, int, int, MPI_Datatype, std::string>> CreateTestParams() {
-  std::vector<std::tuple<std::string, std::string, int, int, MPI_Datatype, std::string>> params;
-
-  std::string task_name = "luchnikov_e_gener_transm_from_all_to_one_gather";
-
-  // Тест 1: count=1, root=0, int
-  params.push_back(std::make_tuple(task_name, "MPI", 1, 0, MPI_INT, "SingleElementIntRoot0"));
-  params.push_back(std::make_tuple(task_name, "SEQ", 1, 0, MPI_INT, "SingleElementIntRoot0"));
-
-  // Тест 2: count=3, root=0, int
-  params.push_back(std::make_tuple(task_name, "MPI", 3, 0, MPI_INT, "SmallIntRoot0"));
-  params.push_back(std::make_tuple(task_name, "SEQ", 3, 0, MPI_INT, "SmallIntRoot0"));
-
-  // Тест 3: count=4, root=0, float
-  params.push_back(std::make_tuple(task_name, "MPI", 4, 0, MPI_FLOAT, "SmallFloatRoot0"));
-  params.push_back(std::make_tuple(task_name, "SEQ", 4, 0, MPI_FLOAT, "SmallFloatRoot0"));
-
-  // Тест 4: count=3, root=0, double
-  params.push_back(std::make_tuple(task_name, "MPI", 3, 0, MPI_DOUBLE, "SmallDoubleRoot0"));
-  params.push_back(std::make_tuple(task_name, "SEQ", 3, 0, MPI_DOUBLE, "SmallDoubleRoot0"));
-
-  // Тест 5: count=2, root=1, int
-  params.push_back(std::make_tuple(task_name, "MPI", 2, 1, MPI_INT, "IntRoot1"));
-  params.push_back(std::make_tuple(task_name, "SEQ", 2, 1, MPI_INT, "IntRoot1"));
-
-  // Тест 6: count=2, root=2, int
-  params.push_back(std::make_tuple(task_name, "MPI", 2, 2, MPI_INT, "IntRoot2"));
-  params.push_back(std::make_tuple(task_name, "SEQ", 2, 2, MPI_INT, "IntRoot2"));
-
-  return params;
-}
-
-std::string PrintTestParam(const testing::TestParamInfo<LuchnikovETransmFrAllToOneGatherFuncTests::ParamType> &info) {
-  std::string task_type = std::get<1>(info.param);
-  std::string test_name = std::get<5>(info.param);
-  return task_type + "_" + test_name;
 }
 
 INSTANTIATE_TEST_SUITE_P(GatherTests, LuchnikovETransmFrAllToOneGatherFuncTests,
