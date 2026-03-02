@@ -14,6 +14,7 @@ SparseMatrixMultSeq::SparseMatrixMultSeq(const InType &in) {
 bool SparseMatrixMultSeq::ValidationImpl() {
   const auto &A = GetInput().A;
   const auto &B = GetInput().B;
+  // Проверяем совместимость матриц и непустые размеры
   return (A.cols == B.rows) && (A.rows > 0) && (B.cols > 0);
 }
 
