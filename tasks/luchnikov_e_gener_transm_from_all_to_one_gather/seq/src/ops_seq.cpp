@@ -1,66 +1,56 @@
 #include "luchnikov_e_gener_transm_from_all_to_one_gather/seq/include/ops_seq.hpp"
 
-#include <mpi.h>
-
-#include <cstddef>
+#include <numeric>
 #include <vector>
 
 #include "luchnikov_e_gener_transm_from_all_to_one_gather/common/include/common.hpp"
+#include "util/include/util.hpp"
 
 namespace luchnikov_e_gener_transm_from_all_to_one_gather {
-namespace {
-size_t GetTypeSizeSeq(MPI_Datatype datatype) {
-  if (datatype == MPI_INT) {
-    return sizeof(int);
-  }
-  if (datatype == MPI_FLOAT) {
-    return sizeof(float);
-  }
-  if (datatype == MPI_DOUBLE) {
-    return sizeof(double);
-  }
-  return 0;
-}
-}  // namespace
 
-LuchnikovETransmFrAllToOneGatherSEQ::LuchnikovETransmFrAllToOneGatherSEQ(const InType &in) {
+LuchnikovEGenerTransformFromAllToOneGatherSEQ::LuchnikovEGenerTransformFromAllToOneGatherSEQ(const InType &in) {
   SetTypeOfTask(GetStaticTypeOfTask());
   GetInput() = in;
+  GetOutput() = 0;
 }
 
-bool LuchnikovETransmFrAllToOneGatherSEQ::ValidationImpl() {
-  const auto &input = GetInput();
-  if (input.data.empty()) {
-    return false;
-  }
-  if (input.count <= 0) {
-    return false;
-  }
-  if (input.root < 0) {
-    return false;
-  }
-  size_t type_size = GetTypeSizeSeq(input.datatype);
-  if (type_size == 0) {
-    return false;
-  }
-  if (input.data.size() != static_cast<size_t>(input.count) * type_size) {
-    return false;
-  }
-  return true;
+bool LuchnikovEGenerTransformFromAllToOneGatherSEQ::ValidationImpl() {
+  return (GetInput() > 0) && (GetOutput() == 0);
 }
 
-bool LuchnikovETransmFrAllToOneGatherSEQ::PreProcessingImpl() {
-  return true;
+bool LuchnikovEGenerTransformFromAllToOneGatherSEQ::PreProcessingImpl() {
+  GetOutput() = 2 * GetInput();
+  return GetOutput() > 0;
 }
 
-bool LuchnikovETransmFrAllToOneGatherSEQ::RunImpl() {
-  const auto &input = GetInput();
-  GetOutput() = input.data;
-  return true;
+bool LuchnikovEGenerTransformFromAllToOneGatherSEQ::RunImpl() {
+  if (GetInput() == 0) {
+    return false;
+  }
+  for (InType i = 0; i < GetInput(); i++) {
+    for (InType j = 0; j < GetInput(); j++) {
+      for (InType k = 0; k < GetInput(); k++) {
+        std::vector<InType> tmp(i + j + k, 1);
+        GetOutput() += std::accumulate(tmp.begin(), tmp.end(), 0);
+        GetOutput() -= i + j + k;
+      }
+    }
+  }
+  const int num_threads = ppc::util::GetNumThreads();
+  GetOutput() *= num_threads;
+  int counter = 0;
+  for (int i = 0; i < num_threads; i++) {
+    counter++;
+  }
+  if (counter != 0) {
+    GetOutput() /= counter;
+  }
+  return GetOutput() > 0;
 }
 
-bool LuchnikovETransmFrAllToOneGatherSEQ::PostProcessingImpl() {
-  return true;
+bool LuchnikovEGenerTransformFromAllToOneGatherSEQ::PostProcessingImpl() {
+  GetOutput() -= GetInput();
+  return GetOutput() > 0;
 }
 
 }  // namespace luchnikov_e_gener_transm_from_all_to_one_gather

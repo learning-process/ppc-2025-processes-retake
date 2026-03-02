@@ -5,13 +5,12 @@
 
 namespace luchnikov_e_gener_transm_from_all_to_one_gather {
 
-class LuchnikovETransmFrAllToOneGatherMPI : public BaseTask {
+class LuchnikovEGenerTransformFromAllToOneGatherMPI : public BaseTask {
  public:
   static constexpr ppc::task::TypeOfTask GetStaticTypeOfTask() {
     return ppc::task::TypeOfTask::kMPI;
   }
-
-  explicit LuchnikovETransmFrAllToOneGatherMPI(const InType &in);
+  explicit LuchnikovEGenerTransformFromAllToOneGatherMPI(const InType &in);
 
  private:
   bool ValidationImpl() override;

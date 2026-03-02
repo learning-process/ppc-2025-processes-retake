@@ -5,12 +5,12 @@
 
 namespace luchnikov_e_gener_transm_from_all_to_one_gather {
 
-class LuchnikovETransmFrAllToOneGatherSEQ : public BaseTask {
+class LuchnikovEGenerTransformFromAllToOneGatherSEQ : public BaseTask {
  public:
   static constexpr ppc::task::TypeOfTask GetStaticTypeOfTask() {
     return ppc::task::TypeOfTask::kSEQ;
   }
-  explicit LuchnikovETransmFrAllToOneGatherSEQ(const InType &in);
+  explicit LuchnikovEGenerTransformFromAllToOneGatherSEQ(const InType &in);
 
  private:
   bool ValidationImpl() override;
