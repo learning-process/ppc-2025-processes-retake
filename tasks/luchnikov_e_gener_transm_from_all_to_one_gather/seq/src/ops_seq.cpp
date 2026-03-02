@@ -32,21 +32,22 @@ LuchnikovETransmFrAllToOneGatherSEQ::LuchnikovETransmFrAllToOneGatherSEQ(const I
 bool LuchnikovETransmFrAllToOneGatherSEQ::ValidationImpl() {
   const auto &input = GetInput();
 
+  if (input.data.empty()) {
+    return false;
+  }
   if (input.count <= 0) {
     return false;
   }
-
   if (input.root < 0) {
     return false;
   }
 
   size_t type_size = GetTypeSizeSeq(input.datatype);
-
   if (type_size == 0) {
     return false;
   }
 
-  if (input.data.size() != static_cast<size_t>(input.count) * type_size) {
+  if (input.data.size() != (size_t)input.count * type_size) {
     return false;
   }
 
@@ -59,7 +60,9 @@ bool LuchnikovETransmFrAllToOneGatherSEQ::PreProcessingImpl() {
 
 bool LuchnikovETransmFrAllToOneGatherSEQ::RunImpl() {
   const auto &input = GetInput();
+  
   GetOutput() = input.data;
+  
   return true;
 }
 

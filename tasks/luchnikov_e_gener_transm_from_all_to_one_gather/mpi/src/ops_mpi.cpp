@@ -4,6 +4,7 @@
 
 #include <algorithm>
 #include <cstddef>
+#include <cstring>
 #include <utility>
 #include <vector>
 
@@ -14,87 +15,16 @@ namespace luchnikov_e_gener_transm_from_all_to_one_gather {
 namespace {
 int GetTypeSize(MPI_Datatype datatype) {
   if (datatype == MPI_INT) {
-    return static_cast<int>(sizeof(int));
+    return sizeof(int);
   }
   if (datatype == MPI_FLOAT) {
-    return static_cast<int>(sizeof(float));
+    return sizeof(float);
   }
   if (datatype == MPI_DOUBLE) {
-    return static_cast<int>(sizeof(double));
+    return sizeof(double);
   }
   return 0;
 }
-
-bool IsPowerOfTwo(int x) {
-  return (x > 0) && ((x & (x - 1)) == 0);
-}
-
-void GatherNonPowerOfTwo(int rank, int world_size, const GatherInput &input, int block_size, OutType &output) {
-  const int root = input.root;
-
-  if (rank == root) {
-    std::vector<char> recv_buffer(static_cast<size_t>(world_size) * static_cast<size_t>(block_size));
-
-    std::ranges::copy(
-        input.data, recv_buffer.begin() + static_cast<std::ptrdiff_t>(rank) * static_cast<std::ptrdiff_t>(block_size));
-
-    for (int i = 0; i < world_size; ++i) {
-      if (i != rank) {
-        MPI_Recv(recv_buffer.data() + (static_cast<std::ptrdiff_t>(i) * static_cast<std::ptrdiff_t>(block_size)),
-                 block_size, MPI_BYTE, i, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-      }
-    }
-
-    output = std::move(recv_buffer);
-  } else {
-    MPI_Send(input.data.data(), block_size, MPI_BYTE, root, 0, MPI_COMM_WORLD);
-    output = std::vector<char>();
-  }
-}
-
-void GatherPowerOfTwo(int rank, int world_size, const GatherInput &input, int block_size, OutType &output) {
-  const int root = input.root;
-
-  std::vector<char> send_buffer(static_cast<size_t>(block_size));
-  std::ranges::copy(input.data, send_buffer.begin());
-
-  std::vector<char> recv_buffer;
-  if (rank == root) {
-    recv_buffer.resize(static_cast<size_t>(world_size) * static_cast<size_t>(block_size));
-    std::ranges::copy(send_buffer, recv_buffer.begin());
-  }
-
-  int step = 1;
-  while (step < world_size) {
-    if (rank % (2 * step) == 0) {
-      int source = rank + step;
-      if (source < world_size) {
-        int recv_size = step * block_size;
-        std::vector<char> temp_recv(static_cast<size_t>(recv_size));
-        MPI_Recv(temp_recv.data(), recv_size, MPI_BYTE, source, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-
-        if (rank == root) {
-          std::ranges::copy(temp_recv, recv_buffer.begin() + (static_cast<std::ptrdiff_t>(source) *
-                                                              static_cast<std::ptrdiff_t>(block_size)));
-        } else {
-          send_buffer.insert(send_buffer.end(), temp_recv.begin(), temp_recv.end());
-        }
-      }
-    } else {
-      int dest = rank - step;
-      MPI_Send(send_buffer.data(), static_cast<int>(send_buffer.size()), MPI_BYTE, dest, 0, MPI_COMM_WORLD);
-      break;
-    }
-    step *= 2;
-  }
-
-  if (rank == root) {
-    output = std::move(recv_buffer);
-  } else {
-    output = std::vector<char>();
-  }
-}
-
 }  // namespace
 
 LuchnikovETransmFrAllToOneGatherMPI::LuchnikovETransmFrAllToOneGatherMPI(const InType &in) {
@@ -117,13 +47,12 @@ bool LuchnikovETransmFrAllToOneGatherMPI::ValidationImpl() {
     return false;
   }
 
-  const int type_size = GetTypeSize(input.datatype);
+  int type_size = GetTypeSize(input.datatype);
   if (type_size <= 0) {
     return false;
   }
 
-  const size_t expected_size = static_cast<size_t>(input.count) * static_cast<size_t>(type_size);
-
+  size_t expected_size = (size_t)input.count * (size_t)type_size;
   if (input.data.size() != expected_size) {
     return false;
   }
@@ -140,18 +69,38 @@ bool LuchnikovETransmFrAllToOneGatherMPI::PreProcessingImpl() {
 
 bool LuchnikovETransmFrAllToOneGatherMPI::RunImpl() {
   int rank = 0;
-  int world_size = 1;
+  int size = 1;
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-  MPI_Comm_size(MPI_COMM_WORLD, &world_size);
+  MPI_Comm_size(MPI_COMM_WORLD, &size);
 
   const auto &input = GetInput();
-  const int type_size = GetTypeSize(input.datatype);
-  const int block_size = input.count * type_size;
 
-  if (!IsPowerOfTwo(world_size)) {
-    GatherNonPowerOfTwo(rank, world_size, input, block_size, GetOutput());
+  int type_size = GetTypeSize(input.datatype);
+  
+  int block_size = input.count * type_size;
+
+  std::vector<char> recv_buffer;
+  if (rank == input.root) {
+    recv_buffer.resize((size_t)input.count * (size_t)size * (size_t)type_size);
+  }
+
+  if (rank == input.root) {
+    char* out_ptr = recv_buffer.data();
+    std::copy(input.data.begin(), input.data.end(), out_ptr + rank * block_size);
+    
+    for (int i = 0; i < size; i++) {
+      if (i != rank) {
+        MPI_Recv(out_ptr + i * block_size, block_size, MPI_BYTE, i, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+      }
+    }
   } else {
-    GatherPowerOfTwo(rank, world_size, input, block_size, GetOutput());
+    MPI_Send(input.data.data(), block_size, MPI_BYTE, input.root, 0, MPI_COMM_WORLD);
+  }
+
+  if (rank == input.root) {
+    GetOutput() = std::move(recv_buffer);
+  } else {
+    GetOutput() = std::vector<char>();
   }
 
   return true;

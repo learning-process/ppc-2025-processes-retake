@@ -1,143 +1,89 @@
 #include <gtest/gtest.h>
 #include <mpi.h>
 
-#include <cmath>
 #include <cstddef>
 #include <string>
-#include <tuple>
 #include <vector>
 
 #include "luchnikov_e_gener_transm_from_all_to_one_gather/common/include/common.hpp"
 #include "luchnikov_e_gener_transm_from_all_to_one_gather/mpi/include/ops_mpi.hpp"
 #include "luchnikov_e_gener_transm_from_all_to_one_gather/seq/include/ops_seq.hpp"
+#include "util/include/perf_test_util.hpp"
 
 namespace luchnikov_e_gener_transm_from_all_to_one_gather {
 
 namespace {
 size_t GetTypeSizeSeq(MPI_Datatype datatype) {
-  if (datatype == MPI_INT) {
-    return sizeof(int);
-  }
-  if (datatype == MPI_FLOAT) {
-    return sizeof(float);
-  }
-  if (datatype == MPI_DOUBLE) {
-    return sizeof(double);
-  }
+  if (datatype == MPI_INT) return sizeof(int);
+  if (datatype == MPI_FLOAT) return sizeof(float);
+  if (datatype == MPI_DOUBLE) return sizeof(double);
   return 0;
-}
-
-using PerfTestParam = std::tuple<std::string, std::string, int>;
-
-std::vector<PerfTestParam> CreatePerfTestParams() {
-  std::vector<PerfTestParam> params;
-
-  params.emplace_back("luchnikov_e_gener_transm_from_all_to_one_gather", "MPI", 0);
-  params.emplace_back("luchnikov_e_gener_transm_from_all_to_one_gather", "SEQ", 0);
-
-  return params;
-}
-
-std::string PrintPerfTestParam(const testing::TestParamInfo<PerfTestParam> &info) {
-  return std::get<1>(info.param);
 }
 }  // namespace
 
-class LuchnikovETransmFrAllToOneGatherPerfTests : public ::testing::TestWithParam<PerfTestParam> {
+class LuchnikovETransmFrAllToOneGatherPerfTests : public ppc::util::BaseRunPerfTests<InType, OutType> {
  protected:
-  static const size_t kDataCount = 100000;
+  static const size_t kDataCount = 10000000;
   MPI_Datatype data_type = MPI_INT;
-  LuchnikovETransmFrAllToOneGatherPerfTests() : input_data_() = default;
 
-  void static SetUp() override {
-    const size_t type_size = sizeof(int);
+  InType input_data{};
+
+  void SetUp() override {
+    size_t type_size = sizeof(int);
     std::vector<char> data(kDataCount * type_size);
 
     int rank = 0;
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 
-    auto *data_ptr = reinterpret_cast<int *>(data.data());
-    for (size_t i = 0; i < kDataCount; ++i) {
-      data_ptr[i] = static_cast<int>((static_cast<size_t>(rank) * kDataCount) + i);
+    int* data_ptr = (int*)data.data();
+    for (size_t i = 0; i < kDataCount; i++) {
+      data_ptr[i] = (int)((size_t)rank * kDataCount + i);
     }
 
-    const int root = 0;
-    input_data_ = GatherInput{.data = data, .count = static_cast<int>(kDataCount), .datatype = data_type, .root = root};
+    int root = 0;
+    input_data = GatherInput{.data = data, .count = (int)kDataCount, .datatype = data_type, .root = root};
   }
 
-  bool static CheckOutputData(OutType &output_data) {
-    const auto &input = input_data_;
+  bool CheckTestOutputData(OutType &output_data) final {
+    const auto &input = input_data;
+    const auto &params = GetParam();
+    const std::string task_name = std::get<1>(params);
+    const bool is_mpi = task_name.find("_mpi_") != std::string::npos;
 
-    const std::string task_type = std::get<1>(GetParam());
-    const bool is_mpi = (task_type == "MPI");
-
-    int world_size = 1;
-    int rank = 0;
+    int size = 1;
     if (is_mpi) {
-      MPI_Comm_size(MPI_COMM_WORLD, &world_size);
+      int rank = 0;
+      MPI_Comm_size(MPI_COMM_WORLD, &size);
       MPI_Comm_rank(MPI_COMM_WORLD, &rank);
       if (rank != input.root) {
         return true;
       }
     }
-    const size_t type_size = 0;
-    const size_t type_size = GetTypeSizeSeq(input.datatype);
-    const size_t expected_size = static_cast<size_t>(input.count) * static_cast<size_t>(world_size) * type_size;
 
-    if (output_data.size() != expected_size) {
-      return false;
-    }
+    size_t type_size = GetTypeSizeSeq(input.datatype);
+    size_t expected_size = (size_t)input.count * (size_t)size * type_size;
 
-    if (rank == input.root && input.datatype == MPI_INT) {
-      const int *out_ptr = reinterpret_cast<const int *>(output_data.data());
-      for (int i = 0; i < world_size; ++i) {
-        for (size_t j = 0; j < kDataCount; ++j) {
-          int expected = (i * static_cast<int>(kDataCount)) + static_cast<int>(j);
-          int actual = out_ptr[(i * static_cast<int>(kDataCount)) + static_cast<int>(j)];
-          if (actual != expected) {
-            return false;
-          }
-        }
-      }
-    }
-
-    return true;
+    return output_data.size() == expected_size;
   }
 
-  void static ExecuteTest() {
-    const std::string task_type = std::get<1>(GetParam());
-
-    if (task_type == "MPI") {
-      LuchnikovETransmFrAllToOneGatherMPI task(input_data_);
-      ASSERT_TRUE(task.Validation());
-      ASSERT_TRUE(task.PreProcessing());
-      ASSERT_TRUE(task.Run());
-      ASSERT_TRUE(task.PostProcessing());
-
-      auto output = task.GetOutput();
-      EXPECT_TRUE(CheckOutputData(output));
-    } else {
-      LuchnikovETransmFrAllToOneGatherSEQ task(input_data_);
-      ASSERT_TRUE(task.Validation());
-      ASSERT_TRUE(task.PreProcessing());
-      ASSERT_TRUE(task.Run());
-      ASSERT_TRUE(task.PostProcessing());
-
-      auto output = task.GetOutput();
-      EXPECT_TRUE(CheckOutputData(output));
-    }
+  InType GetTestInputData() final {
+    return input_data;
   }
-
- private:
-  GatherInput input_data_;
 };
-namespace {
-TEST_P(LuchnikovETransmFrAllToOneGatherPerfTests, RunPerfModes) {
-  ExecuteTest();
-}
-}  // namespace
 
-INSTANTIATE_TEST_SUITE_P(RunModeTests, LuchnikovETransmFrAllToOneGatherPerfTests,
-                         ::testing::ValuesIn(CreatePerfTestParams()), PrintPerfTestParam);
+TEST_P(LuchnikovETransmFrAllToOneGatherPerfTests, RunPerfModes) {
+  ExecuteTest(GetParam());
+}
+
+const auto kAllPerfTasks = ppc::util::MakeAllPerfTasks<InType, 
+  LuchnikovETransmFrAllToOneGatherMPI, 
+  LuchnikovETransmFrAllToOneGatherSEQ>(
+    PPC_SETTINGS_luchnikov_e_gener_transm_from_all_to_one_gather
+);
+
+const auto kGtestValues = ppc::util::TupleToGTestValues(kAllPerfTasks);
+const auto kPerfTestName = LuchnikovETransmFrAllToOneGatherPerfTests::CustomPerfTestName;
+
+INSTANTIATE_TEST_SUITE_P(RunModeTests, LuchnikovETransmFrAllToOneGatherPerfTests, kGtestValues, kPerfTestName);
 
 }  // namespace luchnikov_e_gener_transm_from_all_to_one_gather
