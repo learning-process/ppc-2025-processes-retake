@@ -45,7 +45,8 @@ class SparseMultPerfTests : public ppc::util::BaseRunPerfTests<InType, OutType> 
     input_data_.B = GenSparsePerf(200, 200, 0.05);
   }
 
-  bool CheckTestOutputData(OutType &output_data) final {
+  // ИСПРАВЛЕНИЕ ЗДЕСЬ: закомментировано имя переменной /*output_data*/
+  bool CheckTestOutputData(OutType & /*output_data*/) final {
     return true;
   }
 

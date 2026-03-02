@@ -24,8 +24,9 @@ class VectorMinPerfTests : public ppc::util::BaseRunPerfTests<InType, OutType> {
     }
   }
 
-  bool CheckTestOutputData(OutType &output_data) final {
-    return true;  // В тестах производительности проверка результата не так критична
+  // ИСПРАВЛЕНИЕ ЗДЕСЬ: закомментировано имя переменной /*output_data*/
+  bool CheckTestOutputData(OutType & /*output_data*/) final {
+    return true;
   }
 
   InType GetTestInputData() final {

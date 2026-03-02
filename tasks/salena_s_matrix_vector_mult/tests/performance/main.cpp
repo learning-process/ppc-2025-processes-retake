@@ -32,7 +32,8 @@ class MatVecMultPerfTests : public ppc::util::BaseRunPerfTests<InType, OutType> 
     }
   }
 
-  bool CheckTestOutputData(OutType &output_data) final {
+  // ИСПРАВЛЕНИЕ ЗДЕСЬ: закомментировано имя переменной /*output_data*/
+  bool CheckTestOutputData(OutType & /*output_data*/) final {
     return true;
   }
 
