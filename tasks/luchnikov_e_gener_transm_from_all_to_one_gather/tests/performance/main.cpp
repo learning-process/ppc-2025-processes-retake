@@ -31,8 +31,8 @@ size_t GetTypeSizeSeq(MPI_Datatype datatype) {
 class LuchnikovETransmFrAllToOneGatherPerfTests : public ppc::util::BaseRunPerfTests<InType, OutType> {
  protected:
   static const size_t kDataCount = 10000000;
-  MPI_Datatype data_type_ = MPI_INT;
-  InType input_data_{};
+  MPI_Datatype data_type = MPI_INT;  // NOLINT
+  InType input_data{};               // NOLINT
 
   void SetUp() override {
     size_t type_size = sizeof(int);
@@ -41,15 +41,14 @@ class LuchnikovETransmFrAllToOneGatherPerfTests : public ppc::util::BaseRunPerfT
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
     auto *data_ptr = reinterpret_cast<int *>(data.data());
     for (size_t i = 0; i < kDataCount; i++) {
-      data_ptr[i] = static_cast<int>(static_cast<size_t>(rank) * kDataCount + i);
+      data_ptr[i] = static_cast<int>((static_cast<size_t>(rank) * kDataCount) + i);
     }
     int root = 0;
-    input_data_ =
-        GatherInput{.data = data, .count = static_cast<int>(kDataCount), .datatype = data_type_, .root = root};
+    input_data = GatherInput{.data = data, .count = static_cast<int>(kDataCount), .datatype = data_type, .root = root};
   }
 
   bool CheckTestOutputData(OutType &output_data) final {
-    const auto &input = input_data_;
+    const auto &input = input_data;
     const auto &params = GetParam();
     const std::string task_name = std::get<1>(params);
     const bool is_mpi = task_name.find("_mpi_") != std::string::npos;
@@ -68,7 +67,7 @@ class LuchnikovETransmFrAllToOneGatherPerfTests : public ppc::util::BaseRunPerfT
   }
 
   InType GetTestInputData() final {
-    return input_data_;
+    return input_data;
   }
 };
 
@@ -82,6 +81,8 @@ const auto kAllPerfTasks =
 const auto kGtestValues = ppc::util::TupleToGTestValues(kAllPerfTasks);
 const auto kPerfTestName = LuchnikovETransmFrAllToOneGatherPerfTests::CustomPerfTestName;
 
+// NOLINTBEGIN(misc-use-anonymous-namespace)
 INSTANTIATE_TEST_SUITE_P(RunModeTests, LuchnikovETransmFrAllToOneGatherPerfTests, kGtestValues, kPerfTestName);
+// NOLINTEND(misc-use-anonymous-namespace)
 
 }  // namespace luchnikov_e_gener_transm_from_all_to_one_gather
