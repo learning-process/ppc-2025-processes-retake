@@ -1,22 +1,34 @@
 #pragma once
 
+#include <cstddef>
+#include <vector>
+
 #include "luchnikov_e_gener_transm_from_all_to_one_gather/common/include/common.hpp"
 #include "task/include/task.hpp"
 
 namespace luchnikov_e_gener_transm_from_all_to_one_gather {
 
-class LuchnikovEGenerTransmFromAllToOneGatherSEQ : public BaseTask {
+class LuchnikovEGenerTransmFromAllToOneGatherSequential : public BaseTask {
  public:
-  static constexpr ppc::task::TypeOfTask GetStaticTypeOfTask() {
-    return ppc::task::TypeOfTask::kSEQ;
+  static constexpr auto GetStaticTypeOfTask() -> ppc::task::TypeOfTask {
+    return ppc::task::TypeOfTask::kSequential;
   }
-  explicit LuchnikovEGenerTransmFromAllToOneGatherSEQ(const InType &in);
+
+  explicit LuchnikovEGenerTransmFromAllToOneGatherSequential(const InType &input);
+
+  LuchnikovEGenerTransmFromAllToOneGatherSequential(const LuchnikovEGenerTransmFromAllToOneGatherSequential &) = delete;
+  auto operator=(const LuchnikovEGenerTransmFromAllToOneGatherSequential &)
+      -> LuchnikovEGenerTransmFromAllToOneGatherSequential & = delete;
+  LuchnikovEGenerTransmFromAllToOneGatherSequential(LuchnikovEGenerTransmFromAllToOneGatherSequential &&) = delete;
+  auto operator=(LuchnikovEGenerTransmFromAllToOneGatherSequential &&)
+      -> LuchnikovEGenerTransmFromAllToOneGatherSequential & = delete;
+  ~LuchnikovEGenerTransmFromAllToOneGatherSequential() override = default;
 
  private:
-  bool ValidationImpl() override;
-  bool PreProcessingImpl() override;
-  bool RunImpl() override;
-  bool PostProcessingImpl() override;
+  auto ValidationImpl() -> bool override;
+  auto PreProcessingImpl() -> bool override;
+  auto RunImpl() -> bool override;
+  auto PostProcessingImpl() -> bool override;
 };
 
 }  // namespace luchnikov_e_gener_transm_from_all_to_one_gather
