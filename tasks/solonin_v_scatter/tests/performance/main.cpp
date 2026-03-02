@@ -23,7 +23,7 @@ class SoloninVScatterPerfTests : public ppc::util::BaseRunPerfTests<InType, OutT
 
   void SetUp() override {
     buf_.resize(static_cast<size_t>(kSendCount) * kMaxProcs);
-    std::iota(buf_.begin(), buf_.end(), 0);  // NOLINT(modernize-use-ranges)
+    std::iota(buf_.begin(), buf_.end(), 0);
   }
 
   bool CheckTestOutputData(OutType &out) final {
