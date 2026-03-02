@@ -2,6 +2,8 @@
 
 #include <mpi.h>
 
+#include <algorithm>
+#include <cstddef>
 #include <tuple>
 #include <vector>
 
@@ -77,7 +79,7 @@ bool SoloninVScatterMPI::RunImpl() {
       if (dest == root) {
         continue;
       }
-      MPI_Send(send_buf.data() + static_cast<std::ptrdiff_t>(dest) * count, count, MPI_INT, dest, 0, MPI_COMM_WORLD);
+      MPI_Send(send_buf.data() + (static_cast<std::ptrdiff_t>(dest) * count), count, MPI_INT, dest, 0, MPI_COMM_WORLD);
     }
   } else {
     MPI_Recv(GetOutput().data(), count, MPI_INT, root, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);

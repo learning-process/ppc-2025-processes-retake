@@ -1,7 +1,8 @@
 #include <gtest/gtest.h>
 
-#include <numeric>
+#include <cstddef>
 #include <tuple>
+#include <utility>
 #include <vector>
 
 #include "solonin_v_scatter/common/include/common.hpp"
@@ -21,7 +22,9 @@ class SoloninVScatterPerfTests : public ppc::util::BaseRunPerfTests<InType, OutT
 
   void SetUp() override {
     buf_.resize(static_cast<size_t>(kSendCount) * kMaxProcs);
-    std::iota(buf_.begin(), buf_.end(), 0);
+    for (int i = 0; i < static_cast<int>(buf_.size()); i++) {
+      buf_[i] = i;
+    }
   }
 
   bool CheckTestOutputData(OutType &out) final {
