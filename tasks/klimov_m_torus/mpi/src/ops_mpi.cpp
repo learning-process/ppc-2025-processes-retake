@@ -12,21 +12,65 @@
 
 namespace klimov_m_torus {
 
+namespace {
+
+// Вспомогательные функции, вынесенные в анонимный namespace для снижения сложности RelayMessage
+
+void HandleSameNode(int current_rank, int src, const std::vector<int> &buffer, std::vector<int> &output) {
+  if (current_rank == src) {
+    output = buffer;
+  }
+}
+
+void HandleSourceNode(int current_rank, int src, const std::vector<int> &route, const std::vector<int> &buffer,
+                      std::vector<int> &output) {
+  output = buffer;
+  if (current_rank == src && route.size() > 1) {
+    int next_hop = route[1];
+    int send_len = static_cast<int>(buffer.size());
+    MPI_Send(&send_len, 1, MPI_INT, next_hop, 0, MPI_COMM_WORLD);
+    if (send_len > 0) {
+      MPI_Send(output.data(), send_len, MPI_INT, next_hop, 1, MPI_COMM_WORLD);
+    }
+  }
+}
+
+void HandleIntermediateNode(int current_rank, int dst, const std::vector<int> &route, int my_pos,
+                            std::vector<int> &output) {
+  int prev_hop = route[my_pos - 1];
+  int recv_len = 0;
+  MPI_Recv(&recv_len, 1, MPI_INT, prev_hop, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+  output.resize(recv_len);
+  if (recv_len > 0) {
+    MPI_Recv(output.data(), recv_len, MPI_INT, prev_hop, 1, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+  }
+
+  if (current_rank != dst && my_pos + 1 < static_cast<int>(route.size())) {
+    int next_hop = route[my_pos + 1];
+    MPI_Send(&recv_len, 1, MPI_INT, next_hop, 0, MPI_COMM_WORLD);
+    if (recv_len > 0) {
+      MPI_Send(output.data(), recv_len, MPI_INT, next_hop, 1, MPI_COMM_WORLD);
+    }
+  }
+}
+
+}  // namespace
+
 TorusMeshCommunicator::TorusMeshCommunicator(const InType &in) {
   SetTypeOfTask(GetStaticTypeOfTask());
   GetInput() = in;
   GetOutput() = {};
 }
 
-std::pair<int, int> TorusMeshCommunicator::CalculateGridSize(int totalProcesses) {
-  int rows = static_cast<int>(std::sqrt(static_cast<double>(totalProcesses)));
-  while (rows > 1 && (totalProcesses % rows != 0)) {
+std::pair<int, int> TorusMeshCommunicator::CalculateGridSize(int total_processes) {
+  int rows = static_cast<int>(std::sqrt(static_cast<double>(total_processes)));
+  while (rows > 1 && (total_processes % rows != 0)) {
     --rows;
   }
   if (rows <= 0) {
     rows = 1;
   }
-  int cols = totalProcesses / rows;
+  int cols = total_processes / rows;
   if (cols <= 0) {
     cols = 1;
   }
@@ -119,7 +163,8 @@ bool TorusMeshCommunicator::PreProcessingImpl() {
 }
 
 bool TorusMeshCommunicator::RunImpl() {
-  int sender = 0, receiver = 0;
+  int sender = 0;
+  int receiver = 0;
   DistributeSenderReceiver(sender, receiver);
 
   int data_len = 0;
@@ -155,48 +200,23 @@ void TorusMeshCommunicator::DistributeDataLength(int src, int &len) const {
 std::vector<int> TorusMeshCommunicator::AssembleSendBuffer(int src, int len) const {
   std::vector<int> buffer(len);
   if (current_rank_ == src && len > 0) {
-    std::copy(local_request_.data.begin(), local_request_.data.end(), buffer.begin());
+    std::ranges::copy(local_request_.data, buffer.begin());
   }
   return buffer;
 }
 
 void TorusMeshCommunicator::RelayMessage(int src, int dst, const std::vector<int> &route,
                                          const std::vector<int> &buffer, std::vector<int> &output) const {
-  const int route_len = static_cast<int>(route.size());
-  auto it = std::find(route.begin(), route.end(), current_rank_);
+  auto it = std::ranges::find(route, current_rank_);
   bool on_route = (it != route.end());
   int my_pos = on_route ? static_cast<int>(std::distance(route.begin(), it)) : -1;
 
   if (src == dst) {
-    if (current_rank_ == src) {
-      output = buffer;
-    }
+    HandleSameNode(current_rank_, src, buffer, output);
   } else if (current_rank_ == src) {
-    output = buffer;
-    if (route_len > 1) {
-      int next_hop = route[1];
-      int send_len = static_cast<int>(buffer.size());
-      MPI_Send(&send_len, 1, MPI_INT, next_hop, 0, MPI_COMM_WORLD);
-      if (send_len > 0) {
-        MPI_Send(output.data(), send_len, MPI_INT, next_hop, 1, MPI_COMM_WORLD);
-      }
-    }
+    HandleSourceNode(current_rank_, src, route, buffer, output);
   } else if (on_route) {
-    int prev_hop = route[my_pos - 1];
-    int recv_len = 0;
-    MPI_Recv(&recv_len, 1, MPI_INT, prev_hop, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-    output.resize(recv_len);
-    if (recv_len > 0) {
-      MPI_Recv(output.data(), recv_len, MPI_INT, prev_hop, 1, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-    }
-
-    if (current_rank_ != dst && my_pos + 1 < route_len) {
-      int next_hop = route[my_pos + 1];
-      MPI_Send(&recv_len, 1, MPI_INT, next_hop, 0, MPI_COMM_WORLD);
-      if (recv_len > 0) {
-        MPI_Send(output.data(), recv_len, MPI_INT, next_hop, 1, MPI_COMM_WORLD);
-      }
-    }
+    HandleIntermediateNode(current_rank_, dst, route, my_pos, output);
   }
 }
 

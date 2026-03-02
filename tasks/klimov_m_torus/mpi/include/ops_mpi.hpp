@@ -22,14 +22,14 @@ class TorusMeshCommunicator : public BaseTask {
   bool RunImpl() override;
   bool PostProcessingImpl() override;
 
-  static std::pair<int, int> CalculateGridSize(int totalProcesses);
+  static std::pair<int, int> CalculateGridSize(int total_processes);
   static int CombineCoordinates(int row, int col, int rows, int cols);
   static std::pair<int, int> SplitRank(int rank, int cols);
   static std::vector<int> BuildMessageRoute(int rows, int cols, int from, int to);
 
   void DistributeSenderReceiver(int &src, int &dst);
   void DistributeDataLength(int src, int &len) const;
-  std::vector<int> AssembleSendBuffer(int src, int len) const;
+  [[nodiscard]] std::vector<int> AssembleSendBuffer(int src, int len) const;
   void RelayMessage(int src, int dst, const std::vector<int> &route, const std::vector<int> &buffer,
                     std::vector<int> &output) const;
   void SaveFinalResult(int dst, const std::vector<int> &output, const std::vector<int> &route);

@@ -8,8 +8,8 @@
 namespace klimov_m_torus {
 
 struct TransferRequest {
-  int sender;
-  int receiver;
+  int sender{};
+  int receiver{};
   std::vector<int> data;
 };
 
