@@ -1,6 +1,6 @@
 #include <gtest/gtest.h>
 
-#include <algorithm>
+#include <cstddef>
 #include <random>
 #include <vector>
 
@@ -12,15 +12,14 @@
 namespace salena_s_matrix_vector_mult {
 
 class MatVecMultPerfTests : public ppc::util::BaseRunPerfTests<InType, OutType> {
-  InType input_data_{};
-
+ protected:
   void SetUp() override {
     int rows = 500;
     int cols = 500;
     input_data_.rows = rows;
     input_data_.cols = cols;
-    input_data_.matrix.resize(rows * cols);
-    input_data_.vec.resize(cols);
+    input_data_.matrix.resize(static_cast<std::size_t>(rows) * static_cast<std::size_t>(cols));
+    input_data_.vec.resize(static_cast<std::size_t>(cols));
 
     std::mt19937 gen(42);
     std::uniform_real_distribution<double> dist(-10.0, 10.0);
@@ -33,12 +32,15 @@ class MatVecMultPerfTests : public ppc::util::BaseRunPerfTests<InType, OutType> 
   }
 
   bool CheckTestOutputData(OutType &output_data) final {
-    return output_data.size() == static_cast<size_t>(input_data_.rows);
+    return output_data.size() == static_cast<std::size_t>(input_data_.rows);
   }
 
   InType GetTestInputData() final {
     return input_data_;
   }
+
+ private:
+  InType input_data_{};
 };
 
 TEST_P(MatVecMultPerfTests, RunPerfModes) {

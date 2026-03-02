@@ -43,7 +43,8 @@ bool TestTaskSEQ::RunImpl() {
 
   for (int i = 0; i < rows; ++i) {
     for (int j = 0; j < cols; ++j) {
-      result[i] += matrix[(i * cols) + j] * vec[j];
+      result[static_cast<std::size_t>(i)] +=
+          matrix[static_cast<std::size_t>((i * cols) + j)] * vec[static_cast<std::size_t>(j)];
     }
   }
   return true;

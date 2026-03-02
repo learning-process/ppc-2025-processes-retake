@@ -8,6 +8,38 @@
 #include "salena_s_matrix_vector_mult/common/include/common.hpp"
 
 namespace salena_s_matrix_vector_mult {
+namespace {
+
+void CalculateCountsAndDisplacements(int size, int cols, int rows, std::vector<int> &send_counts,
+                                     std::vector<int> &displs, std::vector<int> &vec_counts,
+                                     std::vector<int> &vec_displs) {
+  int delta_cols = cols / size;
+  int rem_cols = cols % size;
+  int current_displ = 0;
+  int cur_vec = 0;
+  for (int i = 0; i < size; ++i) {
+    int c = delta_cols + (i < rem_cols ? 1 : 0);
+    send_counts[i] = c * rows;
+    displs[i] = current_displ;
+    current_displ += send_counts[i];
+
+    vec_counts[i] = c;
+    vec_displs[i] = cur_vec;
+    cur_vec += c;
+  }
+}
+
+void MultiplyLocal(int rows, int my_cols_count, const std::vector<double> &local_matrix,
+                   const std::vector<double> &local_vec, std::vector<double> &local_res) {
+  for (int j = 0; j < my_cols_count; ++j) {
+    double vec_val = local_vec[j];
+    for (int i = 0; i < rows; ++i) {
+      local_res[static_cast<std::size_t>(i)] += local_matrix[static_cast<std::size_t>((j * rows) + i)] * vec_val;
+    }
+  }
+}
+
+}  // namespace
 
 TestTaskMPI::TestTaskMPI(const InType &in) {
   SetTypeOfTask(GetStaticTypeOfTask());
@@ -48,7 +80,7 @@ std::vector<double> TestTaskMPI::Transpose(const std::vector<double> &matrix, in
   std::vector<double> transposed(static_cast<std::size_t>(rows) * static_cast<std::size_t>(cols));
   for (int i = 0; i < rows; ++i) {
     for (int j = 0; j < cols; ++j) {
-      transposed[(j * rows) + i] = matrix[(i * cols) + j];
+      transposed[static_cast<std::size_t>((j * rows) + i)] = matrix[static_cast<std::size_t>((i * cols) + j)];
     }
   }
   return transposed;
@@ -70,26 +102,12 @@ bool TestTaskMPI::RunImpl() {
     return false;
   }
 
-  int delta_cols = cols / size;
-  int rem_cols = cols % size;
-
   std::vector<int> send_counts(size);
   std::vector<int> displs(size);
   std::vector<int> vec_counts(size);
   std::vector<int> vec_displs(size);
 
-  int current_displ = 0;
-  int cur_vec = 0;
-  for (int i = 0; i < size; ++i) {
-    int c = delta_cols + (i < rem_cols ? 1 : 0);
-    send_counts[i] = c * rows;
-    displs[i] = current_displ;
-    current_displ += send_counts[i];
-
-    vec_counts[i] = c;
-    vec_displs[i] = cur_vec;
-    cur_vec += c;
-  }
+  CalculateCountsAndDisplacements(size, cols, rows, send_counts, displs, vec_counts, vec_displs);
 
   std::vector<double> local_matrix(send_counts[rank]);
   std::vector<double> local_vec(vec_counts[rank]);
@@ -108,12 +126,7 @@ bool TestTaskMPI::RunImpl() {
   std::vector<double> local_res(rows, 0.0);
   int my_cols_count = vec_counts[rank];
 
-  for (int j = 0; j < my_cols_count; ++j) {
-    double vec_val = local_vec[j];
-    for (int i = 0; i < rows; ++i) {
-      local_res[i] += local_matrix[(j * rows) + i] * vec_val;
-    }
-  }
+  MultiplyLocal(rows, my_cols_count, local_matrix, local_vec, local_res);
 
   MPI_Reduce(local_res.data(), rank == 0 ? GetOutput().data() : nullptr, rows, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
 

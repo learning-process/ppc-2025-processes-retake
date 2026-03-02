@@ -1,6 +1,8 @@
 #include <gtest/gtest.h>
 
 #include <algorithm>
+#include <cmath>
+#include <cstddef>
 #include <random>
 #include <string>
 #include <tuple>
@@ -13,8 +15,6 @@
 #include "util/include/util.hpp"
 
 namespace salena_s_matrix_vector_mult {
-
-using TestType = std::tuple<int, int, std::string>;
 
 class MatVecMultFuncTests : public ppc::util::BaseRunFuncTests<InType, OutType, TestType> {
  public:
@@ -30,8 +30,8 @@ class MatVecMultFuncTests : public ppc::util::BaseRunFuncTests<InType, OutType, 
 
     input_data_.rows = rows;
     input_data_.cols = cols;
-    input_data_.matrix.resize(rows * cols);
-    input_data_.vec.resize(cols);
+    input_data_.matrix.resize(static_cast<std::size_t>(rows) * static_cast<std::size_t>(cols));
+    input_data_.vec.resize(static_cast<std::size_t>(cols));
 
     std::mt19937 gen(42);
     std::uniform_real_distribution<double> dist(-10.0, 10.0);
@@ -47,15 +47,16 @@ class MatVecMultFuncTests : public ppc::util::BaseRunFuncTests<InType, OutType, 
     std::vector<double> expected_res(input_data_.rows, 0.0);
     for (int i = 0; i < input_data_.rows; ++i) {
       for (int j = 0; j < input_data_.cols; ++j) {
-        expected_res[i] += input_data_.matrix[i * input_data_.cols + j] * input_data_.vec[j];
+        expected_res[static_cast<std::size_t>(i)] +=
+            input_data_.matrix[static_cast<std::size_t>((i * input_data_.cols) + j)] *
+            input_data_.vec[static_cast<std::size_t>(j)];
       }
     }
 
     if (output_data.size() != expected_res.size()) {
       return false;
     }
-    for (size_t i = 0; i < expected_res.size(); ++i) {
-      // Сравниваем с точностью до 1e-4, так как это double
+    for (std::size_t i = 0; i < expected_res.size(); ++i) {
       if (std::abs(expected_res[i] - output_data[i]) > 1e-4) {
         return false;
       }
