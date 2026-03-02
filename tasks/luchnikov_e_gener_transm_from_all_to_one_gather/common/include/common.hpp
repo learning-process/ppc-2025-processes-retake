@@ -1,25 +1,15 @@
 #pragma once
 
-#include <mpi.h>
-
 #include <string>
 #include <tuple>
-#include <vector>
 
 #include "task/include/task.hpp"
 
 namespace luchnikov_e_gener_transm_from_all_to_one_gather {
 
-struct GatherInput {
-  std::vector<char> data;
-  int count{0};
-  MPI_Datatype datatype{MPI_DATATYPE_NULL};
-  int root{0};
-};
-
-using InType = GatherInput;
-using OutType = std::vector<char>;
-using TestType = std::tuple<int, int, MPI_Datatype, std::string>;
+using InType = int;
+using OutType = int;
+using TestType = std::tuple<int, std::string>;
 using BaseTask = ppc::task::Task<InType, OutType>;
 
 }  // namespace luchnikov_e_gener_transm_from_all_to_one_gather
