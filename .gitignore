@@ -17,3 +17,5 @@ CMakeSettings.json
 .cache
 install
 *.pyc
+cmake_log.txt
+Dockerfile
