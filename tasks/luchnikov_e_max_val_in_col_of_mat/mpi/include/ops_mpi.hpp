@@ -1,21 +1,19 @@
-// [file name]: mpi/include/ops_mpi.hpp
 #pragma once
+
+#include <vector>
 
 #include "luchnikov_e_max_val_in_col_of_mat/common/include/common.hpp"
 #include "task/include/task.hpp"
 
 namespace luchnikov_e_max_val_in_col_of_mat {
 
-class LuchnilkovEMaxValInColOfMatMPI : public BaseTask {
+class LuchnilkovEMaxValInColOfMatMpi : public BaseTask {
  public:
   static constexpr ppc::task::TypeOfTask GetStaticTypeOfTask() {
     return ppc::task::TypeOfTask::kMPI;
   }
-  explicit LuchnilkovEMaxValInColOfMatMPI(const InType &in);
 
-  int GetRank() const {
-    return rank_;
-  }
+  explicit LuchnilkovEMaxValInColOfMatMpi(const InType &in);
 
  private:
   bool ValidationImpl() override;
@@ -23,8 +21,8 @@ class LuchnilkovEMaxValInColOfMatMPI : public BaseTask {
   bool RunImpl() override;
   bool PostProcessingImpl() override;
 
-  int rank_ = 0;
-  int size_ = 1;
+  std::vector<std::vector<int>> matrix_;
+  std::vector<int> result_;
 };
 
 }  // namespace luchnikov_e_max_val_in_col_of_mat

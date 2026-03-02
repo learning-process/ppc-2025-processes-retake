@@ -7,12 +7,13 @@
 
 namespace luchnikov_e_max_val_in_col_of_mat {
 
-class LuchnilkovEMaxValInColOfMatSEQ : public BaseTask {
+class LuchnilkovEMaxValInColOfMatSeq : public BaseTask {
  public:
   static constexpr ppc::task::TypeOfTask GetStaticTypeOfTask() {
     return ppc::task::TypeOfTask::kSEQ;
   }
-  explicit LuchnilkovEMaxValInColOfMatSEQ(const InType &in);
+
+  explicit LuchnilkovEMaxValInColOfMatSeq(const InType &in);
 
  private:
   bool ValidationImpl() override;
