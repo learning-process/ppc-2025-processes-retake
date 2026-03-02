@@ -1,8 +1,10 @@
 #include <gtest/gtest.h>
 #include <mpi.h>
 
+#include <cmath>
 #include <cstddef>
 #include <string>
+#include <tuple>
 #include <vector>
 
 #include "luchnikov_e_gener_transm_from_all_to_one_gather/common/include/common.hpp"
@@ -25,25 +27,28 @@ size_t GetTypeSizeSeq(MPI_Datatype datatype) {
   return 0;
 }
 
-std::vector<std::tuple<std::string, std::string, int>> CreatePerfTestParams() {
-  std::vector<std::tuple<std::string, std::string, int>> params;
+using PerfTestParam = std::tuple<std::string, std::string, int>;
+
+std::vector<PerfTestParam> CreatePerfTestParams() {
+  std::vector<PerfTestParam> params;
 
   std::string task_name = "luchnikov_e_gener_transm_from_all_to_one_gather";
 
-  params.push_back(std::make_tuple(task_name, "MPI", 0));
+  // MPI тест
+  params.emplace_back(task_name, "MPI", 0);
 
-  params.push_back(std::make_tuple(task_name, "SEQ", 0));
+  // SEQ тест
+  params.emplace_back(task_name, "SEQ", 0);
 
   return params;
 }
 
-std::string PrintPerfTestParam(const testing::TestParamInfo<std::tuple<std::string, std::string, int>> &info) {
+std::string PrintPerfTestParam(const testing::TestParamInfo<PerfTestParam> &info) {
   return std::get<1>(info.param);
 }
 }  // namespace
 
-class LuchnikovETransmFrAllToOneGatherPerfTests
-    : public ::testing::TestWithParam<std::tuple<std::string, std::string, int>> {
+class LuchnikovETransmFrAllToOneGatherPerfTests : public ::testing::TestWithParam<PerfTestParam> {
  protected:
   static const size_t kDataCount = 100000;
   MPI_Datatype data_type = MPI_INT;
@@ -87,12 +92,13 @@ class LuchnikovETransmFrAllToOneGatherPerfTests
       return false;
     }
 
+    // Проверка корректности данных
     if (rank == input.root && input.datatype == MPI_INT) {
       const int *out_ptr = reinterpret_cast<const int *>(output_data.data());
       for (int i = 0; i < world_size; ++i) {
         for (size_t j = 0; j < kDataCount; ++j) {
-          int expected = static_cast<int>(i * static_cast<int>(kDataCount) + static_cast<int>(j));
-          int actual = out_ptr[i * static_cast<int>(kDataCount) + static_cast<int>(j)];
+          int expected = static_cast<int>((i * static_cast<int>(kDataCount)) + static_cast<int>(j));
+          int actual = out_ptr[(i * static_cast<int>(kDataCount)) + static_cast<int>(j)];
           if (actual != expected) {
             return false;
           }

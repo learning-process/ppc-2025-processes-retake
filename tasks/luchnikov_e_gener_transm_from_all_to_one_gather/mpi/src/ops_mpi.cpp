@@ -4,7 +4,8 @@
 
 #include <algorithm>
 #include <cstddef>
-#include <cstring>
+#include <cstdint>
+#include <utility>
 #include <vector>
 
 #include "luchnikov_e_gener_transm_from_all_to_one_gather/common/include/common.hpp"
@@ -14,13 +15,13 @@ namespace luchnikov_e_gener_transm_from_all_to_one_gather {
 namespace {
 int GetTypeSize(MPI_Datatype datatype) {
   if (datatype == MPI_INT) {
-    return sizeof(int);
+    return static_cast<int>(sizeof(int));
   }
   if (datatype == MPI_FLOAT) {
-    return sizeof(float);
+    return static_cast<int>(sizeof(float));
   }
   if (datatype == MPI_DOUBLE) {
-    return sizeof(double);
+    return static_cast<int>(sizeof(double));
   }
   return 0;
 }
@@ -28,6 +29,74 @@ int GetTypeSize(MPI_Datatype datatype) {
 bool IsPowerOfTwo(int x) {
   return (x > 0) && ((x & (x - 1)) == 0);
 }
+
+void GatherNonPowerOfTwo(int rank, int world_size, const GatherInput &input, int block_size, OutType &output) {
+  const int root = input.root;
+
+  if (rank == root) {
+    std::vector<char> recv_buffer(static_cast<size_t>(world_size) * static_cast<size_t>(block_size));
+
+    std::copy(input.data.begin(), input.data.end(),
+              recv_buffer.begin() + static_cast<std::ptrdiff_t>(rank) * static_cast<std::ptrdiff_t>(block_size));
+
+    for (int i = 0; i < world_size; ++i) {
+      if (i != rank) {
+        MPI_Recv(recv_buffer.data() + static_cast<std::ptrdiff_t>(i) * static_cast<std::ptrdiff_t>(block_size),
+                 block_size, MPI_BYTE, i, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+      }
+    }
+
+    output = std::move(recv_buffer);
+  } else {
+    MPI_Send(input.data.data(), block_size, MPI_BYTE, root, 0, MPI_COMM_WORLD);
+    output = std::vector<char>();
+  }
+}
+
+void GatherPowerOfTwo(int rank, int world_size, const GatherInput &input, int block_size, OutType &output) {
+  const int root = input.root;
+
+  std::vector<char> send_buffer(static_cast<size_t>(block_size));
+  std::copy(input.data.begin(), input.data.end(), send_buffer.begin());
+
+  std::vector<char> recv_buffer;
+  if (rank == root) {
+    recv_buffer.resize(static_cast<size_t>(world_size) * static_cast<size_t>(block_size));
+    std::copy(send_buffer.begin(), send_buffer.end(), recv_buffer.begin());
+  }
+
+  int step = 1;
+  while (step < world_size) {
+    if (rank % (2 * step) == 0) {
+      int source = rank + step;
+      if (source < world_size) {
+        int recv_size = step * block_size;
+        std::vector<char> temp_recv(static_cast<size_t>(recv_size));
+        MPI_Recv(temp_recv.data(), recv_size, MPI_BYTE, source, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+
+        if (rank == root) {
+          std::copy(
+              temp_recv.begin(), temp_recv.end(),
+              recv_buffer.begin() + static_cast<std::ptrdiff_t>(source) * static_cast<std::ptrdiff_t>(block_size));
+        } else {
+          send_buffer.insert(send_buffer.end(), temp_recv.begin(), temp_recv.end());
+        }
+      }
+    } else {
+      int dest = rank - step;
+      MPI_Send(send_buffer.data(), static_cast<int>(send_buffer.size()), MPI_BYTE, dest, 0, MPI_COMM_WORLD);
+      break;
+    }
+    step *= 2;
+  }
+
+  if (rank == root) {
+    output = std::move(recv_buffer);
+  } else {
+    output = std::vector<char>();
+  }
+}
+
 }  // namespace
 
 LuchnikovETransmFrAllToOneGatherMPI::LuchnikovETransmFrAllToOneGatherMPI(const InType &in) {
@@ -81,78 +150,10 @@ bool LuchnikovETransmFrAllToOneGatherMPI::RunImpl() {
   const int type_size = GetTypeSize(input.datatype);
   const int block_size = input.count * type_size;
 
-  // Для нестепени двойки используем простой алгоритм с прямыми передачами
   if (!IsPowerOfTwo(world_size)) {
-    if (rank == input.root) {
-      // Корневой процесс собирает данные от всех
-      std::vector<char> recv_buffer(static_cast<size_t>(world_size) * static_cast<size_t>(block_size));
-
-      // Копируем свои данные
-      std::copy(input.data.begin(), input.data.end(),
-                recv_buffer.begin() + static_cast<std::ptrdiff_t>(rank * block_size));
-
-      // Получаем данные от всех остальных процессов
-      for (int i = 0; i < world_size; ++i) {
-        if (i != rank) {
-          MPI_Recv(recv_buffer.data() + i * block_size, block_size, MPI_BYTE, i, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-        }
-      }
-
-      GetOutput() = std::move(recv_buffer);
-    } else {
-      // Некорневые процессы отправляют свои данные корню
-      MPI_Send(input.data.data(), block_size, MPI_BYTE, input.root, 0, MPI_COMM_WORLD);
-      GetOutput() = std::vector<char>();
-    }
-
-    return true;
-  }
-
-  // Для степени двойки используем древовидный алгоритм
-  std::vector<char> send_buffer(block_size);
-  std::copy(input.data.begin(), input.data.end(), send_buffer.begin());
-
-  std::vector<char> recv_buffer;
-  if (rank == input.root) {
-    recv_buffer.resize(static_cast<size_t>(world_size) * static_cast<size_t>(block_size));
-    // Копируем свои данные в начало буфера
-    std::copy(send_buffer.begin(), send_buffer.end(), recv_buffer.begin());
-  }
-
-  // Древовидный сбор данных
-  int step = 1;
-  while (step < world_size) {
-    if (rank % (2 * step) == 0) {
-      // Принимаем данные от процессов с шагом step
-      int source = rank + step;
-      if (source < world_size) {
-        int recv_size = step * block_size;
-        std::vector<char> temp_recv(recv_size);
-        MPI_Recv(temp_recv.data(), recv_size, MPI_BYTE, source, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-
-        // Вставляем полученные данные в правильную позицию
-        if (rank == input.root) {
-          // Корень сразу сохраняет в финальный буфер
-          std::copy(temp_recv.begin(), temp_recv.end(),
-                    recv_buffer.begin() + static_cast<std::ptrdiff_t>(source * block_size));
-        } else {
-          // Промежуточные узлы накапливают данные для отправки выше
-          send_buffer.insert(send_buffer.end(), temp_recv.begin(), temp_recv.end());
-        }
-      }
-    } else {
-      // Отправляем данные родительскому процессу
-      int dest = rank - step;
-      MPI_Send(send_buffer.data(), static_cast<int>(send_buffer.size()), MPI_BYTE, dest, 0, MPI_COMM_WORLD);
-      break;
-    }
-    step *= 2;
-  }
-
-  if (rank == input.root) {
-    GetOutput() = std::move(recv_buffer);
+    GatherNonPowerOfTwo(rank, world_size, input, block_size, GetOutput());
   } else {
-    GetOutput() = std::vector<char>();
+    GatherPowerOfTwo(rank, world_size, input, block_size, GetOutput());
   }
 
   return true;

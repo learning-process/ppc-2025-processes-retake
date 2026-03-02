@@ -1,10 +1,9 @@
 #include <gtest/gtest.h>
 #include <mpi.h>
 
-#include <algorithm>
-#include <array>
+#include <cmath>
 #include <cstddef>
-#include <cstring>
+#include <cstdint>
 #include <string>
 #include <tuple>
 #include <vector>
@@ -16,49 +15,48 @@
 namespace luchnikov_e_gener_transm_from_all_to_one_gather {
 
 namespace {
-// Объявляем функции в анонимном пространстве имен
-std::vector<std::tuple<std::string, std::string, int, int, MPI_Datatype, std::string>> CreateTestParams() {
-  std::vector<std::tuple<std::string, std::string, int, int, MPI_Datatype, std::string>> params;
+using TestParam = std::tuple<std::string, std::string, int, int, MPI_Datatype, std::string>;
+
+std::vector<TestParam> CreateTestParams() {
+  std::vector<TestParam> params;
 
   std::string task_name = "luchnikov_e_gener_transm_from_all_to_one_gather";
 
   // Тест 1: count=1, root=0, int
-  params.push_back(std::make_tuple(task_name, "MPI", 1, 0, MPI_INT, "SingleElementIntRoot0"));
-  params.push_back(std::make_tuple(task_name, "SEQ", 1, 0, MPI_INT, "SingleElementIntRoot0"));
+  params.emplace_back(task_name, "MPI", 1, 0, MPI_INT, "SingleElementIntRoot0");
+  params.emplace_back(task_name, "SEQ", 1, 0, MPI_INT, "SingleElementIntRoot0");
 
   // Тест 2: count=3, root=0, int
-  params.push_back(std::make_tuple(task_name, "MPI", 3, 0, MPI_INT, "SmallIntRoot0"));
-  params.push_back(std::make_tuple(task_name, "SEQ", 3, 0, MPI_INT, "SmallIntRoot0"));
+  params.emplace_back(task_name, "MPI", 3, 0, MPI_INT, "SmallIntRoot0");
+  params.emplace_back(task_name, "SEQ", 3, 0, MPI_INT, "SmallIntRoot0");
 
   // Тест 3: count=4, root=0, float
-  params.push_back(std::make_tuple(task_name, "MPI", 4, 0, MPI_FLOAT, "SmallFloatRoot0"));
-  params.push_back(std::make_tuple(task_name, "SEQ", 4, 0, MPI_FLOAT, "SmallFloatRoot0"));
+  params.emplace_back(task_name, "MPI", 4, 0, MPI_FLOAT, "SmallFloatRoot0");
+  params.emplace_back(task_name, "SEQ", 4, 0, MPI_FLOAT, "SmallFloatRoot0");
 
   // Тест 4: count=3, root=0, double
-  params.push_back(std::make_tuple(task_name, "MPI", 3, 0, MPI_DOUBLE, "SmallDoubleRoot0"));
-  params.push_back(std::make_tuple(task_name, "SEQ", 3, 0, MPI_DOUBLE, "SmallDoubleRoot0"));
+  params.emplace_back(task_name, "MPI", 3, 0, MPI_DOUBLE, "SmallDoubleRoot0");
+  params.emplace_back(task_name, "SEQ", 3, 0, MPI_DOUBLE, "SmallDoubleRoot0");
 
   // Тест 5: count=2, root=1, int
-  params.push_back(std::make_tuple(task_name, "MPI", 2, 1, MPI_INT, "IntRoot1"));
-  params.push_back(std::make_tuple(task_name, "SEQ", 2, 1, MPI_INT, "IntRoot1"));
+  params.emplace_back(task_name, "MPI", 2, 1, MPI_INT, "IntRoot1");
+  params.emplace_back(task_name, "SEQ", 2, 1, MPI_INT, "IntRoot1");
 
   // Тест 6: count=2, root=2, int
-  params.push_back(std::make_tuple(task_name, "MPI", 2, 2, MPI_INT, "IntRoot2"));
-  params.push_back(std::make_tuple(task_name, "SEQ", 2, 2, MPI_INT, "IntRoot2"));
+  params.emplace_back(task_name, "MPI", 2, 2, MPI_INT, "IntRoot2");
+  params.emplace_back(task_name, "SEQ", 2, 2, MPI_INT, "IntRoot2");
 
   return params;
 }
 
-std::string PrintTestParam(
-    const testing::TestParamInfo<std::tuple<std::string, std::string, int, int, MPI_Datatype, std::string>> &info) {
+std::string PrintTestParam(const testing::TestParamInfo<TestParam> &info) {
   std::string task_type = std::get<1>(info.param);
   std::string test_name = std::get<5>(info.param);
   return task_type + "_" + test_name;
 }
 }  // namespace
 
-class LuchnikovETransmFrAllToOneGatherFuncTests
-    : public ::testing::TestWithParam<std::tuple<std::string, std::string, int, int, MPI_Datatype, std::string>> {
+class LuchnikovETransmFrAllToOneGatherFuncTests : public ::testing::TestWithParam<TestParam> {
  protected:
   void SetUp() override {
     const auto &count = std::get<2>(GetParam());
@@ -67,15 +65,15 @@ class LuchnikovETransmFrAllToOneGatherFuncTests
 
     int type_size = 0;
     if (datatype == MPI_INT) {
-      type_size = sizeof(int);
+      type_size = static_cast<int>(sizeof(int));
     } else if (datatype == MPI_FLOAT) {
-      type_size = sizeof(float);
+      type_size = static_cast<int>(sizeof(float));
     } else if (datatype == MPI_DOUBLE) {
-      type_size = sizeof(double);
+      type_size = static_cast<int>(sizeof(double));
     }
 
     size_t total_size = static_cast<size_t>(count) * static_cast<size_t>(type_size);
-    // Создаем вектор с помощью reserve и push_back, чтобы избежать potential null pointer dereference
+    // Создаем вектор с помощью reserve и push_back
     std::vector<char> data;
     data.reserve(total_size);
 
@@ -90,17 +88,17 @@ class LuchnikovETransmFrAllToOneGatherFuncTests
     if (datatype == MPI_INT) {
       auto *data_ptr = reinterpret_cast<int *>(data.data());
       for (int i = 0; i < count; ++i) {
-        data_ptr[i] = rank * count + i + 1;
+        data_ptr[i] = (rank * count) + i + 1;
       }
     } else if (datatype == MPI_FLOAT) {
       auto *data_ptr = reinterpret_cast<float *>(data.data());
       for (int i = 0; i < count; ++i) {
-        data_ptr[i] = static_cast<float>(rank * count + i) + 0.5F;
+        data_ptr[i] = static_cast<float>((rank * count) + i) + 0.5F;
       }
     } else if (datatype == MPI_DOUBLE) {
       auto *data_ptr = reinterpret_cast<double *>(data.data());
       for (int i = 0; i < count; ++i) {
-        data_ptr[i] = static_cast<double>(rank * count + i) + 0.25;
+        data_ptr[i] = static_cast<double>((rank * count) + i) + 0.25;
       }
     }
 
@@ -109,13 +107,13 @@ class LuchnikovETransmFrAllToOneGatherFuncTests
 
   static int GetTypeSize(MPI_Datatype datatype) {
     if (datatype == MPI_INT) {
-      return sizeof(int);
+      return static_cast<int>(sizeof(int));
     }
     if (datatype == MPI_FLOAT) {
-      return sizeof(float);
+      return static_cast<int>(sizeof(float));
     }
     if (datatype == MPI_DOUBLE) {
-      return sizeof(double);
+      return static_cast<int>(sizeof(double));
     }
     return 0;
   }
@@ -123,7 +121,7 @@ class LuchnikovETransmFrAllToOneGatherFuncTests
   bool CheckOutputData(OutType &output_data) {
     const auto &input = input_data_;
     const std::string task_type = std::get<1>(GetParam());
-    bool is_mpi = (task_type == "MPI");
+    const bool is_mpi = (task_type == "MPI");
 
     int world_size = 1;
     int rank = 0;
@@ -149,33 +147,33 @@ class LuchnikovETransmFrAllToOneGatherFuncTests
     // Проверяем корректность собранных данных
     if (rank == input.root) {
       if (input.datatype == MPI_INT) {
-        const int *out_ptr = reinterpret_cast<const int *>(output_data.data());
+        const auto *out_ptr = reinterpret_cast<const int *>(output_data.data());
         for (int i = 0; i < world_size; ++i) {
           for (int j = 0; j < input.count; ++j) {
-            int expected_value = i * input.count + j + 1;
-            int actual_value = out_ptr[i * input.count + j];
+            int expected_value = (i * input.count) + j + 1;
+            int actual_value = out_ptr[(i * input.count) + j];
             if (actual_value != expected_value) {
               return false;
             }
           }
         }
       } else if (input.datatype == MPI_FLOAT) {
-        const float *out_ptr = reinterpret_cast<const float *>(output_data.data());
+        const auto *out_ptr = reinterpret_cast<const float *>(output_data.data());
         for (int i = 0; i < world_size; ++i) {
           for (int j = 0; j < input.count; ++j) {
-            float expected_value = static_cast<float>(i * input.count + j) + 0.5F;
-            float actual_value = out_ptr[i * input.count + j];
-            if (std::abs(actual_value - expected_value) > 1e-6) {
+            float expected_value = static_cast<float>((i * input.count) + j) + 0.5F;
+            float actual_value = out_ptr[(i * input.count) + j];
+            if (std::abs(actual_value - expected_value) > 1e-6F) {
               return false;
             }
           }
         }
       } else if (input.datatype == MPI_DOUBLE) {
-        const double *out_ptr = reinterpret_cast<const double *>(output_data.data());
+        const auto *out_ptr = reinterpret_cast<const double *>(output_data.data());
         for (int i = 0; i < world_size; ++i) {
           for (int j = 0; j < input.count; ++j) {
-            double expected_value = static_cast<double>(i * input.count + j) + 0.25;
-            double actual_value = out_ptr[i * input.count + j];
+            double expected_value = static_cast<double>((i * input.count) + j) + 0.25;
+            double actual_value = out_ptr[(i * input.count) + j];
             if (std::abs(actual_value - expected_value) > 1e-12) {
               return false;
             }
@@ -232,14 +230,14 @@ TEST(LuchnikovETransmFrAllToOneGatherMPITest, BasicMPIGather) {
 
   int count = 3;
   std::vector<char> data;
-  data.reserve(count * sizeof(int));
+  data.reserve(static_cast<size_t>(count) * sizeof(int));
   for (size_t i = 0; i < static_cast<size_t>(count) * sizeof(int); ++i) {
     data.push_back(0);
   }
 
   auto *data_ptr = reinterpret_cast<int *>(data.data());
   for (int i = 0; i < count; ++i) {
-    data_ptr[i] = rank * count + i + 1;
+    data_ptr[i] = (rank * count) + i + 1;
   }
 
   GatherInput input{.data = data, .count = count, .datatype = MPI_INT, .root = 0};
@@ -258,7 +256,7 @@ TEST(LuchnikovETransmFrAllToOneGatherMPITest, BasicMPIGather) {
     const int *res_ptr = reinterpret_cast<const int *>(result.data());
     for (int i = 0; i < world_size; ++i) {
       for (int j = 0; j < count; ++j) {
-        EXPECT_EQ(res_ptr[i * count + j], i * count + j + 1);
+        EXPECT_EQ(res_ptr[(i * count) + j], (i * count) + j + 1);
       }
     }
   }
@@ -267,7 +265,7 @@ TEST(LuchnikovETransmFrAllToOneGatherMPITest, BasicMPIGather) {
 TEST(LuchnikovETransmFrAllToOneGatherSEQTest, BasicSEQGather) {
   int count = 3;
   std::vector<char> data;
-  data.reserve(count * sizeof(int));
+  data.reserve(static_cast<size_t>(count) * sizeof(int));
   for (size_t i = 0; i < static_cast<size_t>(count) * sizeof(int); ++i) {
     data.push_back(0);
   }
@@ -342,7 +340,7 @@ TEST(LuchnikovETransmFrAllToOneGatherMPITest, MiddleRootGather) {
 
   auto *d_ptr = reinterpret_cast<float *>(data.data());
   for (int i = 0; i < count; ++i) {
-    d_ptr[i] = static_cast<float>(rank * count + i);
+    d_ptr[i] = static_cast<float>((rank * count) + i);
   }
 
   GatherInput input{.data = data, .count = count, .datatype = MPI_FLOAT, .root = root};
@@ -359,7 +357,7 @@ TEST(LuchnikovETransmFrAllToOneGatherMPITest, MiddleRootGather) {
     const auto *res_ptr = reinterpret_cast<const float *>(result.data());
     for (int rank_id = 0; rank_id < world_size; ++rank_id) {
       for (int i = 0; i < count; ++i) {
-        EXPECT_FLOAT_EQ(res_ptr[(rank_id * count) + i], static_cast<float>(rank_id * count + i));
+        EXPECT_FLOAT_EQ(res_ptr[(rank_id * count) + i], static_cast<float>((rank_id * count) + i));
       }
     }
   }
@@ -380,7 +378,7 @@ TEST(LuchnikovETransmFrAllToOneGatherMPITest, LargeDataGather) {
 
   auto *d_ptr = reinterpret_cast<double *>(data.data());
   for (int i = 0; i < count; ++i) {
-    d_ptr[i] = static_cast<double>(rank * count + i);
+    d_ptr[i] = static_cast<double>((rank * count) + i);
   }
 
   GatherInput input{.data = data, .count = count, .datatype = MPI_DOUBLE, .root = 0};
@@ -398,7 +396,7 @@ TEST(LuchnikovETransmFrAllToOneGatherMPITest, LargeDataGather) {
     const double *res_ptr = reinterpret_cast<const double *>(result.data());
     for (int i = 0; i < world_size; ++i) {
       for (int j = 0; j < count; ++j) {
-        EXPECT_DOUBLE_EQ(res_ptr[i * count + j], static_cast<double>(i * count + j));
+        EXPECT_DOUBLE_EQ(res_ptr[(i * count) + j], static_cast<double>((i * count) + j));
       }
     }
   }
@@ -423,7 +421,7 @@ TEST(LuchnikovETransmFrAllToOneGatherMPITest, NonPowerOfTwoSize) {
 
     auto *d_ptr = reinterpret_cast<int *>(data.data());
     for (int i = 0; i < count; ++i) {
-      d_ptr[i] = rank * count + i;
+      d_ptr[i] = (rank * count) + i;
     }
 
     GatherInput input{.data = data, .count = count, .datatype = MPI_INT, .root = 0};
@@ -441,7 +439,7 @@ TEST(LuchnikovETransmFrAllToOneGatherMPITest, NonPowerOfTwoSize) {
       const int *res_ptr = reinterpret_cast<const int *>(result.data());
       for (int i = 0; i < world_size; ++i) {
         for (int j = 0; j < count; ++j) {
-          EXPECT_EQ(res_ptr[i * count + j], i * count + j);
+          EXPECT_EQ(res_ptr[(i * count) + j], (i * count) + j);
         }
       }
     }
