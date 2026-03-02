@@ -5,7 +5,6 @@
 #include <cstddef>
 #include <fstream>
 #include <string>
-// NOLINTNEXTLINE(misc-include-cleaner) - required for InputType
 #include <tuple>
 
 #include "klimov_m_shell_odd_even_merge/common/include/common.hpp"
@@ -37,8 +36,7 @@ class ShellBatcherFuncTest : public ppc::util::BaseRunFuncTests<InputType, Outpu
   }
 
   bool CheckTestOutputData(OutputType &out_data) final {
-    // NOLINTNEXTLINE(modernize-use-ranges)
-    return std::is_sorted(out_data.begin(), out_data.end());
+    return std::ranges::is_sorted(out_data);
   }
 
   InputType GetTestInputData() final {
@@ -64,7 +62,6 @@ const auto kTaskList = std::tuple_cat(
 const auto kTestValues = ppc::util::ExpandToValues(kTaskList);
 const auto kNamePrinter = ShellBatcherFuncTest::PrintFuncTestName<ShellBatcherFuncTest>;
 
-// NOLINTNEXTLINE(misc-use-anonymous-namespace)
 INSTANTIATE_TEST_SUITE_P(ShellBatcherFunctionalTests, ShellBatcherFuncTest, kTestValues, kNamePrinter);
 
 }  // namespace
