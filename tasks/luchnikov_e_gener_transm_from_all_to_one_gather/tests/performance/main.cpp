@@ -2,8 +2,6 @@
 #include <mpi.h>
 
 #include <cstddef>
-#include <memory>
-#include <random>
 #include <string>
 #include <vector>
 
@@ -14,61 +12,102 @@
 
 namespace luchnikov_e_gener_transm_from_all_to_one_gather {
 
-class LuchnikovEGenerTransmFromAllToOneGatherPerfTestProcesses : public ppc::util::BaseRunPerfTests<InType, OutType> {
-  static constexpr size_t kCount = 1000;
-  InType input_data_{};
+namespace {
+size_t GetTypeSizeSeq(MPI_Datatype datatype) {
+  if (datatype == MPI_INT) {
+    return sizeof(int);
+  }
+  if (datatype == MPI_FLOAT) {
+    return sizeof(float);
+  }
+  if (datatype == MPI_DOUBLE) {
+    return sizeof(double);
+  }
+  return 0;
+}
+}  // namespace
+
+class LuchnikovETransmFrAllToOneGatherPerfTests : public ppc::util::BaseRunPerfTests<InType, OutType> {
+ protected:
+  static const size_t kDataCount = 100000;
+  MPI_Datatype data_type = MPI_INT;
+
+  InType input_data{};
 
   void SetUp() override {
-    input_data_.resize(kCount);
-    std::random_device rd;
-    std::mt19937 gen(rd());
-    std::uniform_int_distribution<int> dist(1, 1000);
+    const size_t type_size = sizeof(int);
+    std::vector<char> data(kDataCount * type_size);
 
-    for (size_t i = 0; i < kCount; ++i) {
-      input_data_[i] = dist(gen);
+    int rank = 0;
+    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+
+    auto *data_ptr = reinterpret_cast<int *>(data.data());
+    for (size_t i = 0; i < kDataCount; ++i) {
+      data_ptr[i] = static_cast<int>((static_cast<size_t>(rank) * kDataCount) + i);
     }
+
+    const int root = 0;
+    input_data = GatherInput{.data = data, .count = static_cast<int>(kDataCount), .datatype = data_type, .root = root};
   }
 
   bool CheckTestOutputData(OutType &output_data) final {
-    // Получаем указатель на задачу через защищённый метод базового класса
-    auto *task_ptr = this->GetTask();
+    const auto &input = input_data;
 
-    // Проверяем тип задачи через dynamic_cast
-    if (dynamic_cast<LuchnikovEGenerTransmFromAllToOneGatherMPI *>(task_ptr) != nullptr) {
-      int rank = 0;
+    const auto &params = GetParam();
+    const std::string task_name = std::get<1>(params);
+    const bool is_mpi = task_name.find("_mpi_") != std::string::npos;
+
+    int world_size = 1;
+    int rank = 0;
+    if (is_mpi) {
+      MPI_Comm_size(MPI_COMM_WORLD, &world_size);
       MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-      if (rank != 0) {
+      if (rank != input.root) {
         return true;
       }
     }
 
-    OutType expected = input_data_;
-    std::sort(expected.begin(), expected.end());
-    return expected == output_data;
+    const size_t type_size = GetTypeSizeSeq(input.datatype);
+    const size_t expected_size = static_cast<size_t>(input.count) * static_cast<size_t>(world_size) * type_size;
+
+    if (output_data.size() != expected_size) {
+      return false;
+    }
+
+    // Дополнительная проверка корректности данных для перформанс тестов
+    if (rank == input.root && input.datatype == MPI_INT) {
+      const int *out_ptr = reinterpret_cast<const int *>(output_data.data());
+      for (int i = 0; i < world_size; ++i) {
+        for (size_t j = 0; j < kDataCount; ++j) {
+          int expected = static_cast<int>(i * static_cast<int>(kDataCount) + static_cast<int>(j));
+          int actual = out_ptr[i * static_cast<int>(kDataCount) + static_cast<int>(j)];
+          if (actual != expected) {
+            return false;
+          }
+        }
+      }
+    }
+
+    return true;
   }
 
   InType GetTestInputData() final {
-    return input_data_;
+    return input_data;
   }
 };
 
-TEST_P(LuchnikovEGenerTransmFromAllToOneGatherPerfTestProcesses, RunPerfModes) {
+TEST_P(LuchnikovETransmFrAllToOneGatherPerfTests, RunPerfModes) {
   ExecuteTest(GetParam());
 }
 
-namespace {
-
-const auto kAllPerfTasks = ppc::util::MakeAllPerfTasks<InType, LuchnikovEGenerTransmFromAllToOneGatherMPI,
-                                                       LuchnikovEGenerTransmFromAllToOneGatherSEQ>(
-    PPC_SETTINGS_luchnikov_e_gener_transm_from_all_to_one_gather);
+const auto kAllPerfTasks =
+    ppc::util::MakeAllPerfTasks<InType, LuchnikovETransmFrAllToOneGatherMPI, LuchnikovETransmFrAllToOneGatherSEQ>(
+        PPC_SETTINGS_luchnikov_e_gener_transm_from_all_to_one_gather);
 
 const auto kGtestValues = ppc::util::TupleToGTestValues(kAllPerfTasks);
 
-const auto kPerfTestName = LuchnikovEGenerTransmFromAllToOneGatherPerfTestProcesses::CustomPerfTestName;
+const auto kPerfTestName = LuchnikovETransmFrAllToOneGatherPerfTests::CustomPerfTestName;
 
-INSTANTIATE_TEST_SUITE_P(RunModeTests, LuchnikovEGenerTransmFromAllToOneGatherPerfTestProcesses, kGtestValues,
-                         kPerfTestName);
-
-}  // namespace
+INSTANTIATE_TEST_SUITE_P(RunModeTests, LuchnikovETransmFrAllToOneGatherPerfTests, kGtestValues, kPerfTestName);
 
 }  // namespace luchnikov_e_gener_transm_from_all_to_one_gather
