@@ -1,5 +1,4 @@
 #pragma once
-#include <vector>
 
 #include "solonin_v_scatter/common/include/common.hpp"
 #include "task/include/task.hpp"

@@ -1,7 +1,6 @@
 #include <gtest/gtest.h>
 #include <mpi.h>
 
-#include <cstddef>
 #include <numeric>
 #include <tuple>
 #include <vector>
@@ -22,12 +21,12 @@ class SoloninVScatterPerfTests : public ppc::util::BaseRunPerfTests<InType, OutT
   int root_{0};
 
   void SetUp() override {
-    buf_.resize(kSendCount * kMaxProcs);
-    std::iota(buf_.begin(), buf_.end(), 0);
+    buf_.resize(static_cast<size_t>(kSendCount) * kMaxProcs);
+    std::ranges::iota(buf_, 0);
   }
 
   bool CheckTestOutputData(OutType &out) final {
-    return static_cast<int>(out.size()) == send_count_;
+    return std::cmp_equal(out.size(), send_count_);
   }
 
   InType GetTestInputData() final {

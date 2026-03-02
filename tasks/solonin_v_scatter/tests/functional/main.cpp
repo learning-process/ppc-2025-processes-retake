@@ -37,7 +37,8 @@ class SoloninVScatterFuncTests : public ppc::util::BaseRunFuncTests<InType, OutT
     }
 
     // Expected: each rank gets its chunk
-    expected_.assign(data_.begin() + rank * send_count_, data_.begin() + rank * send_count_ + send_count_);
+    expected_.assign(data_.begin() + static_cast<std::ptrdiff_t>(rank) * send_count_,
+                     data_.begin() + static_cast<std::ptrdiff_t>(rank) * send_count_ + send_count_);
   }
 
   bool CheckTestOutputData(OutType &out) final {
@@ -82,8 +83,8 @@ namespace {
 
 // Build test data: total = send_count * num_procs elements, values = 0..total-1
 std::vector<int> MakeData(int send_count, int num_procs) {
-  std::vector<int> v(send_count * num_procs);
-  std::iota(v.begin(), v.end(), 0);
+  std::vector<int> v(static_cast<size_t>(send_count) * num_procs);
+  std::ranges::iota(v, 0);
   return v;
 }
 

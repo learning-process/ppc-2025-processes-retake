@@ -2,7 +2,6 @@
 
 #include <mpi.h>
 
-#include <cstddef>
 #include <tuple>
 #include <vector>
 
@@ -70,14 +69,15 @@ bool SoloninVScatterMPI::RunImpl() {
     const auto &send_buf = std::get<0>(GetInput());
 
     // Copy own chunk first
-    std::copy(send_buf.begin() + root * count, send_buf.begin() + root * count + count, GetOutput().begin());
+    std::copy(send_buf.begin() + static_cast<std::ptrdiff_t>(root) * count,
+              send_buf.begin() + static_cast<std::ptrdiff_t>(root) * count + count, GetOutput().begin());
 
     // Send to all other ranks
     for (int dest = 0; dest < world_size_; dest++) {
       if (dest == root) {
         continue;
       }
-      MPI_Send(send_buf.data() + dest * count, count, MPI_INT, dest, 0, MPI_COMM_WORLD);
+      MPI_Send(send_buf.data() + static_cast<std::ptrdiff_t>(dest) * count, count, MPI_INT, dest, 0, MPI_COMM_WORLD);
     }
   } else {
     MPI_Recv(GetOutput().data(), count, MPI_INT, root, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);

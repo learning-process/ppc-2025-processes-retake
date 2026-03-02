@@ -1,7 +1,5 @@
 #include "solonin_v_scatter/seq/include/ops_seq.hpp"
 
-#include <algorithm>
-#include <cstddef>
 #include <tuple>
 #include <vector>
 
@@ -19,7 +17,7 @@ bool SoloninVScatterSEQ::ValidationImpl() {
   const auto &buf = std::get<0>(GetInput());
   int count = std::get<1>(GetInput());
   int root = std::get<2>(GetInput());
-  return !buf.empty() && count > 0 && root == 0 && static_cast<int>(buf.size()) >= count;
+  return !buf.empty() && count > 0 && root == 0 && std::cmp_greater_equal(buf.size(), count);
 }
 
 bool SoloninVScatterSEQ::PreProcessingImpl() {
