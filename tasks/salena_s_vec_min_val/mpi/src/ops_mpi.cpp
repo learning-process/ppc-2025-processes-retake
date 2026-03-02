@@ -15,16 +15,21 @@ TestTaskMPI::TestTaskMPI(const InType &in) {
 }
 
 bool TestTaskMPI::ValidationImpl() {
+  int is_mpi_init = 0;
+  MPI_Initialized(&is_mpi_init);
+  if (!is_mpi_init) {
+    return false;
+  }
+
   int rank = 0;
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 
-  bool is_valid = true;
+  int is_valid = 1;
   if (rank == 0) {
-    is_valid = !GetInput().empty();
+    is_valid = !GetInput().empty() ? 1 : 0;
   }
-
-  MPI_Bcast(&is_valid, 1, MPI_C_BOOL, 0, MPI_COMM_WORLD);
-  return is_valid;
+  MPI_Bcast(&is_valid, 1, MPI_INT, 0, MPI_COMM_WORLD);
+  return is_valid == 1;
 }
 
 bool TestTaskMPI::PreProcessingImpl() {
@@ -33,6 +38,12 @@ bool TestTaskMPI::PreProcessingImpl() {
 }
 
 bool TestTaskMPI::RunImpl() {
+  int is_mpi_init = 0;
+  MPI_Initialized(&is_mpi_init);
+  if (!is_mpi_init) {
+    return false;
+  }
+
   int rank = 0;
   int size = 0;
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
@@ -44,7 +55,6 @@ bool TestTaskMPI::RunImpl() {
   }
 
   MPI_Bcast(&total_elements, 1, MPI_INT, 0, MPI_COMM_WORLD);
-
   if (total_elements == 0) {
     return false;
   }
@@ -72,7 +82,6 @@ bool TestTaskMPI::RunImpl() {
                sendcounts[static_cast<std::size_t>(rank)], MPI_INT, 0, MPI_COMM_WORLD);
 
   int local_min = std::numeric_limits<int>::max();
-
   if (sendcounts[static_cast<std::size_t>(rank)] > 0) {
     for (int i = 0; i < sendcounts[static_cast<std::size_t>(rank)]; ++i) {
       local_min = std::min(local_min, local_data[static_cast<std::size_t>(i)]);
@@ -85,7 +94,6 @@ bool TestTaskMPI::RunImpl() {
   if (rank == 0) {
     GetOutput() = global_min;
   }
-
   return true;
 }
 

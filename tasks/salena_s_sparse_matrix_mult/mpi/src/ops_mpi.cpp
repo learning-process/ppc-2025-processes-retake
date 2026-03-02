@@ -73,6 +73,12 @@ SparseMatrixMultMPI::SparseMatrixMultMPI(const InType &in) {
 }
 
 bool SparseMatrixMultMPI::ValidationImpl() {
+  int is_mpi_init = 0;
+  MPI_Initialized(&is_mpi_init);
+  if (!is_mpi_init) {
+    return false;
+  }
+
   int rank = 0;
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
   int is_valid = 1;
@@ -88,6 +94,12 @@ bool SparseMatrixMultMPI::ValidationImpl() {
 }
 
 bool SparseMatrixMultMPI::PreProcessingImpl() {
+  int is_mpi_init = 0;
+  MPI_Initialized(&is_mpi_init);
+  if (!is_mpi_init) {
+    return false;
+  }
+
   int rank = 0;
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
   if (rank == 0) {
@@ -99,16 +111,18 @@ bool SparseMatrixMultMPI::PreProcessingImpl() {
 }
 
 bool SparseMatrixMultMPI::RunImpl() {
+  int is_mpi_init = 0;
+  MPI_Initialized(&is_mpi_init);
+  if (!is_mpi_init) {
+    return false;
+  }
+
   int rank = 0;
   int size = 0;
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
   MPI_Comm_size(MPI_COMM_WORLD, &size);
 
-  int a_rows = 0;
-  int a_cols = 0;
-  int b_rows = 0;
-  int b_cols = 0;
-  int b_nnz = 0;
+  int a_rows = 0, a_cols = 0, b_rows = 0, b_cols = 0, b_nnz = 0;
 
   if (rank == 0) {
     a_rows = GetInput().A.rows;
@@ -146,13 +160,11 @@ bool SparseMatrixMultMPI::RunImpl() {
     B_local.row_ptr = GetInput().B.row_ptr;
   }
 
-  MPI_Bcast(B_local.values.data(), b_nnz, MPI_DOUBLE, 0, MPI_COMM_WORLD);
-  MPI_Bcast(B_local.col_indices.data(), b_nnz, MPI_INT, 0, MPI_COMM_WORLD);
+  if (b_nnz > 0) {
+    MPI_Bcast(B_local.values.data(), b_nnz, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+    MPI_Bcast(B_local.col_indices.data(), b_nnz, MPI_INT, 0, MPI_COMM_WORLD);
+  }
   MPI_Bcast(B_local.row_ptr.data(), b_rows + 1, MPI_INT, 0, MPI_COMM_WORLD);
-
-  int delta_rows = a_rows / size;
-  int rem_rows = a_rows % size;
-  int local_rows = delta_rows + (rank < rem_rows ? 1 : 0);
 
   std::vector<int> send_counts(static_cast<std::size_t>(size), 0);
   std::vector<int> displs(static_cast<std::size_t>(size), 0);
@@ -164,9 +176,9 @@ bool SparseMatrixMultMPI::RunImpl() {
   } else {
     a_row_ptr_full.resize(static_cast<std::size_t>(a_rows + 1));
   }
-
   MPI_Bcast(a_row_ptr_full.data(), a_rows + 1, MPI_INT, 0, MPI_COMM_WORLD);
 
+  int local_rows = send_counts[static_cast<std::size_t>(rank)];
   int my_start_row = displs[static_cast<std::size_t>(rank)];
   int my_start_idx = a_row_ptr_full[static_cast<std::size_t>(my_start_row)];
   int my_end_idx = a_row_ptr_full[static_cast<std::size_t>(my_start_row + local_rows)];

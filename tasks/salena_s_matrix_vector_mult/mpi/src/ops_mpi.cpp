@@ -19,6 +19,12 @@ TestTaskMPI::TestTaskMPI(const InType &in) {
 }
 
 bool TestTaskMPI::ValidationImpl() {
+  int is_mpi_init = 0;
+  MPI_Initialized(&is_mpi_init);
+  if (!is_mpi_init) {
+    return false;
+  }
+
   int rank = 0;
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
   int is_valid = 1;
@@ -37,6 +43,12 @@ bool TestTaskMPI::ValidationImpl() {
 }
 
 bool TestTaskMPI::PreProcessingImpl() {
+  int is_mpi_init = 0;
+  MPI_Initialized(&is_mpi_init);
+  if (!is_mpi_init) {
+    return false;
+  }
+
   int rank = 0;
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
   if (rank == 0) {
@@ -56,6 +68,12 @@ std::vector<double> TestTaskMPI::Transpose(const std::vector<double> &matrix, in
 }
 
 bool TestTaskMPI::RunImpl() {
+  int is_mpi_init = 0;
+  MPI_Initialized(&is_mpi_init);
+  if (!is_mpi_init) {
+    return false;
+  }
+
   int rank = 0;
   int size = 0;
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);

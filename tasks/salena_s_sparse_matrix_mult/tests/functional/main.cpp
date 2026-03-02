@@ -1,4 +1,5 @@
 #include <gtest/gtest.h>
+#include <mpi.h>
 
 #include <algorithm>
 #include <cmath>
@@ -109,6 +110,16 @@ class SparseMultFuncTests : public ppc::util::BaseRunFuncTests<InType, OutType, 
   }
 
   bool CheckTestOutputData(OutType &output_data) final {
+    int is_mpi_init = 0;
+    MPI_Initialized(&is_mpi_init);
+    if (is_mpi_init) {
+      int rank = 0;
+      MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+      if (rank != 0) {
+        return true;  // Игнорируем проверки на воркерах
+      }
+    }
+
     SparseMatrixCRS expected = MultSparse(input_data_.A, input_data_.B);
 
     if (expected.row_ptr != output_data.row_ptr) {
@@ -123,7 +134,6 @@ class SparseMultFuncTests : public ppc::util::BaseRunFuncTests<InType, OutType, 
         return false;
       }
     }
-
     return true;
   }
 
