@@ -1,15 +1,14 @@
 #pragma once
 
-#include <cstddef>
 #include <vector>
 
 #include "salena_s_matrix_vector_mult/common/include/common.hpp"
+#include "task/include/task.hpp"
 
 namespace salena_s_matrix_vector_mult {
 
 class TestTaskMPI : public BaseTask {
  public:
-  // NOLINTNEXTLINE(misc-include-cleaner)
   static constexpr ppc::task::TypeOfTask GetStaticTypeOfTask() {
     return ppc::task::TypeOfTask::kMPI;
   }

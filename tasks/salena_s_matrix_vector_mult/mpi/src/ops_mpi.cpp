@@ -24,10 +24,11 @@ bool TestTaskMPI::ValidationImpl() {
     if (GetInput().rows <= 0 || GetInput().cols <= 0) {
       return false;
     }
-    if (GetInput().matrix.size() != static_cast<size_t>(GetInput().rows) * static_cast<size_t>(GetInput().cols)) {
+    if (GetInput().matrix.size() !=
+        static_cast<std::size_t>(GetInput().rows) * static_cast<std::size_t>(GetInput().cols)) {
       return false;
     }
-    if (GetInput().vec.size() != static_cast<size_t>(GetInput().cols)) {
+    if (GetInput().vec.size() != static_cast<std::size_t>(GetInput().cols)) {
       return false;
     }
   }
@@ -44,7 +45,7 @@ bool TestTaskMPI::PreProcessingImpl() {
 }
 
 std::vector<double> TestTaskMPI::Transpose(const std::vector<double> &matrix, int rows, int cols) {
-  std::vector<double> transposed(static_cast<size_t>(rows) * static_cast<size_t>(cols));
+  std::vector<double> transposed(static_cast<std::size_t>(rows) * static_cast<std::size_t>(cols));
   for (int i = 0; i < rows; ++i) {
     for (int j = 0; j < cols; ++j) {
       transposed[(j * rows) + i] = matrix[(i * cols) + j];

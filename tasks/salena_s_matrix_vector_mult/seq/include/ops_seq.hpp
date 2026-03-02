@@ -1,5 +1,7 @@
 #pragma once
+
 #include "salena_s_matrix_vector_mult/common/include/common.hpp"
+#include "task/include/task.hpp"
 
 namespace salena_s_matrix_vector_mult {
 
