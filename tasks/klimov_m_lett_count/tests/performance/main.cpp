@@ -12,7 +12,7 @@ namespace klimov_m_lett_count {
 
 class KlimovMLettCountPerfTest : public ppc::util::BaseRunPerfTests<InputType, OutputType> {
   static constexpr size_t kRepeatFactor = 10'000'000;
-  static constexpr const char* kPattern = "abcdefgh";
+  static constexpr const char *kPattern = "abcdefgh";
 
   InputType large_string_;
   OutputType expected_letters_ = 0;
@@ -41,18 +41,13 @@ TEST_P(KlimovMLettCountPerfTest, MeasurePerformance) {
   ExecuteTest(GetParam());
 }
 
-const auto kAllPerfTasks = ppc::util::MakeAllPerfTasks<InputType,
-                                                       KlimovMLettCountMPI,
-                                                       KlimovMLettCountSEQ>(
+const auto kAllPerfTasks = ppc::util::MakeAllPerfTasks<InputType, KlimovMLettCountMPI, KlimovMLettCountSEQ>(
     "tasks/klimov_m_lett_count/settings.json");
 
 const auto kGtestValues = ppc::util::TupleToGTestValues(kAllPerfTasks);
 const auto kNameGen = KlimovMLettCountPerfTest::CustomPerfTestName;
 
-INSTANTIATE_TEST_SUITE_P(KlimovLettCountPerformance,
-                         KlimovMLettCountPerfTest,
-                         kGtestValues,
-                         kNameGen);
+INSTANTIATE_TEST_SUITE_P(KlimovLettCountPerformance, KlimovMLettCountPerfTest, kGtestValues, kNameGen);
 
 }  // namespace
 
