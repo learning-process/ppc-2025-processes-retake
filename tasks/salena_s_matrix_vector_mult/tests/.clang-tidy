@@ -9,3 +9,4 @@ Checks: >
 CheckOptions:
   - key: readability-function-cognitive-complexity.Threshold
     value: 50
+    
