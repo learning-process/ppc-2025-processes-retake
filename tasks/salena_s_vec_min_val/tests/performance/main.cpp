@@ -1,6 +1,7 @@
 #include <gtest/gtest.h>
 
 #include <algorithm>
+#include <chrono>
 #include <cstddef>
 #include <random>
 #include <vector>
@@ -30,6 +31,16 @@ class VectorMinPerfTests : public ppc::util::BaseRunPerfTests<InType, OutType> {
 
   InType GetTestInputData() final {
     return input_data_;
+  }
+
+  void SetPerfAttributes(ppc::performance::PerfAttr &perf_attr) override {
+    perf_attr.num_running = 10;
+    const auto t0 = std::chrono::high_resolution_clock::now();
+    perf_attr.current_timer = [t0] {
+      auto current_time_point = std::chrono::high_resolution_clock::now();
+      auto duration = std::chrono::duration_cast<std::chrono::nanoseconds>(current_time_point - t0).count();
+      return static_cast<double>(duration) * 1e-9;
+    };
   }
 
  private:

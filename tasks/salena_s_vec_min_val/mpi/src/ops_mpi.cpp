@@ -19,14 +19,11 @@ bool TestTaskMPI::ValidationImpl() {
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 
   bool is_valid = true;
-
   if (rank == 0) {
     is_valid = !GetInput().empty();
   }
 
-  // ВАЖНО: Рассылаем результат валидации всем процессам!
   MPI_Bcast(&is_valid, 1, MPI_C_BOOL, 0, MPI_COMM_WORLD);
-
   return is_valid;
 }
 
@@ -58,27 +55,27 @@ bool TestTaskMPI::RunImpl() {
   int remainder = total_elements % size;
   int sum = 0;
   for (int i = 0; i < size; i++) {
-    sendcounts[i] = total_elements / size;
+    sendcounts[static_cast<std::size_t>(i)] = total_elements / size;
     if (remainder > 0) {
-      sendcounts[i]++;
+      sendcounts[static_cast<std::size_t>(i)]++;
       remainder--;
     }
-    displs[i] = sum;
-    sum += sendcounts[i];
+    displs[static_cast<std::size_t>(i)] = sum;
+    sum += sendcounts[static_cast<std::size_t>(i)];
   }
 
-  // ИСПРАВЛЕНИЕ: Гарантируем, что вектор не пустой, чтобы .data() был валидным адресом.
-  std::vector<int> local_data(sendcounts[rank] == 0 ? 1 : sendcounts[rank]);
+  std::vector<int> dummy_i(1, 0);
+  std::vector<int> local_data(static_cast<std::size_t>(std::max(1, sendcounts[static_cast<std::size_t>(rank)])));
 
-  MPI_Scatterv(rank == 0 ? GetInput().data() : nullptr, sendcounts.data(), displs.data(), MPI_INT, local_data.data(),
-               sendcounts[rank], MPI_INT, 0, MPI_COMM_WORLD);
+  const int *input_send = (rank == 0 && !GetInput().empty()) ? GetInput().data() : dummy_i.data();
+  MPI_Scatterv(input_send, sendcounts.data(), displs.data(), MPI_INT, local_data.data(),
+               sendcounts[static_cast<std::size_t>(rank)], MPI_INT, 0, MPI_COMM_WORLD);
 
   int local_min = std::numeric_limits<int>::max();
 
-  // ИСПРАВЛЕНИЕ: Итерируемся только если нам реально что-то прислали.
-  if (sendcounts[rank] > 0) {
-    for (int i = 0; i < sendcounts[rank]; ++i) {
-      local_min = std::min(local_min, local_data[static_cast<size_t>(i)]);
+  if (sendcounts[static_cast<std::size_t>(rank)] > 0) {
+    for (int i = 0; i < sendcounts[static_cast<std::size_t>(rank)]; ++i) {
+      local_min = std::min(local_min, local_data[static_cast<std::size_t>(i)]);
     }
   }
 
