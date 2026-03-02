@@ -1,9 +1,7 @@
 #include <gtest/gtest.h>
-#include <mpi.h>
 
 #include <numeric>
 #include <tuple>
-#include <utility>
 #include <vector>
 
 #include "solonin_v_scatter/common/include/common.hpp"
