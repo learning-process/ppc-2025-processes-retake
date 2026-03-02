@@ -23,10 +23,8 @@ class ShellBatcherMPI : public BaseTask {
 };
 
 void ShellSortLocal(std::vector<int> &data);
-std::vector<int> MergeEvenLeft(const std::vector<int> &left, const std::vector<int> &right, int chunk, int rank,
-                               MPI_Comm comm);
-std::vector<int> MergeOddRight(const std::vector<int> &left, const std::vector<int> &right, int chunk, int rank,
-                               MPI_Comm comm);
+std::vector<int> MergeEvenLeft(std::vector<int> &left, std::vector<int> &right, int chunk, int rank, MPI_Comm comm);
+std::vector<int> MergeOddRight(std::vector<int> &left, std::vector<int> &right, int chunk, int rank, MPI_Comm comm);
 void ExchangeWithRight(int rank, std::vector<int> &chunk, int chunk_size, MPI_Comm comm);
 void ExchangeWithLeft(int rank, std::vector<int> &chunk, int chunk_size, MPI_Comm comm);
 void EvenStep(int rank, int procs, std::vector<int> &chunk, int chunk_size, MPI_Comm comm);

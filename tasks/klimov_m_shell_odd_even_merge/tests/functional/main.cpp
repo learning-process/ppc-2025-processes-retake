@@ -5,8 +5,8 @@
 #include <cstddef>
 #include <fstream>
 #include <string>
+// NOLINTNEXTLINE(misc-include-cleaner) - required for InputType
 #include <tuple>
-#include <vector>
 
 #include "klimov_m_shell_odd_even_merge/common/include/common.hpp"
 #include "klimov_m_shell_odd_even_merge/mpi/include/ops_mpi.hpp"
@@ -19,28 +19,25 @@ namespace klimov_m_shell_odd_even_merge {
 class ShellBatcherFuncTest : public ppc::util::BaseRunFuncTests<InputType, OutputType, TestParam> {
  public:
   static std::string PrintTestParam(const TestParam &test_param) {
-    const size_t dot_pos = test_param.find('.');
-    if (dot_pos == std::string::npos) {
-      return test_param;
-    }
+    size_t dot_pos = test_param.find('.');
     return test_param.substr(0, dot_pos);
   }
 
  protected:
   void SetUp() override {
-    const TestParam file_name = std::get<static_cast<std::size_t>(ppc::util::GTestParamIndex::kTestParams)>(GetParam());
-    const std::string full_path = ppc::util::GetAbsoluteTaskPath(PPC_ID_klimov_m_shell_odd_even_merge, file_name);
+    TestParam file_name = std::get<static_cast<std::size_t>(ppc::util::GTestParamIndex::kTestParams)>(GetParam());
+    std::string full_path = ppc::util::GetAbsoluteTaskPath(PPC_ID_klimov_m_shell_odd_even_merge, file_name);
     std::ifstream fin(full_path);
 
-    if (fin.is_open()) {
-      int val = 0;
-      while (fin >> val) {
-        input_data_.push_back(val);
-      }
+    int val = 0;
+    while (fin >> val) {
+      input_data_.push_back(val);
     }
+    fin.close();
   }
 
   bool CheckTestOutputData(OutputType &out_data) final {
+    // NOLINTNEXTLINE(modernize-use-ranges)
     return std::is_sorted(out_data.begin(), out_data.end());
   }
 
@@ -67,6 +64,7 @@ const auto kTaskList = std::tuple_cat(
 const auto kTestValues = ppc::util::ExpandToValues(kTaskList);
 const auto kNamePrinter = ShellBatcherFuncTest::PrintFuncTestName<ShellBatcherFuncTest>;
 
+// NOLINTNEXTLINE(misc-use-anonymous-namespace)
 INSTANTIATE_TEST_SUITE_P(ShellBatcherFunctionalTests, ShellBatcherFuncTest, kTestValues, kNamePrinter);
 
 }  // namespace
