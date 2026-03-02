@@ -11,30 +11,11 @@
 #include "luchnikov_e_gener_transm_from_all_to_one_gather/common/include/common.hpp"
 #include "luchnikov_e_gener_transm_from_all_to_one_gather/mpi/include/ops_mpi.hpp"
 #include "luchnikov_e_gener_transm_from_all_to_one_gather/seq/include/ops_seq.hpp"
-#include "util/include/func_test_util.hpp"
 
 namespace luchnikov_e_gener_transm_from_all_to_one_gather {
 
-class LuchnikovETransmFrAllToOneGatherFuncTests : public ppc::util::BaseRunFuncTests<InType, OutType, TestType> {
- public:
-  static std::string PrintTestParam(const TestType &test_param) {
-    const auto &count = std::get<0>(test_param);
-    const auto &root = std::get<1>(test_param);
-    const auto &datatype = std::get<2>(test_param);
-    const auto &name = std::get<3>(test_param);
-
-    std::string type_str;
-    if (datatype == MPI_INT) {
-      type_str = "int";
-    } else if (datatype == MPI_FLOAT) {
-      type_str = "float";
-    } else if (datatype == MPI_DOUBLE) {
-      type_str = "double";
-    }
-
-    return "count" + std::to_string(count) + "_root" + std::to_string(root) + "_" + type_str + "_" + name;
-  }
-
+class LuchnikovETransmFrAllToOneGatherFuncTests
+    : public ::testing::TestWithParam<std::tuple<std::string, std::string, TestType>> {
  protected:
   void SetUp() override {
     TestType params = std::get<2>(GetParam());
@@ -91,11 +72,11 @@ class LuchnikovETransmFrAllToOneGatherFuncTests : public ppc::util::BaseRunFuncT
     return 0;
   }
 
-  bool CheckTestOutputData(OutType &output_data) final {
+  bool CheckOutputData(OutType &output_data) {
     const auto &input = input_data_;
     const auto &params = std::get<2>(GetParam());
-    const std::string test_name = std::get<3>(params);
-    bool is_mpi = test_name.find("_mpi_") != std::string::npos;
+    const std::string test_name = std::get<1>(GetParam());
+    bool is_mpi = test_name.find("MPI") != std::string::npos;
 
     int world_size = 1;
     int rank = 0;
@@ -136,18 +117,43 @@ class LuchnikovETransmFrAllToOneGatherFuncTests : public ppc::util::BaseRunFuncT
     return true;
   }
 
-  InType GetTestInputData() final {
+  GatherInput GetInputData() {
     return input_data_;
   }
 
+  void ExecuteTest() {
+    const auto &params = GetParam();
+    const std::string task_type = std::get<1>(params);
+
+    if (task_type.find("MPI") != std::string::npos) {
+      LuchnikovETransmFrAllToOneGatherMPI task(input_data_);
+      ASSERT_TRUE(task.Validation());
+      ASSERT_TRUE(task.PreProcessing());
+      ASSERT_TRUE(task.Run());
+      ASSERT_TRUE(task.PostProcessing());
+
+      auto output = task.GetOutput();
+      EXPECT_TRUE(CheckOutputData(output));
+    } else {
+      LuchnikovETransmFrAllToOneGatherSEQ task(input_data_);
+      ASSERT_TRUE(task.Validation());
+      ASSERT_TRUE(task.PreProcessing());
+      ASSERT_TRUE(task.Run());
+      ASSERT_TRUE(task.PostProcessing());
+
+      auto output = task.GetOutput();
+      EXPECT_TRUE(CheckOutputData(output));
+    }
+  }
+
  private:
-  InType input_data_;
+  GatherInput input_data_;
 };
 
 namespace {
 
 TEST_P(LuchnikovETransmFrAllToOneGatherFuncTests, GatherCheck) {
-  ExecuteTest(GetParam());
+  ExecuteTest();
 }
 
 const std::array<TestType, 6> kTestParam = {std::make_tuple(1, 0, MPI_INT, "SingleElementIntRoot0"),
@@ -157,18 +163,24 @@ const std::array<TestType, 6> kTestParam = {std::make_tuple(1, 0, MPI_INT, "Sing
                                             std::make_tuple(2, 1, MPI_INT, "IntRoot1"),
                                             std::make_tuple(2, 2, MPI_INT, "IntRoot2")};
 
-const auto kTestTasksList =
-    std::tuple_cat(ppc::util::AddFuncTask<LuchnikovETransmFrAllToOneGatherMPI, InType>(
-                       kTestParam, PPC_SETTINGS_luchnikov_e_gener_transm_from_all_to_one_gather),
-                   ppc::util::AddFuncTask<LuchnikovETransmFrAllToOneGatherSEQ, InType>(
-                       kTestParam, PPC_SETTINGS_luchnikov_e_gener_transm_from_all_to_one_gather));
+std::vector<std::tuple<std::string, std::string, TestType>> CreateTestParams() {
+  std::vector<std::tuple<std::string, std::string, TestType>> params;
 
-const auto kGtestValues = ppc::util::ExpandToValues(kTestTasksList);
+  for (const auto &test_case : kTestParam) {
+    params.push_back(std::make_tuple("luchnikov_e_gener_transm_from_all_to_one_gather", "MPI", test_case));
 
-const auto kPerfTestName =
-    LuchnikovETransmFrAllToOneGatherFuncTests::PrintFuncTestName<LuchnikovETransmFrAllToOneGatherFuncTests>;
+    params.push_back(std::make_tuple("luchnikov_e_gener_transm_from_all_to_one_gather", "SEQ", test_case));
+  }
 
-INSTANTIATE_TEST_SUITE_P(GatherTests, LuchnikovETransmFrAllToOneGatherFuncTests, kGtestValues, kPerfTestName);
+  return params;
+}
+
+INSTANTIATE_TEST_SUITE_P(GatherTests, LuchnikovETransmFrAllToOneGatherFuncTests,
+                         ::testing::ValuesIn(CreateTestParams()),
+                         [](const testing::TestParamInfo<LuchnikovETransmFrAllToOneGatherFuncTests::ParamType> &info) {
+                           std::string name = std::get<1>(info.param) + "_" + std::get<3>(std::get<2>(info.param));
+                           return name;
+                         });
 
 TEST(LuchnikovETransmFrAllToOneGatherMPITest, BasicMPIGather) {
   int rank = 0;
@@ -328,7 +340,9 @@ TEST(LuchnikovETransmFrAllToOneGatherMPITest, NonPowerOfTwoSize) {
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
   MPI_Comm_size(MPI_COMM_WORLD, &world_size);
 
-  if (world_size > 3 && !((world_size & (world_size - 1)) == 0)) {
+  bool is_power_of_two = (world_size > 0) && ((world_size & (world_size - 1)) == 0);
+
+  if (!is_power_of_two && world_size > 3) {
     int count = 3;
     std::vector<char> data(static_cast<size_t>(count) * sizeof(int));
     auto *d_ptr = reinterpret_cast<int *>(data.data());
