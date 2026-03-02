@@ -31,8 +31,8 @@ size_t GetTypeSizeSeq(MPI_Datatype datatype) {
 class LuchnikovETransmFrAllToOneGatherPerfTests : public ppc::util::BaseRunPerfTests<InType, OutType> {
  protected:
   static const size_t kDataCount = 10000000;
-  MPI_Datatype data_type = MPI_INT;  // NOLINT
-  InType input_data{};               // NOLINT
+  MPI_Datatype data_type = MPI_INT;
+  InType input_data{};
 
   void SetUp() override {
     size_t type_size = sizeof(int);
@@ -81,8 +81,6 @@ const auto kAllPerfTasks =
 const auto kGtestValues = ppc::util::TupleToGTestValues(kAllPerfTasks);
 const auto kPerfTestName = LuchnikovETransmFrAllToOneGatherPerfTests::CustomPerfTestName;
 
-// NOLINTBEGIN(misc-use-anonymous-namespace)
 INSTANTIATE_TEST_SUITE_P(RunModeTests, LuchnikovETransmFrAllToOneGatherPerfTests, kGtestValues, kPerfTestName);
-// NOLINTEND(misc-use-anonymous-namespace)
 
 }  // namespace luchnikov_e_gener_transm_from_all_to_one_gather
