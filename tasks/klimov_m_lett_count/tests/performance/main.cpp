@@ -11,7 +11,7 @@
 namespace klimov_m_lett_count {
 
 class KlimovMLettCountPerfTest : public ppc::util::BaseRunPerfTests<InputType, OutputType> {
-  static constexpr size_t kRepeatFactor = 10'000'000;
+  static constexpr size_t kRepeatFactor = 1'000'000;
   static constexpr const char *kPattern = "abcdefgh";
 
   InputType large_string_;
@@ -19,11 +19,12 @@ class KlimovMLettCountPerfTest : public ppc::util::BaseRunPerfTests<InputType, O
 
  protected:
   void SetUp() override {
-    large_string_.reserve(kRepeatFactor * std::char_traits<char>::length(kPattern));
+    const size_t pattern_len = std::char_traits<char>::length(kPattern);
+    large_string_.reserve(kRepeatFactor * pattern_len);
     for (size_t i = 0; i < kRepeatFactor; ++i) {
       large_string_ += kPattern;
     }
-    expected_letters_ = static_cast<OutputType>(kRepeatFactor * std::char_traits<char>::length(kPattern));
+    expected_letters_ = static_cast<OutputType>(kRepeatFactor * pattern_len);
   }
 
   bool CheckTestOutputData(OutputType &output) final {

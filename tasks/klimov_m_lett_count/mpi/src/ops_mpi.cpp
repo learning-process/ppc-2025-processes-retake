@@ -70,7 +70,7 @@ bool KlimovMLettCountMPI::RunImpl() {
       if (seg_len > 0) {
         MPI_Send(input_str.substr(start, seg_len).data(), static_cast<int>(seg_len), MPI_CHAR, i, 1, MPI_COMM_WORLD);
       } else {
-        MPI_Send("", 0, MPI_CHAR, i, 1, MPI_COMM_WORLD);
+        MPI_Send(nullptr, 0, MPI_CHAR, i, 1, MPI_COMM_WORLD);
       }
     }
   } else {
@@ -81,6 +81,7 @@ bool KlimovMLettCountMPI::RunImpl() {
       local_segment.resize(actual_len);
       MPI_Recv(local_segment.data(), static_cast<int>(actual_len), MPI_CHAR, 0, 1, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
     } else {
+      MPI_Recv(nullptr, 0, MPI_CHAR, 0, 1, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
       local_segment.clear();
     }
   }
