@@ -59,9 +59,7 @@ bool LuchnikovETransmFrAllToOneGatherSEQ::PreProcessingImpl() {
 
 bool LuchnikovETransmFrAllToOneGatherSEQ::RunImpl() {
   const auto &input = GetInput();
-
   GetOutput() = input.data;
-
   return true;
 }
 

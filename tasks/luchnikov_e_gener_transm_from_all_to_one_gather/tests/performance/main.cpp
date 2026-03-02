@@ -32,13 +32,8 @@ using PerfTestParam = std::tuple<std::string, std::string, int>;
 std::vector<PerfTestParam> CreatePerfTestParams() {
   std::vector<PerfTestParam> params;
 
-  std::string task_name = "luchnikov_e_gener_transm_from_all_to_one_gather";
-
-  // MPI тест
-  params.emplace_back(task_name, "MPI", 0);
-
-  // SEQ тест
-  params.emplace_back(task_name, "SEQ", 0);
+  params.emplace_back("luchnikov_e_gener_transm_from_all_to_one_gather", "MPI", 0);
+  params.emplace_back("luchnikov_e_gener_transm_from_all_to_one_gather", "SEQ", 0);
 
   return params;
 }
@@ -52,8 +47,9 @@ class LuchnikovETransmFrAllToOneGatherPerfTests : public ::testing::TestWithPara
  protected:
   static const size_t kDataCount = 100000;
   MPI_Datatype data_type = MPI_INT;
+  LuchnikovETransmFrAllToOneGatherPerfTests() : input_data_() = default;
 
-  void SetUp() override {
+  void static SetUp() override {
     const size_t type_size = sizeof(int);
     std::vector<char> data(kDataCount * type_size);
 
@@ -69,7 +65,7 @@ class LuchnikovETransmFrAllToOneGatherPerfTests : public ::testing::TestWithPara
     input_data_ = GatherInput{.data = data, .count = static_cast<int>(kDataCount), .datatype = data_type, .root = root};
   }
 
-  bool CheckOutputData(OutType &output_data) {
+  bool static CheckOutputData(OutType &output_data) {
     const auto &input = input_data_;
 
     const std::string task_type = std::get<1>(GetParam());
@@ -84,7 +80,7 @@ class LuchnikovETransmFrAllToOneGatherPerfTests : public ::testing::TestWithPara
         return true;
       }
     }
-
+    const size_t type_size = 0;
     const size_t type_size = GetTypeSizeSeq(input.datatype);
     const size_t expected_size = static_cast<size_t>(input.count) * static_cast<size_t>(world_size) * type_size;
 
@@ -92,12 +88,11 @@ class LuchnikovETransmFrAllToOneGatherPerfTests : public ::testing::TestWithPara
       return false;
     }
 
-    // Проверка корректности данных
     if (rank == input.root && input.datatype == MPI_INT) {
       const int *out_ptr = reinterpret_cast<const int *>(output_data.data());
       for (int i = 0; i < world_size; ++i) {
         for (size_t j = 0; j < kDataCount; ++j) {
-          int expected = static_cast<int>((i * static_cast<int>(kDataCount)) + static_cast<int>(j));
+          int expected = (i * static_cast<int>(kDataCount)) + static_cast<int>(j);
           int actual = out_ptr[(i * static_cast<int>(kDataCount)) + static_cast<int>(j)];
           if (actual != expected) {
             return false;
@@ -109,7 +104,7 @@ class LuchnikovETransmFrAllToOneGatherPerfTests : public ::testing::TestWithPara
     return true;
   }
 
-  void ExecuteTest() {
+  void static ExecuteTest() {
     const std::string task_type = std::get<1>(GetParam());
 
     if (task_type == "MPI") {
@@ -136,10 +131,11 @@ class LuchnikovETransmFrAllToOneGatherPerfTests : public ::testing::TestWithPara
  private:
   GatherInput input_data_;
 };
-
+namespace {
 TEST_P(LuchnikovETransmFrAllToOneGatherPerfTests, RunPerfModes) {
   ExecuteTest();
 }
+}  // namespace
 
 INSTANTIATE_TEST_SUITE_P(RunModeTests, LuchnikovETransmFrAllToOneGatherPerfTests,
                          ::testing::ValuesIn(CreatePerfTestParams()), PrintPerfTestParam);

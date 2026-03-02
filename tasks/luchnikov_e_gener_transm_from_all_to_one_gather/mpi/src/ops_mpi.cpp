@@ -4,7 +4,6 @@
 
 #include <algorithm>
 #include <cstddef>
-#include <cstdint>
 #include <utility>
 #include <vector>
 
@@ -36,12 +35,12 @@ void GatherNonPowerOfTwo(int rank, int world_size, const GatherInput &input, int
   if (rank == root) {
     std::vector<char> recv_buffer(static_cast<size_t>(world_size) * static_cast<size_t>(block_size));
 
-    std::copy(input.data.begin(), input.data.end(),
-              recv_buffer.begin() + static_cast<std::ptrdiff_t>(rank) * static_cast<std::ptrdiff_t>(block_size));
+    std::ranges::copy(
+        input.data, recv_buffer.begin() + static_cast<std::ptrdiff_t>(rank) * static_cast<std::ptrdiff_t>(block_size));
 
     for (int i = 0; i < world_size; ++i) {
       if (i != rank) {
-        MPI_Recv(recv_buffer.data() + static_cast<std::ptrdiff_t>(i) * static_cast<std::ptrdiff_t>(block_size),
+        MPI_Recv(recv_buffer.data() + (static_cast<std::ptrdiff_t>(i) * static_cast<std::ptrdiff_t>(block_size)),
                  block_size, MPI_BYTE, i, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
       }
     }
@@ -57,12 +56,12 @@ void GatherPowerOfTwo(int rank, int world_size, const GatherInput &input, int bl
   const int root = input.root;
 
   std::vector<char> send_buffer(static_cast<size_t>(block_size));
-  std::copy(input.data.begin(), input.data.end(), send_buffer.begin());
+  std::ranges::copy(input.data, send_buffer.begin());
 
   std::vector<char> recv_buffer;
   if (rank == root) {
     recv_buffer.resize(static_cast<size_t>(world_size) * static_cast<size_t>(block_size));
-    std::copy(send_buffer.begin(), send_buffer.end(), recv_buffer.begin());
+    std::ranges::copy(send_buffer, recv_buffer.begin());
   }
 
   int step = 1;
@@ -75,9 +74,8 @@ void GatherPowerOfTwo(int rank, int world_size, const GatherInput &input, int bl
         MPI_Recv(temp_recv.data(), recv_size, MPI_BYTE, source, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 
         if (rank == root) {
-          std::copy(
-              temp_recv.begin(), temp_recv.end(),
-              recv_buffer.begin() + static_cast<std::ptrdiff_t>(source) * static_cast<std::ptrdiff_t>(block_size));
+          std::ranges::copy(temp_recv, recv_buffer.begin() + (static_cast<std::ptrdiff_t>(source) *
+                                                              static_cast<std::ptrdiff_t>(block_size)));
         } else {
           send_buffer.insert(send_buffer.end(), temp_recv.begin(), temp_recv.end());
         }
