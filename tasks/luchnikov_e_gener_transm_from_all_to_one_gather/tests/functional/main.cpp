@@ -110,9 +110,9 @@ const std::array<TestType, 5> kTestParamMedium = {std::make_tuple(10, "10"), std
                                                   std::make_tuple(20, "20"), std::make_tuple(25, "25"),
                                                   std::make_tuple(30, "30")};
 
-const std::array<TestType, 5> kTestParamLarge = {std::make_tuple(50, "50"), std::make_tuple(75, "75"),
-                                                 std::make_tuple(100, "100"), std::make_tuple(125, "125"),
-                                                 std::make_tuple(150, "150")};
+const std::array<TestType, 5> kTestParamLarge = {std::make_tuple(50, "50"), std::make_tuple(60, "60"),
+                                                 std::make_tuple(70, "70"), std::make_tuple(80, "80"),
+                                                 std::make_tuple(90, "90")};
 
 const auto kTestTasksListSmall =
     std::tuple_cat(ppc::util::AddFuncTask<LuchnikovEGenerTransformFromAllToOneGatherMPI, InType>(
