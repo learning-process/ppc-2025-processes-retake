@@ -3,6 +3,7 @@
 
 #include <algorithm>
 #include <cstddef>
+#include <memory>
 #include <random>
 #include <string>
 #include <vector>
@@ -37,8 +38,11 @@ class LuchnikovEGenerTransmFromAllToOneGatherFuncTestsProcesses
   }
 
   bool CheckTestOutputData(OutType &output_data) final {
+    // Получаем указатель на задачу через защищённый метод базового класса
+    auto* task_ptr = this->GetTask();
+    
     // Проверяем тип задачи через dynamic_cast
-    if (dynamic_cast<LuchnikovEGenerTransmFromAllToOneGatherMPI *>(this->GetTaskPtr()) != nullptr) {
+    if (dynamic_cast<LuchnikovEGenerTransmFromAllToOneGatherMPI*>(task_ptr) != nullptr) {
       int rank = 0;
       MPI_Comm_rank(MPI_COMM_WORLD, &rank);
       if (rank != 0) {
