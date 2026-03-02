@@ -84,7 +84,7 @@ namespace {
 // Build test data: total = send_count * num_procs elements, values = 0..total-1
 std::vector<int> MakeData(int send_count, int num_procs) {
   std::vector<int> v(static_cast<size_t>(send_count) * num_procs);
-  std::ranges::iota(v, 0);
+  std::iota(v.begin(), v.end(), 0);
   return v;
 }
 
