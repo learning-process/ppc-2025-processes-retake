@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <array>
 #include <cstddef>
+#include <cstring>
 #include <string>
 #include <tuple>
 #include <vector>
@@ -74,7 +75,14 @@ class LuchnikovETransmFrAllToOneGatherFuncTests
     }
 
     size_t total_size = static_cast<size_t>(count) * static_cast<size_t>(type_size);
-    std::vector<char> data(total_size);
+    // Создаем вектор с помощью reserve и push_back, чтобы избежать potential null pointer dereference
+    std::vector<char> data;
+    data.reserve(total_size);
+
+    // Заполняем вектор нулями
+    for (size_t i = 0; i < total_size; ++i) {
+      data.push_back(0);
+    }
 
     int rank = 0;
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
@@ -151,6 +159,28 @@ class LuchnikovETransmFrAllToOneGatherFuncTests
             }
           }
         }
+      } else if (input.datatype == MPI_FLOAT) {
+        const float *out_ptr = reinterpret_cast<const float *>(output_data.data());
+        for (int i = 0; i < world_size; ++i) {
+          for (int j = 0; j < input.count; ++j) {
+            float expected_value = static_cast<float>(i * input.count + j) + 0.5F;
+            float actual_value = out_ptr[i * input.count + j];
+            if (std::abs(actual_value - expected_value) > 1e-6) {
+              return false;
+            }
+          }
+        }
+      } else if (input.datatype == MPI_DOUBLE) {
+        const double *out_ptr = reinterpret_cast<const double *>(output_data.data());
+        for (int i = 0; i < world_size; ++i) {
+          for (int j = 0; j < input.count; ++j) {
+            double expected_value = static_cast<double>(i * input.count + j) + 0.25;
+            double actual_value = out_ptr[i * input.count + j];
+            if (std::abs(actual_value - expected_value) > 1e-12) {
+              return false;
+            }
+          }
+        }
       }
     }
 
@@ -201,7 +231,12 @@ TEST(LuchnikovETransmFrAllToOneGatherMPITest, BasicMPIGather) {
   MPI_Comm_size(MPI_COMM_WORLD, &world_size);
 
   int count = 3;
-  std::vector<char> data(count * sizeof(int));
+  std::vector<char> data;
+  data.reserve(count * sizeof(int));
+  for (size_t i = 0; i < static_cast<size_t>(count) * sizeof(int); ++i) {
+    data.push_back(0);
+  }
+
   auto *data_ptr = reinterpret_cast<int *>(data.data());
   for (int i = 0; i < count; ++i) {
     data_ptr[i] = rank * count + i + 1;
@@ -231,7 +266,12 @@ TEST(LuchnikovETransmFrAllToOneGatherMPITest, BasicMPIGather) {
 
 TEST(LuchnikovETransmFrAllToOneGatherSEQTest, BasicSEQGather) {
   int count = 3;
-  std::vector<char> data(count * sizeof(int));
+  std::vector<char> data;
+  data.reserve(count * sizeof(int));
+  for (size_t i = 0; i < static_cast<size_t>(count) * sizeof(int); ++i) {
+    data.push_back(0);
+  }
+
   auto *data_ptr = reinterpret_cast<int *>(data.data());
   for (int i = 0; i < count; ++i) {
     data_ptr[i] = i + 1;
@@ -258,7 +298,11 @@ TEST(LuchnikovETransmFrAllToOneGatherMPITest, InvalidValidation) {
   int world_size = 1;
   MPI_Comm_size(MPI_COMM_WORLD, &world_size);
 
-  std::vector<char> data(sizeof(int));
+  std::vector<char> data;
+  data.reserve(sizeof(int));
+  for (size_t i = 0; i < sizeof(int); ++i) {
+    data.push_back(0);
+  }
 
   GatherInput input_neg_count{.data = data, .count = -1, .datatype = MPI_INT, .root = 0};
   LuchnikovETransmFrAllToOneGatherMPI task_1(input_neg_count);
@@ -272,7 +316,11 @@ TEST(LuchnikovETransmFrAllToOneGatherMPITest, InvalidValidation) {
   LuchnikovETransmFrAllToOneGatherMPI task_3(input_wrong_type);
   EXPECT_FALSE(task_3.Validation());
 
-  std::vector<char> wrong_size_data(sizeof(int) * 2);
+  std::vector<char> wrong_size_data;
+  wrong_size_data.reserve(sizeof(int) * 2);
+  for (size_t i = 0; i < sizeof(int) * 2; ++i) {
+    wrong_size_data.push_back(0);
+  }
   GatherInput input_wrong_size{.data = wrong_size_data, .count = 1, .datatype = MPI_INT, .root = 0};
   LuchnikovETransmFrAllToOneGatherMPI task_4(input_wrong_size);
   EXPECT_FALSE(task_4.Validation());
@@ -286,7 +334,12 @@ TEST(LuchnikovETransmFrAllToOneGatherMPITest, MiddleRootGather) {
 
   int root = world_size / 2;
   int count = 2;
-  std::vector<char> data(static_cast<size_t>(count) * sizeof(float));
+  std::vector<char> data;
+  data.reserve(static_cast<size_t>(count) * sizeof(float));
+  for (size_t i = 0; i < static_cast<size_t>(count) * sizeof(float); ++i) {
+    data.push_back(0);
+  }
+
   auto *d_ptr = reinterpret_cast<float *>(data.data());
   for (int i = 0; i < count; ++i) {
     d_ptr[i] = static_cast<float>(rank * count + i);
@@ -319,7 +372,12 @@ TEST(LuchnikovETransmFrAllToOneGatherMPITest, LargeDataGather) {
   MPI_Comm_size(MPI_COMM_WORLD, &world_size);
 
   int count = 1000;
-  std::vector<char> data(static_cast<size_t>(count) * sizeof(double));
+  std::vector<char> data;
+  data.reserve(static_cast<size_t>(count) * sizeof(double));
+  for (size_t i = 0; i < static_cast<size_t>(count) * sizeof(double); ++i) {
+    data.push_back(0);
+  }
+
   auto *d_ptr = reinterpret_cast<double *>(data.data());
   for (int i = 0; i < count; ++i) {
     d_ptr[i] = static_cast<double>(rank * count + i);
@@ -357,7 +415,12 @@ TEST(LuchnikovETransmFrAllToOneGatherMPITest, NonPowerOfTwoSize) {
 
   if (!is_power_of_two && world_size > 2) {
     int count = 3;
-    std::vector<char> data(static_cast<size_t>(count) * sizeof(int));
+    std::vector<char> data;
+    data.reserve(static_cast<size_t>(count) * sizeof(int));
+    for (size_t i = 0; i < static_cast<size_t>(count) * sizeof(int); ++i) {
+      data.push_back(0);
+    }
+
     auto *d_ptr = reinterpret_cast<int *>(data.data());
     for (int i = 0; i < count; ++i) {
       d_ptr[i] = rank * count + i;
