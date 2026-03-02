@@ -1,8 +1,6 @@
 #include <gtest/gtest.h>
 #include <mpi.h>
 
-#include <algorithm>
-#include <array>
 #include <cstddef>
 #include <string>
 #include <tuple>
@@ -22,7 +20,6 @@ class LuchnikovETransmFrAllToOneGatherFuncTests : public ppc::util::BaseRunFuncT
     const auto &root = std::get<1>(test_param);
     const auto &datatype = std::get<2>(test_param);
     const auto &name = std::get<3>(test_param);
-
     std::string type_str = "unknown";
     if (datatype == MPI_INT) {
       type_str = "int";
@@ -31,19 +28,16 @@ class LuchnikovETransmFrAllToOneGatherFuncTests : public ppc::util::BaseRunFuncT
     } else if (datatype == MPI_DOUBLE) {
       type_str = "double";
     }
-
     return "count" + std::to_string(count) + "_root" + std::to_string(root) + "_" + type_str + "_" + name;
   }
 
  protected:
   void SetUp() override {
     TestType params = std::get<2>(GetParam());
-
     const auto &count = std::get<0>(params);
     const auto &root = std::get<1>(params);
     const auto &datatype = std::get<2>(params);
-
-    int type_size = 0;
+    size_t type_size = 0;
     if (datatype == MPI_INT) {
       type_size = sizeof(int);
     } else if (datatype == MPI_FLOAT) {
@@ -51,37 +45,40 @@ class LuchnikovETransmFrAllToOneGatherFuncTests : public ppc::util::BaseRunFuncT
     } else if (datatype == MPI_DOUBLE) {
       type_size = sizeof(double);
     }
-
-    size_t total_size = (size_t)count * (size_t)type_size;
+    size_t total_size = static_cast<size_t>(count) * type_size;
     if (total_size == 0) {
       total_size = 1;
     }
     std::vector<char> data(total_size);
-
     if (datatype == MPI_INT) {
-      int* data_ptr = (int*)data.data();
+      auto *data_ptr = reinterpret_cast<int *>(data.data());
       for (int i = 0; i < count; i++) {
         data_ptr[i] = i + 1;
       }
     } else if (datatype == MPI_FLOAT) {
-      float* data_ptr = (float*)data.data();
+      auto *data_ptr = reinterpret_cast<float *>(data.data());
       for (int i = 0; i < count; i++) {
-        data_ptr[i] = (float)i + 0.5f;
+        data_ptr[i] = static_cast<float>(i) + 0.5f;
       }
     } else if (datatype == MPI_DOUBLE) {
-      double* data_ptr = (double*)data.data();
+      auto *data_ptr = reinterpret_cast<double *>(data.data());
       for (int i = 0; i < count; i++) {
-        data_ptr[i] = (double)i + 0.25;
+        data_ptr[i] = static_cast<double>(i) + 0.25;
       }
     }
-
     input_data_ = GatherInput{.data = data, .count = count, .datatype = datatype, .root = root};
   }
 
-  static int GetTypeSize(MPI_Datatype datatype) {
-    if (datatype == MPI_INT) return sizeof(int);
-    if (datatype == MPI_FLOAT) return sizeof(float);
-    if (datatype == MPI_DOUBLE) return sizeof(double);
+  static size_t GetTypeSize(MPI_Datatype datatype) {
+    if (datatype == MPI_INT) {
+      return sizeof(int);
+    }
+    if (datatype == MPI_FLOAT) {
+      return sizeof(float);
+    }
+    if (datatype == MPI_DOUBLE) {
+      return sizeof(double);
+    }
     return 0;
   }
 
@@ -89,24 +86,22 @@ class LuchnikovETransmFrAllToOneGatherFuncTests : public ppc::util::BaseRunFuncT
     const auto &input = input_data_;
     std::string test_name = std::get<1>(GetParam());
     bool is_mpi = test_name.find("_mpi_") != std::string::npos;
-
     int size = 1;
     if (is_mpi) {
-      MPI_Comm_size(MPI_COMM_WORLD, &size);
+      int mpi_err = MPI_Comm_size(MPI_COMM_WORLD, &size);
+      (void)mpi_err;
       int rank = 0;
-      MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+      mpi_err = MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+      (void)mpi_err;
       if (rank != input.root) {
         return true;
       }
     }
-
     if (output_data.empty()) {
       return false;
     }
-
-    size_t type_size = (size_t)GetTypeSize(input.datatype);
-    size_t expected_size = (size_t)input.count * (size_t)size * type_size;
-
+    size_t type_size = GetTypeSize(input.datatype);
+    size_t expected_size = static_cast<size_t>(input.count) * static_cast<size_t>(size) * type_size;
     return output_data.size() == expected_size;
   }
 
@@ -124,40 +119,37 @@ TEST_P(LuchnikovETransmFrAllToOneGatherFuncTests, GatherCheck) {
   ExecuteTest(GetParam());
 }
 
-const std::array<TestType, 3> kTestParam = {
-  std::make_tuple(3, 0, MPI_INT, "SmallIntRoot0"),
-  std::make_tuple(4, 0, MPI_FLOAT, "SmallFloatRoot0"),
-  std::make_tuple(3, 0, MPI_DOUBLE, "SmallDoubleRoot0")
-};
+const std::array<TestType, 3> kTestParam = {std::make_tuple(3, 0, MPI_INT, "SmallIntRoot0"),
+                                            std::make_tuple(4, 0, MPI_FLOAT, "SmallFloatRoot0"),
+                                            std::make_tuple(3, 0, MPI_DOUBLE, "SmallDoubleRoot0")};
 
-const auto kTestTasksList = std::tuple_cat(
-  ppc::util::AddFuncTask<LuchnikovETransmFrAllToOneGatherMPI, InType>(kTestParam, PPC_SETTINGS_luchnikov_e_gener_transm_from_all_to_one_gather),
-  ppc::util::AddFuncTask<LuchnikovETransmFrAllToOneGatherSEQ, InType>(kTestParam, PPC_SETTINGS_luchnikov_e_gener_transm_from_all_to_one_gather)
-);
+const auto kTestTasksList =
+    std::tuple_cat(ppc::util::AddFuncTask<LuchnikovETransmFrAllToOneGatherMPI, InType>(
+                       kTestParam, PPC_SETTINGS_luchnikov_e_gener_transm_from_all_to_one_gather),
+                   ppc::util::AddFuncTask<LuchnikovETransmFrAllToOneGatherSEQ, InType>(
+                       kTestParam, PPC_SETTINGS_luchnikov_e_gener_transm_from_all_to_one_gather));
 
 const auto kGtestValues = ppc::util::ExpandToValues(kTestTasksList);
-const auto kPerfTestName = LuchnikovETransmFrAllToOneGatherFuncTests::PrintFuncTestName<LuchnikovETransmFrAllToOneGatherFuncTests>;
+const auto kPerfTestName =
+    LuchnikovETransmFrAllToOneGatherFuncTests::PrintFuncTestName<LuchnikovETransmFrAllToOneGatherFuncTests>;
 
 INSTANTIATE_TEST_SUITE_P(GatherTests, LuchnikovETransmFrAllToOneGatherFuncTests, kGtestValues, kPerfTestName);
 
 TEST(LuchnikovETransmFrAllToOneGatherMPITest, BasicMPIGather) {
   int rank = 0;
-  MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-
+  int mpi_err = MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+  (void)mpi_err;
   std::vector<char> data(3 * sizeof(int));
-  int* data_ptr = (int*)data.data();
+  auto *data_ptr = reinterpret_cast<int *>(data.data());
   data_ptr[0] = 1;
   data_ptr[1] = 2;
   data_ptr[2] = 3;
-
   GatherInput input{.data = data, .count = 3, .datatype = MPI_INT, .root = 0};
   LuchnikovETransmFrAllToOneGatherMPI task(input);
-
   EXPECT_TRUE(task.Validation());
   EXPECT_TRUE(task.PreProcessing());
   EXPECT_TRUE(task.Run());
   EXPECT_TRUE(task.PostProcessing());
-
   if (rank == 0) {
     const auto &result = task.GetOutput();
     EXPECT_FALSE(result.empty());
@@ -166,23 +158,19 @@ TEST(LuchnikovETransmFrAllToOneGatherMPITest, BasicMPIGather) {
 
 TEST(LuchnikovETransmFrAllToOneGatherSEQTest, BasicSEQGather) {
   std::vector<char> data(3 * sizeof(int));
-  int* data_ptr = (int*)data.data();
+  auto *data_ptr = reinterpret_cast<int *>(data.data());
   data_ptr[0] = 1;
   data_ptr[1] = 2;
   data_ptr[2] = 3;
-
   GatherInput input{.data = data, .count = 3, .datatype = MPI_INT, .root = 0};
   LuchnikovETransmFrAllToOneGatherSEQ task(input);
-
   EXPECT_TRUE(task.Validation());
   EXPECT_TRUE(task.PreProcessing());
   EXPECT_TRUE(task.Run());
   EXPECT_TRUE(task.PostProcessing());
-
   const auto &result = task.GetOutput();
   ASSERT_EQ(result.size(), 3 * sizeof(int));
-
-  const int* res_ptr = (const int*)result.data();
+  const auto *res_ptr = reinterpret_cast<const int *>(result.data());
   EXPECT_EQ(res_ptr[0], 1);
   EXPECT_EQ(res_ptr[1], 2);
   EXPECT_EQ(res_ptr[2], 3);
@@ -190,17 +178,15 @@ TEST(LuchnikovETransmFrAllToOneGatherSEQTest, BasicSEQGather) {
 
 TEST(LuchnikovETransmFrAllToOneGatherMPITest, InvalidValidation) {
   std::vector<char> data(sizeof(int));
-  
   GatherInput input_neg_count{.data = data, .count = -1, .datatype = MPI_INT, .root = 0};
   LuchnikovETransmFrAllToOneGatherMPI task_1(input_neg_count);
   EXPECT_FALSE(task_1.Validation());
-
   int size = 1;
-  MPI_Comm_size(MPI_COMM_WORLD, &size);
+  int mpi_err = MPI_Comm_size(MPI_COMM_WORLD, &size);
+  (void)mpi_err;
   GatherInput input_invalid_root{.data = data, .count = 1, .datatype = MPI_INT, .root = size + 1};
   LuchnikovETransmFrAllToOneGatherMPI task_2(input_invalid_root);
   EXPECT_FALSE(task_2.Validation());
-
   GatherInput input_wrong_type{.data = data, .count = 1, .datatype = MPI_CHAR, .root = 0};
   LuchnikovETransmFrAllToOneGatherMPI task_3(input_wrong_type);
   EXPECT_FALSE(task_3.Validation());
@@ -209,33 +195,30 @@ TEST(LuchnikovETransmFrAllToOneGatherMPITest, InvalidValidation) {
 TEST(LuchnikovETransmFrAllToOneGatherMPITest, MiddleRootGather) {
   int rank = 0;
   int size = 0;
-  MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-  MPI_Comm_size(MPI_COMM_WORLD, &size);
-
+  int mpi_err = MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+  (void)mpi_err;
+  mpi_err = MPI_Comm_size(MPI_COMM_WORLD, &size);
+  (void)mpi_err;
   int root = size / 2;
   int count = 2;
-  
-  std::vector<char> data((size_t)count * sizeof(float));
-  float* d_ptr = (float*)data.data();
+  std::vector<char> data(static_cast<size_t>(count) * sizeof(float));
+  auto *d_ptr = reinterpret_cast<float *>(data.data());
   for (int i = 0; i < count; i++) {
-    d_ptr[i] = (float)rank;
+    d_ptr[i] = static_cast<float>(rank);
   }
-
   GatherInput input{.data = data, .count = count, .datatype = MPI_FLOAT, .root = root};
   LuchnikovETransmFrAllToOneGatherMPI task(input);
-
   ASSERT_TRUE(task.Validation());
   task.PreProcessing();
   task.Run();
   task.PostProcessing();
-
   if (rank == root) {
     const auto &result = task.GetOutput();
-    ASSERT_EQ(result.size(), (size_t)count * (size_t)size * sizeof(float));
-    const float* res_ptr = (const float*)result.data();
+    ASSERT_EQ(result.size(), static_cast<size_t>(count) * static_cast<size_t>(size) * sizeof(float));
+    const auto *res_ptr = reinterpret_cast<const float *>(result.data());
     for (int r = 0; r < size; r++) {
       for (int i = 0; i < count; i++) {
-        EXPECT_FLOAT_EQ(res_ptr[(r * count) + i], (float)r);
+        EXPECT_FLOAT_EQ(res_ptr[(r * count) + i], static_cast<float>(r));
       }
     }
   }
@@ -244,28 +227,25 @@ TEST(LuchnikovETransmFrAllToOneGatherMPITest, MiddleRootGather) {
 TEST(LuchnikovETransmFrAllToOneGatherMPITest, LargeDataGather) {
   int rank = 0;
   int size = 0;
-  MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-  MPI_Comm_size(MPI_COMM_WORLD, &size);
-
+  int mpi_err = MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+  (void)mpi_err;
+  mpi_err = MPI_Comm_size(MPI_COMM_WORLD, &size);
+  (void)mpi_err;
   int count = 10000;
-  
   std::vector<char> data(count * sizeof(double));
-  double* d_ptr = (double*)data.data();
+  auto *d_ptr = reinterpret_cast<double *>(data.data());
   for (int i = 0; i < count; i++) {
-    d_ptr[i] = (double)rank;
+    d_ptr[i] = static_cast<double>(rank);
   }
-
   GatherInput input{.data = data, .count = count, .datatype = MPI_DOUBLE, .root = 0};
   LuchnikovETransmFrAllToOneGatherMPI task(input);
-
   task.Validation();
   task.PreProcessing();
   task.Run();
   task.PostProcessing();
-
   if (rank == 0) {
     const auto &result = task.GetOutput();
-    EXPECT_EQ(result.size(), (size_t)count * (size_t)size * sizeof(double));
+    EXPECT_EQ(result.size(), static_cast<size_t>(count) * static_cast<size_t>(size) * sizeof(double));
   }
 }
 
