@@ -63,7 +63,7 @@ bool SoloninVSparseMulCRSMPI::RunImpl() {
   int ra = 0;
   int ca = 0;
   int cb = 0;
-  if (!BroadcastSizes(ra, cb, ca)) {
+  if (!BroadcastSizes(ra, ca, cb)) {
     return true;
   }
 
