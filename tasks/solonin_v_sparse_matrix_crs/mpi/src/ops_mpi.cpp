@@ -56,6 +56,16 @@ bool SoloninVSparseMulCRSMPI::PreProcessingImpl() {
 }
 
 bool SoloninVSparseMulCRSMPI::RunImpl() {
+  local_row_ids_.clear();
+  local_vals_a_.clear();
+  local_cols_a_.clear();
+  local_ptr_a_.clear();
+  local_vals_c_.clear();
+  local_cols_c_.clear();
+  local_ptr_c_.clear();
+  vals_c_.clear();
+  cols_c_.clear();
+  ptr_c_.clear();
   if (world_size_ == 1) {
     return RunSequential();
   }
