@@ -1,9 +1,9 @@
 {
-    "student": {
-        "first_name": "Diana",
-        "last_name": "Rychkova",
-        "middle_name": "Dmitrievna",
-        "group_number": "3823B1FI3",
-        "task_number": "2"
-    }
+  "student": {
+    "first_name": "Диана",
+    "group_number": "3823Б1ФИ3",
+    "last_name": "Рычкова",
+    "middle_name": "Дмитриевна",
+    "task_number": "22"
+  }
 }
