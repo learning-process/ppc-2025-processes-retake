@@ -1,8 +1,8 @@
 # Нахождение минимальных значений по столбцам матрицы
 
-- Student: Солонин Владислав Викторович, group 3823Б1ПР1
+- Student: Солонин Влад, group 3823Б1ПР5
 - Technology: SEQ | MPI
-- Variant: 1
+- Variant: 188
 
 ## 1. Introduction
 
